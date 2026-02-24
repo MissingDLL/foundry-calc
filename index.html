@@ -2252,17 +2252,6 @@
           [M.PUMPJACK_I]: { cycleTime: 60 / 1800 },
         },
       },
-
-       "Steam": {
-        category: CAT.COMPONENTS,
-        ingredients: [
-          { item: I.WATER, amount: 20 },
-        ],
-        output: { amount: 60 },
-        machines: {
-          [M.PUMPJACK_I]: { cycleTime: 60 },
-        },
-      },
       "Electronic Components": {
         category: CAT.COMPONENTS,
         ingredients: [
@@ -2773,13 +2762,10 @@
           [M.ASSEMBLER_II]: { cycleTime: 6.666 },
           [M.ASSEMBLER_III]: { cycleTime: 5 },
         },
-        power_consumption_kw: 150,
+        power_consumption: 150,
+        power_consumption_unit: "kW",
         size: "3x6x3",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
       },
       [M.ASSEMBLER_I]: {
         category: CAT.STRUCTURES,
@@ -2796,13 +2782,10 @@
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         },
         speed: 1,
-        power_consumption_kw: 50,
+        power_consumption: 50,
+        power_consumption_unit: "kW",
         size: "3x4x3",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
       },
 
       [M.ASSEMBLER_III]: {
@@ -2820,13 +2803,10 @@
           [M.ASSEMBLER_III]: { cycleTime: 3 },
         },
         speed: 2,
-        power_consumption_kw: 250,
+        power_consumption: 250,
+        power_consumption_unit: "kW",
         size: "3x4x3",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
       },
       "Assembly Line Logistics Container": {
         category: CAT.STRUCTURES,
@@ -2845,7 +2825,7 @@
         },
         stats: {
           size: '11x7x11',
-          dataSystemSupport: true,
+          tags: ["Data System Support"],
         },
       },
       "Assembly Line Merger": {
@@ -3013,8 +2993,7 @@
           connectionRange: '10m',
           maxConnections: 2,
           grid: 'High Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
       "Battery (Small)": {
@@ -3039,8 +3018,7 @@
           connectionRange: '10m',
           maxConnections: 2,
           grid: 'High Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
       "Biomass Burner": {
@@ -3057,7 +3035,8 @@
           [M.ASSEMBLER_II]: { cycleTime: 2.666 },
           [M.ASSEMBLER_III]: { cycleTime: 2 },
         },
-        power_generation_kw: 600,
+        power_generation: 600,
+        power_generation_unit: "kW",
         efficiency: 0.7,
         requires_fuel: true,
         size: "1x2x1",
@@ -3112,15 +3091,12 @@
           [M.ASSEMBLER_II]: { cycleTime: 2.666 },
           [M.ASSEMBLER_III]: { cycleTime: 2 },
         },
-        power_generation_mw: 1.8,
+        power_generation: 1.8,
+        power_generation_unit: "MW",
         efficiency: 0.8,
         requires_fuel: true,
         size: "4x6x4",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
       },
       "Cargo Shuttle Start Pad": {
         category: CAT.STRUCTURES,
@@ -3138,7 +3114,8 @@
           [M.ASSEMBLER_III]: { cycleTime: 15 },
         },
         size: "31x14x31",
-        power_consumption_kw: 300,
+        power_consumption: 300,
+        power_consumption_unit: "kW",
         tags: ["Requires Foundation", "Low Voltage Grid", "Blast Resistant"],
         description: "Used for planetary logistics.",
       },
@@ -3158,7 +3135,8 @@
           [M.ASSEMBLER_III]: { cycleTime: 15 },
         },
         size: "31x14x31",
-        power_consumption_kw: 300,
+        power_consumption: 300,
+        power_consumption_unit: "kW",
         tags: ["Requires Foundation", "Low Voltage Grid", "Blast Resistant"],
         description: "Used for planetary logistics.",
       },
@@ -3177,7 +3155,8 @@
           [M.ASSEMBLER_III]: { cycleTime: 6 },
         },
         size: "31x14x31",
-        power_consumption_kw: 300,
+        power_consumption: 300,
+        power_consumption_unit: "kW",
         tags: ["Requires Foundation", "Low Voltage Grid", "Blast Resistant"],
         description: "Used for planetary logistics.",
       },
@@ -3196,7 +3175,8 @@
           [M.ASSEMBLER_III]: { cycleTime: 6 },
         },
         size: "31x14x31",
-        power_consumption_kw: 300,
+        power_consumption: 300,
+        power_consumption_unit: "kW",
         tags: ["Requires Foundation", "Low Voltage Grid", "Blast Resistant"],
         description: "Used for planetary logistics.",
       },
@@ -3325,7 +3305,7 @@
         },
         items_per_min: 160,
         size: "1x1x1",
-        data_system_support: true,
+        tags: ["Data System Support"],
       },
       "Conveyor II": {
         category: CAT.STRUCTURES,
@@ -3343,7 +3323,7 @@
         },
         items_per_min: 320,
         size: "1x1x1",
-        data_system_support: true,
+        tags: ["Data System Support"],
       },
       "Conveyor III": {
         category: CAT.STRUCTURES,
@@ -3359,9 +3339,9 @@
           [M.ASSEMBLER_II]: { cycleTime: 5 },
           [M.ASSEMBLER_III]: { cycleTime: 3.75 },
         },
-        items_per_minute: 640,
+        items_per_min: 640,
         size: "1x1x1",
-        data_system_support: true,
+        tags: ["Data System Support"],
       },
       "Conveyor IV": {
         category: CAT.STRUCTURES,
@@ -3381,9 +3361,9 @@
           [M.ASSEMBLER_II]: { cycleTime: 5 },
           [M.ASSEMBLER_III]: { cycleTime: 3.75 },
         },
-        items_per_minute: 640,
+        items_per_min: 640,
         size: "1x1x1",
-        data_system_support: true,
+        tags: ["Data System Support"],
       },
       "Conveyor Slope I": {
         category: CAT.STRUCTURES,
@@ -3471,7 +3451,6 @@
         },
         stats: {
           slots: 8,
-          loaderSupport: false,
           size: '2x1x1',
         },
       },
@@ -3491,11 +3470,11 @@
         },
         stats: {
           speed: 1,
-          maxPowerConsumption: '500 kW',
+          power_consumption: 500,
+        power_consumption_unit: "kW",
           size: '4x9x4',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
       "Data Cable": {
@@ -3634,13 +3613,10 @@
         },
         drone_range: 6,
         drone_count: 4,
-        power_consumption_kw: 200,
+        power_consumption: 200,
+        power_consumption_unit: "kW",
         size: "2x2x2",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
       },
       "Drone Miner II": {
         category: CAT.STRUCTURES,
@@ -3658,13 +3634,10 @@
         },
         drone_range: 8,
         drone_count: 4,
-        power_consumption_kw: 400,
+        power_consumption: 400,
+        power_consumption_unit: "kW",
         size: "2x2x2",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
       },
       [M.ELECTRIC_ARC_FURNACE]: {
         category: CAT.STRUCTURES,
@@ -3693,7 +3666,7 @@
           grid: 'High Voltage',
           connectionRange: '15m',
           maxConnections: 4,
-          blastResistant: true,
+          tags: ["Blast Resistant"],
         },
       },
       "Emergency Beacon": {
@@ -3710,7 +3683,7 @@
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
         size: "5x5x5",
-        blast_resistant: true,
+        tags: ["Blast Resistant"],
       },
       "Escalator I": {
         category: CAT.STRUCTURES,
@@ -3768,13 +3741,10 @@
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
         items_per_min: 1800,
-        power_consumption_kw: 5,
+        power_consumption: 5,
+        power_consumption_unit: "kW",
         size: "2x2x1",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
         modes: ["Input", "Default", "Output"],
       },
       "Flare Stack": {
@@ -3793,10 +3763,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 2.5 },
         },
         stats: {
-          maxPowerConsumption: '200 kW',
+          power_consumption: 200,
+        power_consumption_unit: "kW",
           size: '3x12x3',
           grid: 'Low Voltage',
-          requiresFoundation: true,
+          tags: ["Requires Foundation"],
         },
       },
       "Freight Elevator I": {
@@ -3924,7 +3895,7 @@
         },
         stats: {
           size: '11x12x7',
-          dataSystemSupport: true,
+          tags: ["Data System Support"],
         },
       },
       [M.LAVA_SMELTER_II]: {
@@ -3944,7 +3915,7 @@
         },
         stats: {
           size: '11x12x7',
-          dataSystemSupport: true,
+          tags: ["Data System Support"],
         },
       },
       Loader: {
@@ -3962,13 +3933,10 @@
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
         items_per_min: 1800,
-        power_consumption_kw: 5,
+        power_consumption: 5,
+        power_consumption_unit: "kW",
         size: "2x2x1",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
         modes: ["Input", "Default", "Output"],
       },
       "Loader Second Lane": {
@@ -3986,13 +3954,10 @@
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
         items_per_min: 1800,
-        power_consumption_kw: 10,
+        power_consumption: 10,
+        power_consumption_unit: "kW",
         size: "3x2x1",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
         modes: ["Input", "Default", "Output"],
       },
       "Loader Third Lane": {
@@ -4010,13 +3975,10 @@
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
         items_per_min: 1800,
-        power_consumption_kw: 12,
+        power_consumption: 12,
+        power_consumption_unit: "kW",
         size: "4x2x1",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
         modes: ["Input", "Default", "Output"],
       },
 
@@ -4034,7 +3996,6 @@
         },
         stats: {
           slots: 32,
-          loaderSupport: false,
           size: '4x2x2',
         },
       },
@@ -4054,9 +4015,8 @@
         },
         stats: {
           slots: 10,
-          loaderSupport: true,
           size: '2x3x2',
-          dataSystemSupport: true,
+          tags: ["Loader Support", "Data System Support"],
         },
       },
       "Logistic Container II": {
@@ -4076,9 +4036,8 @@
         },
         stats: {
           slots: 20,
-          loaderSupport: true,
           size: '4x3x2',
-          dataSystemSupport: true,
+          tags: ["Loader Support", "Data System Support"],
         },
       },
       "Logistic Container III": {
@@ -4097,9 +4056,8 @@
         },
         stats: {
           slots: 40,
-          loaderSupport: true,
           size: '4x3x4',
-          dataSystemSupport: true,
+          tags: ["Loader Support", "Data System Support"],
         },
       },
       "Omni-Analyzer": {
@@ -4119,7 +4077,7 @@
         description:
           "Allows analyzing collectibles like crystals to unlock upgrades.",
         size: "3x2x6",
-        blast_resistant: true,
+        tags: ["Blast Resistant"],
       },
       "Ore Vein Miner": {
         category: CAT.STRUCTURES,
@@ -4135,7 +4093,8 @@
           [M.ASSEMBLER_II]: { cycleTime: 5.333 },
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         },
-        power_consumption_kw: 500,
+        power_consumption: 500,
+        power_consumption_unit: "kW",
         size: "10x4x5",
         tags: [
           "High Voltage Grid",
@@ -4196,13 +4155,10 @@
           [M.ASSEMBLER_II]: { cycleTime: 2 },
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
-        power_consumption_kw: 1000,
+        power_consumption: 1,
+        power_consumption_unit: "MW",
         size: "5x4x3",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
         modes: ["LVG", "HVG"],
       },
       Pipeline: {
@@ -4238,13 +4194,10 @@
           [M.ASSEMBLER_II]: { cycleTime: 2 },
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
-        power_consumption_kw: 1000,
+        power_consumption: 1,
+        power_consumption_unit: "MW",
         size: "5x4x3",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
         modes: ["LVG", "HVG"],
       },
       "Power Pole (Large)": {
@@ -4319,13 +4272,10 @@
           [M.ASSEMBLER_II]: { cycleTime: 2 },
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
-        power_consumption_kw: 1000,
+        power_consumption: 1,
+        power_consumption_unit: "MW",
         size: "5x4x3",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
         modes: ["LVG", "HVG"],
       },
       "Pump (Pipes)": {
@@ -4342,13 +4292,10 @@
           [M.ASSEMBLER_II]: { cycleTime: 2 },
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
-        power_consumption_kw: 200,
+        power_consumption: 200,
+        power_consumption_unit: "kW",
         size: "2x2x1",
-        tags: [
-          "Requires Foundation",
-          "Low Voltage Grid",
-          "Data System Support",
-        ],
+        tags: ["Requires Foundation", "Low Voltage Grid", "Data System Support"],
         modes: ["LVG", "HVG"],
       },
       "Pumpjack I": {
@@ -4367,7 +4314,8 @@
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         },
         output_l_per_min: 1800,
-        power_consumption_kw: 200,
+        power_consumption: 200,
+        power_consumption_unit: "kW",
         size: "3x6x3",
         tags: ["High Voltage Grid", "Power Consumer", "Data System Support"],
         hv_connection_range_m: 15,
@@ -4403,10 +4351,10 @@
           [M.ASSEMBLER_II]: { cycleTime: 2.666 },
           [M.ASSEMBLER_III]: { cycleTime: 2 },
         },
-        max_power_consumption_kw: 200,
+        power_consumption: 200,
+        power_consumption_unit: "kW",
         size: "3x4x3",
-        requires_foundation: true,
-        low_voltage_grid: true,
+        tags: ["Requires Foundation", "Low Voltage Grid"],
       },
       "Resource Separator": {
         category: CAT.STRUCTURES,
@@ -4423,10 +4371,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         },
         stats: {
-          maxPowerConsumption: '250 kW',
+          power_consumption: 250,
+        power_consumption_unit: "kW",
           size: '9x5x5',
           grid: 'Low Voltage',
-          requiresFoundation: true,
+          tags: ["Requires Foundation"],
         },
       },
       "Robot Workstation I": {
@@ -4497,10 +4446,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         },
         stats: {
-          maxPowerConsumption: '250 kW',
+          power_consumption: 250,
+        power_consumption_unit: "kW",
           size: '9x5x5',
           grid: 'Low Voltage',
-          requiresFoundation: true,
+          tags: ["Requires Foundation"],
         },
       },
       "Shipping Pad (Medium)": {
@@ -4576,7 +4526,8 @@
           [M.ASSEMBLER_II]: { cycleTime: 6.666 },
           [M.ASSEMBLER_III]: { cycleTime: 5 },
         },
-        power_consumption_kw: 100,
+        power_consumption: 100,
+        power_consumption_unit: "kW",
         size: "2x3x2",
         tags: ["Requires Foundation", "Low Voltage Grid"],
       },
@@ -4596,7 +4547,8 @@
           [M.ASSEMBLER_II]: { cycleTime: 6.666 },
           [M.ASSEMBLER_III]: { cycleTime: 5 },
         },
-        power_generation_kw: 650,
+        power_generation: 650,
+        power_generation_unit: "kW",
         size: "5x4x5",
         tags: [
           "Requires Foundation",
@@ -4622,7 +4574,8 @@
           [M.ASSEMBLER_II]: { cycleTime: 5.333 },
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         },
-        power_generation_kw: 300,
+        power_generation: 300,
+        power_generation_unit: "kW",
         size: "3x2x3",
         tags: [
           "Requires Foundation",
@@ -4647,11 +4600,10 @@
           [M.ASSEMBLER_II]: { cycleTime: 2 },
           [M.ASSEMBLER_III]: { cycleTime: 1.5 },
         },
-        max_power_consumption_kw: 50,
+        power_consumption: 50,
+        power_consumption_unit: "kW",
         size: "2x4x2",
-        requires_foundation: true,
-        low_voltage_grid: true,
-        blast_resistant: true,
+        tags: ["Requires Foundation", "Low Voltage Grid", "Blast Resistant"],
       },
       Stairs: {
         category: CAT.STRUCTURES,
@@ -4682,7 +4634,8 @@
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         },
         max_steam_intake_l_per_s: 60,
-        power_generation_mw: 3.6,
+        power_generation: 3.6,
+        power_generation_unit: "MW",
         efficiency: 1.0,
         requires_fuel: true,
         size: "12x6x5",
@@ -4712,8 +4665,7 @@
         stats: {
           capacity: '25000 l',
           size: '7x4x3',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
       "Transformer (Large)": {
@@ -4737,8 +4689,7 @@
           connectionRange: '10m',
           maxConnections: 2,
           grid: ['Low Voltage', 'High Voltage'],
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
       "Transformer (Small)": {
@@ -4762,8 +4713,7 @@
           connectionRange: '10m',
           maxConnections: 2,
           grid: ['Low Voltage', 'High Voltage'],
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
       "Transport Ship Port": {
@@ -4838,9 +4788,8 @@
         },
         stats: {
           slots: 40,
-          loaderSupport: true,
           size: '4x4x4',
-          dataSystemSupport: true,
+          tags: ["Loader Support", "Data System Support"],
         },
       },
       "Xeno-Logistics Tower": {
@@ -4860,7 +4809,8 @@
         },
         stats: {
           coverageArea: '96x96',
-          maxPowerConsumption: '250 kW',
+          power_consumption: 250,
+        power_consumption_unit: "kW",
           size: '4x11x4',
           type: 'Power Consumer',
           grid: 'High Voltage',
@@ -4885,11 +4835,11 @@
         },
         stats: {
           speed: 1,
-          maxPowerConsumption: '4.0 MW',
+          power_consumption: 4,
+        power_consumption_unit: "MW",
           size: '18x12x9',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
 
@@ -4907,11 +4857,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 3 },
         }, stats: {
           speed: 1.5,
-          maxPowerConsumption: '125 kW',
+          power_consumption: 125,
+        power_consumption_unit: "kW",
           size: '3x4x3',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
 
@@ -4931,11 +4881,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 5 },
         }, stats: {
           speed: 1,
-          maxPowerConsumption: '300 kW',
+          power_consumption: 300,
+        power_consumption_unit: "kW",
           size: '3x4x3',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
 
@@ -4955,11 +4905,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 5 },
         }, stats: {
           speed: 1,
-          maxPowerConsumption: '100 kW',
+          power_consumption: 100,
+        power_consumption_unit: "kW",
           size: '3x4x3',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
 
@@ -4979,7 +4929,7 @@
           [M.ASSEMBLER_III]: { cycleTime: 5 },
         }, stats: {
           size: '11x12x7',
-          dataSystemSupport: true,
+          tags: ["Data System Support"],
         },
       },
 
@@ -4999,7 +4949,7 @@
           [M.ASSEMBLER_III]: { cycleTime: 7.5 },
         }, stats: {
           size: '11x12x7',
-          dataSystemSupport: true,
+          tags: ["Data System Support"],
         },
       },
 
@@ -5018,11 +4968,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         }, stats: {
           speed: 1,
-          maxPowerConsumption: '75 kW',
+          power_consumption: 75,
+        power_consumption_unit: "kW",
           size: '2x4x2',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
 
@@ -5041,11 +4991,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 3 },
         }, stats: {
           speed: 2,
-          maxPowerConsumption: '200 kW',
+          power_consumption: 200,
+        power_consumption_unit: "kW",
           size: '2x4x2',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
 
@@ -5066,11 +5016,11 @@
         },
         stats: {
           speed: 1,
-          maxPowerConsumption: '1.0 MW',
+          power_consumption: 1,
+        power_consumption_unit: "MW",
           size: '5x12x5',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
       "Chemical Processor": {
@@ -5090,11 +5040,11 @@
         },
         stats: {
           speed: 1,
-          maxPowerConsumption: '300 kW',
+          power_consumption: 300,
+        power_consumption_unit: "kW",
           size: '7x8x5',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
 
@@ -5113,11 +5063,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         }, stats: {
           speed: 1,
-          maxPowerConsumption: '100 kW',
+          power_consumption: 100,
+        power_consumption_unit: "kW",
           size: '6x7x3',
           grid: 'Low Voltage',
-          requiresFoundation: true,
-          dataSystemSupport: true,
+          tags: ["Requires Foundation", "Data System Support"],
         },
       },
 
@@ -5135,10 +5085,11 @@
           [M.ASSEMBLER_II]: { cycleTime: 3.333 },
           [M.ASSEMBLER_III]: { cycleTime: 2.5 },
         }, stats: {
-          maxPowerConsumption: '1.0 MW',
+          power_consumption: 1,
+        power_consumption_unit: "MW",
           size: '4x4x3',
           grid: 'Low Voltage',
-          requiresFoundation: true,
+          tags: ["Requires Foundation"],
         },
       },
 
@@ -5158,10 +5109,11 @@
           [M.ASSEMBLER_III]: { cycleTime: 4 },
         }, stats: {
           speed: 1,
-          maxPowerConsumption: '100 kW',
+          power_consumption: 100,
+        power_consumption_unit: "kW",
           size: '5x7x7',
           grid: 'Low Voltage',
-          requiresFoundation: true,
+          tags: ["Requires Foundation"],
         },
       },
 
@@ -5205,8 +5157,7 @@
             output: "air",
             adjacency_bonus: false,
           },
-          blast_resistant: true,
-          requires_foundation: true,
+          tags: ["Blast Resistant", "Requires Foundation"],
         },
       },
       "Blast Furnace Base": {
@@ -5233,8 +5184,7 @@
             base_speed: "100%",
             adjacency_bonus: "none",
           },
-          blast_resistant: true,
-          requires_foundation: true,
+          tags: ["Blast Resistant", "Requires Foundation"],
         },
       },
       "Fracking Tower Base": {
@@ -5259,11 +5209,11 @@
             input: "none",
             output: "none",
             adjacency_bonus: "none",
-            max_power_consumption: 500,
-            max_power_consumption_unit: "kW",
+            power_consumption: 500,
+        power_consumption_unit: "kW",
+            
           },
-          blast_resistant: true,
-          requires_foundation: false,
+          tags: ["Blast Resistant"],
         },
       },
       "Hot Air Stove Base": {
@@ -5289,8 +5239,7 @@
             output: "hot_air",
             adjacency_bonus: true,
           },
-          blast_resistant: true,
-          requires_foundation: true,
+          tags: ["Blast Resistant", "Requires Foundation"],
         },
       },
       "Long Range Scanner Base": {
@@ -5315,11 +5264,11 @@
             input: "none",
             output: "none",
             adjacency_bonus: "none",
-            max_power_consumption: 500,
-            max_power_consumption_unit: "kW",
+            power_consumption: 500,
+        power_consumption_unit: "kW",
+            
           },
-          blast_resistant: true,
-          requires_foundation: true,
+          tags: ["Blast Resistant", "Requires Foundation"],
         },
       },
       "Modular Storage Tank Base": {
@@ -5341,8 +5290,7 @@
           size: "25x6x25",
           modular_building: true,
           modular_building_details: {},
-          blast_resistant: true,
-          requires_foundation: true,
+          tags: ["Blast Resistant", "Requires Foundation"],
         },
       },
       "Monument Base": {
@@ -5359,8 +5307,7 @@
           size: "14x1x10",
           modular_building: true,
           modular_building_details: {},
-          blast_resistant: true,
-          requires_foundation: false,
+          tags: ["Blast Resistant"],
         },
       },
       "Radio Tower Base": {
@@ -5385,11 +5332,11 @@
             input: "none",
             output: "none",
             adjacency_bonus: "none",
-            max_power_consumption: 10,
-            max_power_consumption_unit: "MW",
+            power_consumption: 10,
+        power_consumption_unit: "MW",
+            
           },
-          blast_resistant: true,
-          requires_foundation: true,
+          tags: ["Blast Resistant", "Requires Foundation"],
         },
       },
 
@@ -5626,6 +5573,7 @@
         workstation_effect: {
           machine_efficiency: 4,
           power_consumption: 20,
+        power_consumption_unit: "kW",
           applies_to: ["Chemical Buildings"],
         },
       },
@@ -5650,6 +5598,7 @@
         workstation_effect: {
           machine_efficiency: 2,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Casting Machines"],
         },
       },
@@ -5674,6 +5623,7 @@
         workstation_effect: {
           machine_efficiency: 2.5,
           power_consumption: 20,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers"],
         },
       },
@@ -5697,6 +5647,7 @@
         workstation_effect: {
           machine_efficiency: 5,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers"],
         },
       },
@@ -5719,6 +5670,7 @@
         workstation_effect: {
           machine_efficiency: 5,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers"],
         },
       },
@@ -5741,6 +5693,7 @@
         workstation_effect: {
           machine_efficiency: 5,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers"],
         },
       },
@@ -5764,6 +5717,7 @@
         workstation_effect: {
           machine_efficiency: 5,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers"],
         },
       },
@@ -5786,6 +5740,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Greenhouses", "Crystal Refiners", "Pumpjacks"],
         },
       },
@@ -5808,6 +5763,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Greenhouses", "Crystal Refiners", "Pumpjacks"],
         },
       },
@@ -5830,6 +5786,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Greenhouses", "Crystal Refiners", "Pumpjacks"],
         },
       },
@@ -5853,6 +5810,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Greenhouses", "Crystal Refiners", "Pumpjacks"],
         },
       },
@@ -5876,6 +5834,7 @@
         workstation_effect: {
           machine_speed: 5,
           power_consumption: 2,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers", "Smelters"],
         },
       },
@@ -5899,6 +5858,7 @@
         workstation_effect: {
           machine_speed: 15,
           power_consumption: 5,
+        power_consumption_unit: "kW",
           applies_to: ["Greenhouses", "Crystal Refiners", "Pumpjacks"],
         },
       },
@@ -5922,6 +5882,7 @@
         workstation_effect: {
           machine_efficiency: 15,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Pumpjacks"],
         },
       },
@@ -5945,6 +5906,7 @@
         workstation_effect: {
           machine_speed: 30,
           power_consumption: 20,
+        power_consumption_unit: "kW",
           applies_to: ["Miners"],
         },
       },
@@ -5969,6 +5931,7 @@
         workstation_effect: {
           machine_speed: 7.5,
           power_consumption: null,
+        power_consumption_unit: "kW",
           applies_to: [
             "Assemblers",
             "Casting Machines",
@@ -5996,6 +5959,7 @@
         workstation_effect: {
           machine_speed: 15,
           power_consumption: 5,
+        power_consumption_unit: "kW",
           applies_to: ["Research Servers"],
         },
       },
@@ -6019,6 +5983,7 @@
         workstation_effect: {
           machine_speed: 12.5,
           power_consumption: 5,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers", "Miners", "Smelters"],
         },
       },
@@ -6042,6 +6007,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers", "Miners", "Smelters"],
         },
       },
@@ -6064,6 +6030,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers", "Miners", "Smelters"],
         },
       },
@@ -6086,6 +6053,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers", "Miners", "Smelters"],
         },
       },
@@ -6109,6 +6077,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Crushers", "Miners", "Smelters"],
         },
       },
@@ -6132,6 +6101,7 @@
         workstation_effect: {
           machine_efficiency: 3,
           power_consumption: 20,
+        power_consumption_unit: "kW",
           applies_to: ["Assemblers", "Miners", "Pumpjacks", "Smelters"],
           exempt: ["Extractors (Xeno-Scrap & Crystals)"],
         },
@@ -6156,6 +6126,7 @@
         workstation_effect: {
           machine_efficiency: 6,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Assemblers", "Miners", "Pumpjacks", "Smelters"],
           exempt: ["Extractors (Xeno-Scrap & Crystals)"],
         },
@@ -6180,6 +6151,7 @@
         workstation_effect: {
           machine_efficiency: 6,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Assemblers", "Miners", "Pumpjacks", "Smelters"],
           exempt: ["Extractors (Xeno-Scrap & Crystals)"],
         },
@@ -6204,6 +6176,7 @@
         workstation_effect: {
           machine_efficiency: 6,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Assemblers", "Miners", "Pumpjacks", "Smelters"],
           exempt: ["Extractors (Xeno-Scrap & Crystals)"],
         },
@@ -6228,6 +6201,7 @@
         workstation_effect: {
           machine_efficiency: 6,
           power_consumption: 40,
+        power_consumption_unit: "kW",
           applies_to: ["Assemblers", "Miners", "Pumpjacks", "Smelters"],
           exempt: ["Extractors (Xeno-Scrap & Crystals)"],
         },
@@ -6251,6 +6225,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: [
             "Assemblers",
             "Casting Machines",
@@ -6279,6 +6254,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: [
             "Assemblers",
             "Casting Machines",
@@ -6307,6 +6283,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: [
             "Assemblers",
             "Casting Machines",
@@ -6336,6 +6313,7 @@
         workstation_effect: {
           machine_speed: 25,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: [
             "Assemblers",
             "Casting Machines",
@@ -6365,6 +6343,7 @@
         workstation_effect: {
           machine_speed: 12.5,
           power_consumption: 5,
+        power_consumption_unit: "kW",
           applies_to: ["Greenhouses", "Crystal Refiners", "Pumpjacks"],
         },
       },
@@ -6389,6 +6368,7 @@
         workstation_effect: {
           machine_efficiency: 1.5,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Research Servers"],
         },
       },
@@ -6411,6 +6391,7 @@
         workstation_effect: {
           machine_efficiency: 3,
           power_consumption: 30,
+        power_consumption_unit: "kW",
           applies_to: ["Research Servers"],
         },
       },
@@ -6434,6 +6415,7 @@
         workstation_effect: {
           machine_efficiency: 3,
           power_consumption: 30,
+        power_consumption_unit: "kW",
           applies_to: ["Research Servers"],
         },
       },
@@ -6457,6 +6439,7 @@
         workstation_effect: {
           machine_efficiency: 3,
           power_consumption: 30,
+        power_consumption_unit: "kW",
           applies_to: ["Research Servers"],
         },
       },
@@ -6480,6 +6463,7 @@
         workstation_effect: {
           machine_efficiency: 3,
           power_consumption: 30,
+        power_consumption_unit: "kW",
           applies_to: ["Research Servers"],
         },
       },
@@ -6503,6 +6487,7 @@
         workstation_effect: {
           machine_speed: 30,
           power_consumption: 20,
+        power_consumption_unit: "kW",
           applies_to: ["Casting Machines"],
         },
       },
@@ -6526,6 +6511,7 @@
         workstation_effect: {
           machine_speed: 30,
           power_consumption: 20,
+        power_consumption_unit: "kW",
           applies_to: [
             "Chemical Buildings",
             "Incinerators",
@@ -6551,7 +6537,8 @@
         sales_price: 34, // F
         workstation_effect: {
           machine_speed: 5, // +5%
-          power_consumption: 1, // +1%
+          power_consumption: 1,
+        power_consumption_unit: "kW", // +1%
           applies_to: ["Assemblers", "Miners"],
         },
       },
@@ -6575,6 +6562,7 @@
         workstation_effect: {
           machine_speed: 15,
           power_consumption: 5,
+        power_consumption_unit: "kW",
           applies_to: ["Casting Machines"],
         },
       },
@@ -6597,6 +6585,7 @@
         workstation_effect: {
           machine_efficiency: 2,
           power_consumption: 15,
+        power_consumption_unit: "kW",
           applies_to: ["Smelters"],
         },
       },
@@ -8521,7 +8510,7 @@
                 const bonuses = [];
                 if (ws.machine_efficiency) bonuses.push(`<span style="color:var(--accent3)">+${ws.machine_efficiency}% Effizienz</span>`);
                 if (ws.machine_speed) bonuses.push(`<span style="color:var(--accent)">+${ws.machine_speed}% Geschwindigkeit</span>`);
-                if (ws.power_consumption) bonuses.push(`<span style="color:var(--warn)">+${ws.power_consumption}% Energie</span>`);
+                if (ws.power_consumption_kw) bonuses.push(`<span style="color:var(--warn)">+${ws.power_consumption_kw}% Energie</span>`);
                 const targets = (ws.applies_to || []).join(", ");
                 const exempt = ws.exempt ? ` <span style="color:var(--text-dim)">(nicht: ${ws.exempt.join(", ")})</span>` : "";
                 const metaParts = [];
