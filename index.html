@@ -9724,6 +9724,13 @@ const THEMES = {
         letter-spacing: 0 !important; text-transform: none !important;
         border-radius: 8px !important; padding: 5px 14px !important;
       }
+      /* ── SANKEY ──────────────────────────── */
+      #sankeyWrap { background: #0a0a14 !important; }
+      #sankeyTooltip {
+        background: rgba(28,28,30,0.95) !important;
+        border: 1px solid rgba(255,255,255,0.10) !important;
+        border-radius: 10px !important;
+      }
     `,
   },
 
@@ -9880,6 +9887,42 @@ const THEMES = {
         border-radius: 8px !important; padding: 5px 14px !important;
       }
       #__se-panel, #__se-panel * { color: #f5f5f7 !important; }
+      /* ── SANKEY ──────────────────────────── */
+      #sankeyWrap {
+        background: rgba(255,255,255,0.25) !important;
+        backdrop-filter: blur(40px) !important;
+        -webkit-backdrop-filter: blur(40px) !important;
+      }
+      #sankeyTooltip {
+        background: rgba(255,255,255,0.85) !important;
+        border: 1px solid rgba(0,0,0,0.08) !important;
+        border-radius: 10px !important;
+        color: #1d1d1f !important;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.10) !important;
+        backdrop-filter: blur(20px) !important;
+      }
+      #sankeyTooltip * { color: #1d1d1f !important; }
+      /* Nodes: attribute-selector overrides (D3 sets fill as SVG attr) */
+      #sankeySvg rect[fill="#122a12"] { fill: rgba(52,199,89,0.18)  !important; stroke: #34c759 !important; }
+      #sankeySvg rect[fill="#0a1628"] { fill: rgba(0,122,255,0.14)  !important; stroke: #007aff !important; }
+      #sankeySvg rect[fill="#2a1206"] { fill: rgba(255,159,10,0.18) !important; stroke: #ff9f0a !important; }
+      /* Links */
+      #sankeySvg path[stroke="#4a8adf"] { stroke: rgba(0,122,255,0.35) !important; }
+      /* Info cards */
+      #sankeySvg foreignObject > div {
+        background: rgba(255,255,255,0.75) !important;
+        border-color: rgba(0,0,0,0.09) !important;
+        color: #1d1d1f !important;
+        backdrop-filter: blur(12px);
+      }
+      #sankeySvg foreignObject > div * { color: #1d1d1f !important; }
+      /* Legend */
+      #sankeyLegend { font-family: -apple-system, sans-serif !important; }
+      #sankeyLegend > span { color: #6e6e73 !important; }
+      #sankeyLegend span > span {
+        background: rgba(0,0,0,0.06) !important;
+        border-color: rgba(0,0,0,0.12) !important;
+      }
     `,
   },
 };
@@ -10009,6 +10052,15 @@ THEMES.default.css = `
         font-size: 13px !important; font-weight: 500 !important;
         letter-spacing: 0 !important; text-transform: none !important;
         border-radius: 8px !important; padding: 5px 14px !important;
+      }
+      /* ── SANKEY ──────────────────────────── */
+      #sankeyWrap { background: rgba(4,4,16,0.85) !important; }
+      #sankeyTooltip {
+        background: rgba(10,8,28,0.92) !important;
+        border: 1px solid rgba(255,255,255,0.12) !important;
+        border-radius: 10px !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
       }
     `;
 
