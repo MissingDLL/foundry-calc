@@ -642,13 +642,13 @@
       <!-- View Toggle -->
       <div
         style="display:flex;border:1px solid #2a3a55;border-radius:7px;overflow:hidden;margin-bottom:4px;flex-shrink:0">
-        <button id="toggleBotBtn" onclick="switchSidebarView('bots')"
-          style="flex:1;padding:8px 4px;background:#0d2a50;border:none;color:var(--accent);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s">
-          🤖 Bots
-        </button>
         <button id="toggleRecipeBtn" onclick="switchSidebarView('recipes')"
-          style="flex:1;padding:8px 4px;background:#0a111d;border:none;border-left:1px solid #2a3a55;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s">
+          style="flex:1;padding:8px 4px;background:#0d2a50;border:none;color:var(--accent);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s">
           ⚙ Rezepte
+        </button>
+        <button id="toggleBotBtn" onclick="switchSidebarView('bots')"
+          style="flex:1;padding:8px 4px;background:#0a111d;border:none;border-left:1px solid #2a3a55;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s">
+          🤖 Bots
         </button>
         <button id="toggleSettingsBtn" onclick="openRecipeSettings()"
           style="flex:1;padding:8px 4px;background:#0a111d;border:none;border-left:1px solid #2a3a55;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s">
@@ -657,7 +657,7 @@
       </div>
 
       <!-- Bot Sidebar -->
-      <div id="sidebar-bots" style="display:flex;flex-direction:column;gap:16px;overflow-y:auto;flex:1;min-height:0">
+      <div id="sidebar-bots" style="display:none;flex-direction:column;gap:16px;overflow-y:auto;flex:1;min-height:0">
         <div>
           <div class="section-title">Konfiguration</div>
           <div class="panel">
@@ -682,7 +682,7 @@
       </div>
 
       <!-- Recipe Sidebar -->
-      <div id="sidebar-recipes" style="display:none;flex-direction:column;gap:12px;min-height:0;flex:1">
+      <div id="sidebar-recipes" style="display:flex;flex-direction:column;gap:12px;min-height:0;flex:1">
         <div>
           <div class="section-title">Rezept suchen</div>
           <div style="position:relative">
@@ -792,7 +792,7 @@
               background: #0d1520;
               border: 1px solid #2a3a55;
               border-radius: 12px;
-              width: 600px;
+              width: 720px;
               max-width: 95vw;
               max-height: 80vh;
               display: flex;
@@ -5649,7 +5649,7 @@
           { item: I.IGNIUM_FUEL_ROD, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 30 },
           [M.ASSEMBLER_II]: { cycleTime: 20 },
@@ -5674,7 +5674,7 @@
           { item: I.ENERGY_CELL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 16,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5699,7 +5699,7 @@
           { item: I.WEAPON_COMPONENTS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 20,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5723,7 +5723,7 @@
           { item: I.WEAPON_COMPONENTS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5746,7 +5746,7 @@
           { item: I.WEAPON_COMPONENTS, amount: 2 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5769,7 +5769,7 @@
           { item: I.STEEL_BEAMS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5793,7 +5793,7 @@
           { item: I.ENERGY_CELL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5816,7 +5816,7 @@
           { item: I.XENOFERRITE_PLATES, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5839,7 +5839,7 @@
           { item: I.POLYMER_BOARD, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5862,7 +5862,7 @@
           { item: I.XENOFERRITE_PLATES, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5886,7 +5886,7 @@
           { item: I.ENERGY_CELL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5910,7 +5910,7 @@
           { item: I.FIRMARLITE_SHEET, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 24,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -5934,7 +5934,7 @@
           { item: I.IGNIUM_FUEL_ROD, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 30 },
           [M.ASSEMBLER_II]: { cycleTime: 20 },
@@ -5958,7 +5958,7 @@
           { item: I.IGNIUM_FUEL_ROD, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 30 },
           [M.ASSEMBLER_II]: { cycleTime: 20 },
@@ -5982,7 +5982,7 @@
           { item: I.GLASS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 24,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 12 },
           [M.ASSEMBLER_II]: { cycleTime: 8 },
@@ -6007,7 +6007,7 @@
           { item: I.ENERGY_CELL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 14,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 30 },
           [M.ASSEMBLER_II]: { cycleTime: 20 },
@@ -6035,7 +6035,7 @@
           { item: I.IGNIUM_FUEL_ROD, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 30 },
           [M.ASSEMBLER_II]: { cycleTime: 20 },
@@ -6059,7 +6059,7 @@
           { item: I.HOVER_ENGINE, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 20,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 20 },
           [M.ASSEMBLER_II]: { cycleTime: 13.333 },
@@ -6083,7 +6083,7 @@
           { item: I.MINING_DRILL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6106,7 +6106,7 @@
           { item: I.XENOFERRITE_PLATES, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6129,7 +6129,7 @@
           { item: I.STEEL_BEAMS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6153,7 +6153,7 @@
           { item: I.ENERGY_CELL, amount: 2 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6177,7 +6177,7 @@
           { item: I.CIRCUIT_BOARDS, amount: 2 },
         ],
         output: { amount: 1 },
-        efficiency: 20,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 20 },
           [M.ASSEMBLER_II]: { cycleTime: 13.333 },
@@ -6202,7 +6202,7 @@
           { item: I.MODULAR_BUILDING_PLANNER, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6227,7 +6227,7 @@
           { item: I.CIRCUIT_BOARDS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6252,7 +6252,7 @@
           { item: I.RUBBER, amount: 2 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6277,7 +6277,7 @@
           { item: I.ENERGY_CELL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6301,7 +6301,7 @@
           { item: I.XENOFERRITE_PLATES, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 2,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6330,7 +6330,7 @@
           { item: I.GLASS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 2,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6359,7 +6359,7 @@
           { item: I.XENOFERRITE_PLATES, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 2,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6389,7 +6389,7 @@
           { item: I.ENERGY_CELL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 2,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6419,7 +6419,7 @@
           { item: I.HOVER_ENGINE, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 24,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 8 },
           [M.ASSEMBLER_II]: { cycleTime: 5.333 },
@@ -6444,7 +6444,7 @@
           { item: I.ENERGY_CELL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 10 },
           [M.ASSEMBLER_II]: { cycleTime: 6.666 },
@@ -6467,7 +6467,7 @@
           { item: I.POLYMER_BOARD, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6491,7 +6491,7 @@
           { item: I.GLASS, amount: 2 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6515,7 +6515,7 @@
           { item: I.POLYMER_BOARD, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6539,7 +6539,7 @@
           { item: I.ENERGY_CELL, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: null,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 15 },
           [M.ASSEMBLER_II]: { cycleTime: 10 },
@@ -6563,7 +6563,7 @@
           { item: I.GLASS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 26,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 8 },
           [M.ASSEMBLER_II]: { cycleTime: 5.333 },
@@ -6587,7 +6587,7 @@
           { item: I.GLASS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 22,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 12 },
           [M.ASSEMBLER_II]: { cycleTime: 8 },
@@ -6614,7 +6614,7 @@
           { item: I.ELECTRONIC_COMPONENTS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 32, // +32%
+        efficiency: 0, // +32%
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 10 },
           [M.ASSEMBLER_II]: { cycleTime: 6.666 },
@@ -6638,7 +6638,7 @@
           { item: I.HOVER_ENGINE, amount: 2 },
         ],
         output: { amount: 1 },
-        efficiency: 10,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 12 },
           [M.ASSEMBLER_II]: { cycleTime: 8 },
@@ -6661,7 +6661,7 @@
           { item: I.ELECTRONIC_COMPONENTS, amount: 1 },
         ],
         output: { amount: 1 },
-        efficiency: 24,
+        efficiency: 0,
         machines: {
           [M.ASSEMBLER_I]: { cycleTime: 12 },
           [M.ASSEMBLER_II]: { cycleTime: 8 },
@@ -6900,7 +6900,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -6912,7 +6912,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7077,7 +7077,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7089,7 +7089,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7101,7 +7101,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7113,7 +7113,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7138,7 +7138,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7150,7 +7150,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7162,7 +7162,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7174,7 +7174,7 @@
           { item: I.MINERAL_ROCK, amount: 1 },
           { item: I.WATER, amount: 250 },
         ],
-        output: { amount: 3 },
+        output: { amount: 3, chance: 0.5 },
         machines: {
           [M.GREENHOUSE]: { cycleTime: 300 },
         },
@@ -7414,6 +7414,7 @@
     // and variant preferences: { 'Xenoferrite Plates': 'Xenoferrite Plates (Tier 1)' }
     const recipeSettings = {}; // machineName overrides per recipe
     const variantSettings = {}; // variant preference per item group
+    const minerSettings = {}; // ore rubble name → preferred miner machine name
     const botEfficiencyOverrides = {}; // { botName: efficiencyValue } — user-set overrides
     let globalMiningProductivity = 0;  // % bonus for Crusher recipes
     let globalFluidProductivity = 0;  // % bonus for Fluid/Chemical recipes
@@ -7500,6 +7501,14 @@
       },
     ];
 
+    // Miner groups — which miner to use for each minable ore
+    const MINER_GROUPS = [
+      { label: "Xenoferrite Ore Rubble", miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
+      { label: "Ignium Ore Rubble",      miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
+      { label: "Technum Ore Rubble",     miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
+      { label: "Telluxite Ore Rubble",   miners: ["Ore Vein Miner"] },
+    ];
+
     // Recipe variant groups
     const VARIANT_GROUPS = [
       {
@@ -7564,10 +7573,10 @@
 
       MACHINE_FAMILIES.forEach((fam) => {
         const row = document.createElement("div");
-        row.style.cssText = "display:flex;align-items:center;gap:12px";
+        row.style.cssText = "display:flex;align-items:center;gap:12px;flex-wrap:wrap";
 
         const lbl = document.createElement("div");
-        lbl.style.cssText = "width:110px;font-size:13px;color:var(--text)";
+        lbl.style.cssText = "width:110px;font-size:13px;color:var(--text);flex-shrink:0";
         lbl.textContent = fam.label;
         row.appendChild(lbl);
 
@@ -7575,7 +7584,7 @@
           const isActive = (fam.defaultChoice || fam.machines[0]) === machine;
           const btn = document.createElement("button");
           btn.style.cssText =
-            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;" +
+            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;white-space:nowrap;" +
             (isActive
               ? "background:#0d2a50;border:2px solid var(--accent);color:var(--text);"
               : "background:#0a111d;border:1px solid #2a3a55;color:var(--text-dim);");
@@ -7607,7 +7616,7 @@
 
       // ── Section: Recipe variant defaults ─────────────────────
       const sep = document.createElement("div");
-      sep.style.cssText = "border-top:1px solid #1a2a3a;margin:4px 0";
+      sep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
       el.appendChild(sep);
 
       const varTitle = document.createElement("div");
@@ -7638,7 +7647,7 @@
           const shortName =
             variant.replace(group.label, "").trim() || variant;
           btn.style.cssText =
-            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;" +
+            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;white-space:nowrap;" +
             (isActive
               ? "background:#0d2a50;border:2px solid var(--accent);color:var(--text);"
               : "background:#0a111d;border:1px solid #2a3a55;color:var(--text-dim);");
@@ -7667,9 +7676,148 @@
       });
       el.appendChild(varGrid);
 
+      // ── Section: Miner preferences ───────────────────────────────
+      const minerSep = document.createElement("div");
+      minerSep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
+      el.appendChild(minerSep);
+
+      const minerTitle = document.createElement("div");
+      minerTitle.style.cssText =
+        "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px";
+      minerTitle.textContent = "Abbau-Maschinen (Grundmaterialien)";
+      el.appendChild(minerTitle);
+
+      const minerDesc = document.createElement("div");
+      minerDesc.style.cssText = "font-size:11px;color:var(--text-dim);margin-bottom:12px";
+      minerDesc.textContent =
+        "Welche Maschine soll für jeden Rohstoff in der Grundmaterial-Auflösung verwendet werden?";
+      el.appendChild(minerDesc);
+
+      const minerGrid = document.createElement("div");
+      minerGrid.style.cssText = "display:flex;flex-direction:column;gap:10px";
+
+      MINER_GROUPS.forEach((group) => {
+        if (group.miners.length < 2) return; // skip if only one option
+        const row = document.createElement("div");
+        row.style.cssText = "display:flex;align-items:center;gap:12px;flex-wrap:wrap";
+
+        const lbl = document.createElement("div");
+        lbl.style.cssText = "width:160px;font-size:13px;color:var(--text);flex-shrink:0";
+        lbl.textContent = group.label;
+        row.appendChild(lbl);
+
+        const currentChoice = minerSettings[group.label] || group.miners[0];
+
+        group.miners.forEach((miner) => {
+          const isActive = currentChoice === miner;
+          const btn = document.createElement("button");
+          btn.style.cssText =
+            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;white-space:nowrap;" +
+            (isActive
+              ? "background:#0d2a50;border:2px solid var(--accent);color:var(--text);"
+              : "background:#0a111d;border:1px solid #2a3a55;color:var(--text-dim);");
+          btn.innerHTML = getIcon(miner + " (Recipe)", 20) + "<span>" + miner + "</span>";
+          btn.dataset.ore = group.label;
+          btn.dataset.miner = miner;
+          btn.onclick = function () {
+            minerSettings[group.label] = miner;
+            row.querySelectorAll("button").forEach((b) => {
+              const active = b.dataset.miner === miner;
+              b.style.background = active ? "#0d2a50" : "#0a111d";
+              b.style.border = active ? "2px solid var(--accent)" : "1px solid #2a3a55";
+              b.style.color = active ? "var(--text)" : "var(--text-dim)";
+            });
+          };
+          row.appendChild(btn);
+        });
+
+        minerGrid.appendChild(row);
+      });
+      el.appendChild(minerGrid);
+
       // ── Section: Bot efficiency overrides ────────────────────────
+      // ── Section: Global Research Productivity ────────────────────
+      const resSep = document.createElement("div");
+      resSep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
+      el.appendChild(resSep);
+
+      const resTitle = document.createElement("div");
+      resTitle.style.cssText =
+        "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px";
+      resTitle.textContent = "Globale Forschungsproduktivität";
+      el.appendChild(resTitle);
+
+      const resDesc = document.createElement("div");
+      resDesc.style.cssText = "font-size:11px;color:var(--text-dim);margin-bottom:12px";
+      resDesc.textContent =
+        "Mining: gilt für Crusher I/II · Fluid: gilt für Fluid-Assembler, Chemical Processor, Barrel Filler, Greenhouse";
+      el.appendChild(resDesc);
+
+      const resGrid = document.createElement("div");
+      resGrid.style.cssText = "display:flex;flex-direction:column;gap:10px";
+
+      [
+        {
+          label: "⛏ Mining Produktivität", key: "mining", getter: () => globalMiningProductivity,
+          setter: (v) => { globalMiningProductivity = v; }
+        },
+        {
+          label: "💧 Fluid Produktivität", key: "fluid", getter: () => globalFluidProductivity,
+          setter: (v) => { globalFluidProductivity = v; }
+        },
+      ].forEach(({ label, getter, setter }) => {
+        const row = document.createElement("div");
+        row.style.cssText =
+          "display:flex;align-items:center;gap:10px;background:#0a111d;border:1px solid #1a2a3a;border-radius:5px;padding:8px 12px";
+
+        const lbl = document.createElement("div");
+        lbl.style.cssText = "flex:1;font-size:13px;color:var(--text);font-weight:600";
+        lbl.textContent = label;
+
+        const inputWrap = document.createElement("div");
+        inputWrap.style.cssText = "display:flex;align-items:center;gap:4px;flex-shrink:0";
+
+        const inp = document.createElement("input");
+        inp.type = "number";
+        inp.min = "0";
+        inp.max = "9999";
+        inp.step = "10";
+        inp.value = getter();
+        inp.style.cssText =
+          "width:70px;padding:4px 8px;background:#161c2a;border:1px solid #2a3a55;color:var(--accent3);" +
+          "font-family:'Share Tech Mono',monospace;font-size:14px;border-radius:4px;text-align:right";
+        inp.oninput = function () {
+          const val = parseFloat(this.value);
+          setter(isNaN(val) || val < 0 ? 0 : val);
+        };
+
+        const pct = document.createElement("span");
+        pct.style.cssText = "font-size:12px;color:var(--text-dim)";
+        pct.textContent = "%";
+
+        const resetBtn = document.createElement("button");
+        resetBtn.title = "Zurücksetzen";
+        resetBtn.style.cssText =
+          "padding:2px 8px;background:transparent;border:1px solid #2a3a55;color:var(--text-dim);" +
+          "border-radius:3px;cursor:pointer;font-size:12px;line-height:1";
+        resetBtn.textContent = "↺";
+        resetBtn.onclick = function () {
+          setter(0);
+          inp.value = 0;
+        };
+
+        inputWrap.appendChild(inp);
+        inputWrap.appendChild(pct);
+        inputWrap.appendChild(resetBtn);
+        row.appendChild(lbl);
+        row.appendChild(inputWrap);
+        resGrid.appendChild(row);
+      });
+
+      el.appendChild(resGrid);
+
       const effSep = document.createElement("div");
-      effSep.style.cssText = "border-top:1px solid #1a2a3a;margin:4px 0";
+      effSep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
       el.appendChild(effSep);
 
       const effTitle = document.createElement("div");
@@ -7758,89 +7906,9 @@
 
       el.appendChild(effGrid);
 
-      // ── Section: Global Research Productivity ────────────────────
-      const resSep = document.createElement("div");
-      resSep.style.cssText = "border-top:1px solid #1a2a3a;margin:4px 0";
-      el.appendChild(resSep);
-
-      const resTitle = document.createElement("div");
-      resTitle.style.cssText =
-        "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px";
-      resTitle.textContent = "Globale Forschungsproduktivität";
-      el.appendChild(resTitle);
-
-      const resDesc = document.createElement("div");
-      resDesc.style.cssText = "font-size:11px;color:var(--text-dim);margin-bottom:12px";
-      resDesc.textContent =
-        "Mining: gilt für Crusher I/II · Fluid: gilt für Fluid-Assembler, Chemical Processor, Barrel Filler, Greenhouse";
-      el.appendChild(resDesc);
-
-      const resGrid = document.createElement("div");
-      resGrid.style.cssText = "display:flex;flex-direction:column;gap:10px";
-
-      [
-        {
-          label: "⛏ Mining Produktivität", key: "mining", getter: () => globalMiningProductivity,
-          setter: (v) => { globalMiningProductivity = v; }
-        },
-        {
-          label: "💧 Fluid Produktivität", key: "fluid", getter: () => globalFluidProductivity,
-          setter: (v) => { globalFluidProductivity = v; }
-        },
-      ].forEach(({ label, getter, setter }) => {
-        const row = document.createElement("div");
-        row.style.cssText =
-          "display:flex;align-items:center;gap:10px;background:#0a111d;border:1px solid #1a2a3a;border-radius:5px;padding:8px 12px";
-
-        const lbl = document.createElement("div");
-        lbl.style.cssText = "flex:1;font-size:13px;color:var(--text);font-weight:600";
-        lbl.textContent = label;
-
-        const inputWrap = document.createElement("div");
-        inputWrap.style.cssText = "display:flex;align-items:center;gap:4px;flex-shrink:0";
-
-        const inp = document.createElement("input");
-        inp.type = "number";
-        inp.min = "0";
-        inp.max = "9999";
-        inp.step = "10";
-        inp.value = getter();
-        inp.style.cssText =
-          "width:70px;padding:4px 8px;background:#161c2a;border:1px solid #2a3a55;color:var(--accent3);" +
-          "font-family:'Share Tech Mono',monospace;font-size:14px;border-radius:4px;text-align:right";
-        inp.oninput = function () {
-          const val = parseFloat(this.value);
-          setter(isNaN(val) || val < 0 ? 0 : val);
-        };
-
-        const pct = document.createElement("span");
-        pct.style.cssText = "font-size:12px;color:var(--text-dim)";
-        pct.textContent = "%";
-
-        const resetBtn = document.createElement("button");
-        resetBtn.title = "Zurücksetzen";
-        resetBtn.style.cssText =
-          "padding:2px 8px;background:transparent;border:1px solid #2a3a55;color:var(--text-dim);" +
-          "border-radius:3px;cursor:pointer;font-size:12px;line-height:1";
-        resetBtn.textContent = "↺";
-        resetBtn.onclick = function () {
-          setter(0);
-          inp.value = 0;
-        };
-
-        inputWrap.appendChild(inp);
-        inputWrap.appendChild(pct);
-        inputWrap.appendChild(resetBtn);
-        row.appendChild(lbl);
-        row.appendChild(inputWrap);
-        resGrid.appendChild(row);
-      });
-
-      el.appendChild(resGrid);
-
       // ── Section: Workstations ─────────────────────────────────────
       const wsSep = document.createElement("div");
-      wsSep.style.cssText = "border-top:1px solid #1a2a3a;margin:4px 0";
+      wsSep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
       el.appendChild(wsSep);
 
       const wsTitle = document.createElement("div");
@@ -7853,15 +7921,15 @@
       wsDesc.textContent = "Eine Workstation pro Maschinenkategorie. WS1: 1 Slot · WS2: 2 Slots · WS3: 3 Slots + Charged Reno Core (+33 %). Pro Item überschreibbar.";
       el.appendChild(wsDesc);
 
-      const wsContainer = document.createElement("div");
-      wsContainer.id = "wsContainer";
-      wsContainer.style.cssText = "display:flex;flex-direction:column;gap:10px";
-      el.appendChild(wsContainer);
-
       const wsSummary = document.createElement("div");
       wsSummary.id = "wsBonusSummary";
-      wsSummary.style.cssText = "margin-top:8px;padding:8px 10px;background:#0a111d;border:1px solid #1a2a3a;border-radius:6px";
+      wsSummary.style.cssText = "margin-bottom:10px;padding:8px 10px;background:#0a111d;border:1px solid #1a2a3a;border-radius:6px";
       el.appendChild(wsSummary);
+
+      const wsContainer = document.createElement("div");
+      wsContainer.id = "wsContainer";
+      wsContainer.style.cssText = "display:grid;grid-template-columns:repeat(2,1fr);gap:10px";
+      el.appendChild(wsContainer);
 
       renderWorkstations();
     }
@@ -8586,6 +8654,22 @@
             </div>`
               : ""
             }
+            ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
+              ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid #1a2a3a;display:flex;align-items:center;gap:5px">
+              <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance-Output:</span>
+              <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} pro Zyklus</span>
+              <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(ø ${(r.output.amount * r.output.chance).toFixed(1)}/Zyklus)</span>
+            </div>`
+              : ""
+            }
+            ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
+              ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid #1a2a3a;display:flex;align-items:center;gap:5px">
+              <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance-Output:</span>
+              <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} pro Zyklus</span>
+              <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(ø ${(r.output.amount * r.output.chance).toFixed(1)}/Zyklus)</span>
+            </div>`
+              : ""
+            }
             ${r.ingredients.length
               ? `<div style="margin-top:7px;padding-top:7px;border-top:1px solid #1a2a3a;display:flex;flex-wrap:wrap;gap:5px">
               ${ingLines}
@@ -8768,10 +8852,25 @@
     }
 
     // Helper: get primary output amount (supports both single object and array)
+    // Multiplies by chance if present (e.g. 0.5 → expected value)
     function getOutputAmount(recipe) {
       if (!recipe.output) return 0;
-      if (Array.isArray(recipe.output)) return recipe.output[0].amount;
-      return recipe.output.amount;
+      if (Array.isArray(recipe.output)) {
+        const o = recipe.output[0];
+        return o.amount * (o.chance != null ? o.chance : 1);
+      }
+      const o = recipe.output;
+      return o.amount * (o.chance != null ? o.chance : 1);
+    }
+
+    // Helper: get display label for output (e.g. "3 (50%)" when chance is set)
+    function getOutputLabel(recipe) {
+      if (!recipe.output) return "0";
+      const o = Array.isArray(recipe.output) ? recipe.output[0] : recipe.output;
+      if (o.chance != null && o.chance < 1) {
+        return `${o.amount} (${Math.round(o.chance * 100)}%)`;
+      }
+      return String(o.amount);
     }
 
     function calculateRecipes() {
@@ -8877,6 +8976,11 @@
               </span>`;
           }).join('');
 
+          const hasChance = !Array.isArray(recipe.output) && recipe.output && recipe.output.chance != null && recipe.output.chance < 1;
+          const chanceBadge = hasChance
+            ? `<span title="${recipe.output.amount} pro Zyklus mit ${Math.round(recipe.output.chance * 100)}% Wahrscheinlichkeit (Ø ${(recipe.output.amount * recipe.output.chance).toFixed(1)}/Zyklus)" style="display:inline-flex;align-items:center;gap:3px;background:#1a1000;border:1px solid #554400;border-radius:3px;padding:1px 5px;font-size:10px;color:#f5a623;cursor:help;flex-shrink:0">⚡ ${Math.round(recipe.output.chance * 100)}%</span>`
+            : '';
+
           return `
         <tr class="recipe-main-row" onclick="toggleRecipeRow('${rid}')">
           <td style="padding:7px 12px"><div style="display:flex;align-items:center;gap:6px">
@@ -8886,7 +8990,7 @@
           </div></td>
           <td style="padding:7px 12px"><div style="display:flex;align-items:center;gap:8px">${getIcon(r.machineName, 24)}<span style="color:var(--text-dim);font-size:13px">${r.machineName}</span></div></td>
           <td class="num">${r.machines}</td>
-          <td class="num">${fmt(r.actualOpm)}</td>
+          <td class="num" style="white-space:nowrap">${fmt(r.actualOpm)}${chanceBadge ? ' ' + chanceBadge : ''}</td>
           <td style="text-align:right;padding:7px 12px">
             ${r.over > 0.05
               ? `<span style="color:var(--warn)">+${fmt(r.over)}</span>`
@@ -8917,32 +9021,40 @@
       // ── Grundmaterialien: rekursive Auflösung ──────────────
       // Expand ingredients recursively: if an item has a RECIPE entry,
       // resolve it further; items with no recipe = raw/ground material.
+      // groundTotals[name] = { amount: Number, machine: String|null }
       const groundTotals = {};
-      const visited = new Set();
 
       function resolveToGround(itemName, amountPerMin, depth) {
         if (depth > 20) return; // safety cap
 
-        // Step 2: resolve variant (e.g. "Xenoferrite Plates" → "Xenoferrite Plates (Tier 2)")
+        // Resolve variant (e.g. "Xenoferrite Plates" → "Xenoferrite Plates (Tier 2)")
         const resolved = resolveRecipeName(itemName);
 
-        // Step 3: look up the recipe
         const recipe = RECIPES[resolved];
-        if (!recipe || !recipe.ingredients || recipe.ingredients.length === 0 ||
-          !recipe.machines || Object.keys(recipe.machines).length === 0 ||
+        if (!recipe || !recipe.machines || Object.keys(recipe.machines).length === 0 ||
           getOutputAmount(recipe) === 0) {
-          // No recipe or empty → treat as raw material
-          // Use clean display name (resolved alias, but without tier suffix for grouping)
-          groundTotals[resolved] = (groundTotals[resolved] || 0) + amountPerMin;
+          // Truly raw — no recipe or no machines
+          if (!groundTotals[resolved]) groundTotals[resolved] = { amount: 0, machine: null };
+          groundTotals[resolved].amount += amountPerMin;
           return;
         }
-        // Pick the first available machine to get cycle time for ratio calculation
+
+        if (!recipe.ingredients || recipe.ingredients.length === 0) {
+          // Minable ore: no ingredients but has machines → pick preferred miner
+          const machineNames = Object.keys(recipe.machines);
+          const preferred = minerSettings[resolved];
+          const machine = (preferred && machineNames.includes(preferred)) ? preferred : machineNames[0];
+          if (!groundTotals[resolved]) groundTotals[resolved] = { amount: 0, machine };
+          groundTotals[resolved].amount += amountPerMin;
+          return;
+        }
+
+        // Has ingredients → recurse
         const [, machData] = Object.entries(recipe.machines)[0];
         const ct = machData.cycleTime;
         const opm = (60 / ct) * getOutputAmount(recipe);
         // How many "recipe runs per minute" produce amountPerMin output?
         const runsPerMin = amountPerMin / opm;
-        // Expand each ingredient recursively
         recipe.ingredients.forEach((ing) => {
           const ingPerMin = runsPerMin * ing.amount * (60 / ct);
           resolveToGround(ing.item, ingPerMin, depth + 1);
@@ -8956,14 +9068,27 @@
 
       const groundCount = Object.keys(groundTotals).length;
       const groundRows = Object.entries(groundTotals)
-        .sort((a, b) => b[1] - a[1])
-        .map(([name, val]) => {
+        .sort((a, b) => b[1].amount - a[1].amount)
+        .map(([name, info]) => {
+          const val = info.amount;
+          const machine = info.machine;
           const cls = val > 100 ? "num-warn" : "num";
+          let machineTd = '<td class="label" style="color:var(--text-dim);padding:6px 12px">—</td><td class="num">—</td>';
+          if (machine) {
+            const rec = RECIPES[name];
+            const md = rec && rec.machines[machine];
+            if (md) {
+              const opm = (60 / md.cycleTime) * getOutputAmount(rec);
+              const count = Math.ceil(val / opm);
+              machineTd = `<td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${getIcon(machine + ' (Recipe)', 22)}<span class="label">${machine}</span></div></td><td class="num">${count}</td>`;
+            }
+          }
           return `
         <tr>
           <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${getIcon(name, 28)}<span class="label">${name}</span></div></td>
           <td class="${cls}">${fmt(val)}</td>
           <td class="num">${fmt(val / 60)}/s</td>
+          ${machineTd}
         </tr>`;
         })
         .join("");
@@ -9020,7 +9145,7 @@
           </div>
           <div class="collapsible-body">
             <table class="results-table">
-              <thead><tr><th>Rohstoff</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Sekunde</th></tr></thead>
+              <thead><tr><th>Rohstoff</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Sekunde</th><th>Maschine</th><th style="text-align:right">Anzahl</th></tr></thead>
               <tbody>${groundRows}</tbody>
             </table>
           </div>
