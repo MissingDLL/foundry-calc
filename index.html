@@ -9,18 +9,25 @@
     rel="stylesheet" />
   <style>
     :root {
-      --bg: #0a0c10;
-      --bg2: #111520;
-      --bg3: #161c2a;
-      --panel: #1a2235;
-      --border: #2a3a55;
-      --accent: #00d4ff;
-      --accent2: #ff6b35;
-      --accent3: #39d353;
-      --text: #c8d8f0;
-      --text-dim: #6a82a0;
-      --highlight: #00d4ff22;
-      --warn: #ffcc00;
+      --bg: #060612;
+      --bg2: rgba(255,255,255,0.04);
+      --bg3: rgba(255,255,255,0.07);
+      --panel: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.12);
+      --accent: #0a84ff;
+      --accent2: #ff453a;
+      --accent3: #30d158;
+      --text: #f5f5f7;
+      --text-dim: #98989f;
+      --highlight: rgba(10,132,255,0.12);
+      --warn: #ffd60a;
+      --glass-bg: rgba(255,255,255,0.07);
+      --glass-border: rgba(255,255,255,0.13);
+      --glass-highlight: rgba(255,255,255,0.18);
+      --shadow-deep: 0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3);
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
     }
 
     * {
@@ -30,41 +37,53 @@
     }
 
     body {
-      background: var(--bg);
+      background:
+        radial-gradient(ellipse 100% 80% at 0% 0%,   #1e0a5e 0%, transparent 50%),
+        radial-gradient(ellipse 80%  70% at 100% 0%,  #0a2d6e 0%, transparent 50%),
+        radial-gradient(ellipse 70%  60% at 100% 100%,#2e0a5e 0%, transparent 50%),
+        radial-gradient(ellipse 80%  70% at 0%   100%,#041230 0%, transparent 50%),
+        #060612;
       color: var(--text);
-      font-family: "Rajdhani", sans-serif;
-      font-size: 15px;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.01em;
     }
 
     /* Header */
     header {
-      background: linear-gradient(135deg, #0d1525 0%, #1a2840 100%);
-      border-bottom: 2px solid var(--accent);
-      padding: 16px 32px;
+      background: rgba(255,255,255,0.06);
+      backdrop-filter: blur(60px) saturate(200%);
+      -webkit-backdrop-filter: blur(60px) saturate(200%);
+      border-bottom: none;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,0.10),
+        inset 0 1px 0 rgba(255,255,255,0.08);
+      padding: 14px 28px;
       display: flex;
       align-items: center;
       gap: 20px;
-      box-shadow: 0 4px 30px #00d4ff22;
     }
 
     .logo {
-      font-family: "Share Tech Mono", monospace;
-      font-size: 26px;
-      color: var(--accent);
-      letter-spacing: 4px;
-      text-shadow: 0 0 20px var(--accent);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.08em;
+      text-shadow: none;
     }
 
     .logo span {
-      color: var(--accent2);
+      color: rgba(255,255,255,0.45);
     }
 
     .subtitle {
-      color: var(--text-dim);
-      font-size: 13px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      color: rgba(255,255,255,0.35);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      text-transform: none;
     }
 
     /* Layout */
@@ -72,18 +91,20 @@
       display: grid;
       grid-template-columns: 360px 1fr;
       gap: 0;
-      height: calc(100vh - 72px);
+      height: calc(100vh - 62px);
       overflow: hidden;
     }
 
     /* Sidebar */
     .sidebar {
-      background: var(--bg2);
-      border-right: 1px solid var(--border);
-      padding: 20px;
+      background: rgba(255,255,255,0.04);
+      backdrop-filter: blur(60px) saturate(180%);
+      -webkit-backdrop-filter: blur(60px) saturate(180%);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      padding: 16px 14px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 10px;
       overflow: hidden;
     }
 
@@ -91,26 +112,48 @@
     .main {
       padding: 24px;
       overflow-y: auto;
+      background: transparent;
     }
 
     /* Section headers */
     .section-title {
-      font-family: "Share Tech Mono", monospace;
-      font-size: 11px;
-      color: var(--accent);
-      letter-spacing: 3px;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.30);
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-bottom: 10px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
       padding-bottom: 6px;
     }
 
     /* Panels */
     .panel {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      background:
+        linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%),
+        rgba(255,255,255,0.05);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: var(--radius-lg);
       padding: 16px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.18),
+        inset 0 -1px 0 rgba(0,0,0,0.20),
+        0 12px 40px rgba(0,0,0,0.5),
+        0 2px 8px rgba(0,0,0,0.3);
+      transition: box-shadow 0.2s ease;
+    }
+
+    .sidebar .panel {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      background: rgba(255,255,255,0.06);
+      border-color: rgba(255,255,255,0.09);
+      border-radius: var(--radius-md);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.14),
+        0 4px 16px rgba(0,0,0,0.3);
     }
 
     /* Config grid */
@@ -129,36 +172,38 @@
 
     .input-group label {
       font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 1px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.04em;
       text-transform: uppercase;
     }
 
     input[type="number"],
+    input[type="text"],
     select {
-      background: var(--bg3);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
       color: var(--text);
-      font-family: "Share Tech Mono", monospace;
-      font-size: 15px;
-      padding: 6px 10px;
-      border-radius: 4px;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+      font-size: 14px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
       width: 100%;
       outline: none;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
 
     input[type="number"]:focus,
+    input[type="text"]:focus,
     select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 8px #00d4ff33;
+      border-color: rgba(10,132,255,0.6);
+      box-shadow: 0 0 0 3px rgba(10,132,255,0.22);
     }
 
     /* Bot selector */
     .bot-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
       flex: 1;
       overflow-y: auto;
       padding-right: 4px;
@@ -169,12 +214,12 @@
     }
 
     .bot-list::-webkit-scrollbar-track {
-      background: var(--bg);
+      background: transparent;
     }
 
     .bot-list::-webkit-scrollbar-thumb {
-      background: var(--border);
-      border-radius: 2px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 99px;
     }
 
     .bot-item {
@@ -182,16 +227,17 @@
       align-items: center;
       gap: 10px;
       padding: 8px 10px;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       border: 1px solid transparent;
       cursor: pointer;
-      transition: all 0.15s;
-      background: var(--bg3);
+      transition: all 0.18s ease;
+      background: rgba(255,255,255,0.05);
     }
 
     .bot-item:hover {
-      border-color: var(--accent);
-      background: var(--highlight);
+      border-color: rgba(10,132,255,0.4);
+      background: rgba(10,132,255,0.10);
+      transform: scale(1.01);
     }
 
     .bot-check input[type="checkbox"] {
@@ -202,20 +248,19 @@
     }
 
     .bot-item.selected {
-      border-color: var(--accent);
-      background: #00d4ff15;
+      border-color: rgba(10,132,255,0.5);
+      background: rgba(10,132,255,0.12);
     }
 
     .bot-name {
       flex: 1;
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: 500;
     }
 
     .bot-qty {
       width: 52px;
       text-align: center;
-      font-family: "Share Tech Mono", monospace;
       font-size: 14px;
       padding: 3px 6px;
     }
@@ -225,25 +270,26 @@
       display: flex;
       gap: 0;
       margin-bottom: 20px;
-      border-bottom: 2px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
     }
 
     .tab {
       padding: 8px 20px;
       cursor: pointer;
-      font-size: 13px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      font-size: 12px;
+      letter-spacing: 0;
+      text-transform: none;
+      font-weight: 500;
       color: var(--text-dim);
       border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      transition: all 0.2s;
+      margin-bottom: -1px;
+      transition: all 0.2s ease;
     }
 
     .tab.active {
       color: var(--accent);
       border-bottom-color: var(--accent);
-      text-shadow: 0 0 10px var(--accent);
+      text-shadow: none;
     }
 
     .tab:hover:not(.active) {
@@ -257,44 +303,44 @@
     }
 
     .results-table th {
-      background: var(--bg3);
-      color: var(--accent);
-      font-family: "Share Tech Mono", monospace;
-      font-size: 11px;
-      letter-spacing: 2px;
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.35);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       padding: 8px 12px;
       text-align: left;
-      border-bottom: 2px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
       position: sticky;
       top: 0;
     }
 
     .results-table td {
       padding: 7px 12px;
-      border-bottom: 1px solid var(--border);
-      font-size: 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-size: 13px;
     }
 
     .results-table tr:hover td {
-      background: var(--highlight);
+      background: rgba(10,132,255,0.10);
     }
 
     .results-table td.num {
-      font-family: "Share Tech Mono", monospace;
+      font-family: -apple-system, BlinkMacSystemFont, monospace;
       color: var(--accent3);
       text-align: right;
     }
 
     .results-table td.num-warn {
-      font-family: "Share Tech Mono", monospace;
+      font-family: -apple-system, BlinkMacSystemFont, monospace;
       color: var(--warn);
       text-align: right;
     }
 
     .results-table td.label {
       color: var(--text);
-      font-weight: 600;
+      font-weight: 500;
     }
 
     /* Summary boxes */
@@ -306,12 +352,25 @@
     }
 
     .summary-box {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      background:
+        linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%),
+        rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: var(--radius-md);
       padding: 14px;
       position: relative;
       overflow: hidden;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.18),
+        0 4px 20px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .summary-box:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.22),
+        0 8px 28px rgba(0,0,0,0.5);
     }
 
     .summary-box::before {
@@ -320,8 +379,9 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 2px;
+      height: 1px;
       background: var(--accent);
+      opacity: 0.7;
     }
 
     .summary-box.orange::before {
@@ -333,17 +393,19 @@
     }
 
     .summary-label {
-      font-size: 11px;
-      color: var(--text-dim);
-      letter-spacing: 1px;
+      font-size: 10px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-bottom: 6px;
     }
 
     .summary-value {
-      font-family: "Share Tech Mono", monospace;
       font-size: 22px;
+      font-weight: 600;
       color: var(--accent);
+      letter-spacing: -0.02em;
     }
 
     .summary-box.orange .summary-value {
@@ -356,7 +418,7 @@
 
     .summary-unit {
       font-size: 12px;
-      color: var(--text-dim);
+      color: rgba(255,255,255,0.35);
       margin-top: 2px;
     }
 
@@ -364,12 +426,11 @@
     .badge {
       display: inline-block;
       padding: 2px 8px;
-      border-radius: 3px;
+      border-radius: 6px;
       font-size: 11px;
-      font-family: "Share Tech Mono", monospace;
-      background: #00d4ff22;
+      background: rgba(10,132,255,0.15);
       color: var(--accent);
-      border: 1px solid #00d4ff44;
+      border: 1px solid rgba(10,132,255,0.25);
     }
 
     /* Science packs */
@@ -381,17 +442,19 @@
     }
 
     .sci-card {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius-sm);
       padding: 12px;
     }
 
     .sci-card h4 {
-      font-size: 13px;
-      color: var(--accent);
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.50);
       margin-bottom: 8px;
-      font-family: "Share Tech Mono", monospace;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
     }
 
     .sci-row {
@@ -399,7 +462,7 @@
       justify-content: space-between;
       font-size: 13px;
       padding: 2px 0;
-      border-bottom: 1px solid #ffffff08;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
     }
 
     .sci-row:last-child {
@@ -407,53 +470,59 @@
     }
 
     .sci-val {
-      font-family: "Share Tech Mono", monospace;
       color: var(--accent3);
+      font-weight: 500;
     }
 
     /* Calc button */
     .calc-btn {
-      background: linear-gradient(135deg, #00aacc, #0080aa);
+      background: #0a84ff;
       border: none;
       color: #fff;
-      font-family: "Rajdhani", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       font-size: 14px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0;
+      text-transform: none;
       padding: 10px 20px;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
       width: 100%;
-      transition: all 0.2s;
-      box-shadow: 0 4px 15px #00d4ff33;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px rgba(10,132,255,0.4);
     }
 
     .calc-btn:hover {
-      background: linear-gradient(135deg, #00d4ff, #0099bb);
-      box-shadow: 0 4px 25px #00d4ff55;
+      background: #409cff;
+      box-shadow: 0 6px 20px rgba(10,132,255,0.5);
+      transform: translateY(-1px);
+    }
+
+    .calc-btn:active {
+      transform: scale(0.98);
     }
 
     .reset-btn {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      color: var(--text-dim);
-      font-family: "Rajdhani", sans-serif;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.55);
+      font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 1px;
-      text-transform: uppercase;
+      font-weight: 500;
+      letter-spacing: 0;
+      text-transform: none;
       padding: 8px 14px;
-      border-radius: 4px;
+      border-radius: var(--radius-sm);
       cursor: pointer;
       width: 100%;
-      transition: all 0.2s;
+      transition: all 0.2s ease;
       margin-top: 6px;
     }
 
     .reset-btn:hover {
-      border-color: var(--accent2);
-      color: var(--accent2);
+      border-color: rgba(255,69,58,0.5);
+      color: #ff453a;
+      background: rgba(255,69,58,0.08);
     }
 
     /* Tab content */
@@ -486,16 +555,16 @@
     /* Category separators in bot list */
     .bot-category {
       font-size: 10px;
-      color: var(--text-dim);
-      letter-spacing: 3px;
+      color: rgba(255,255,255,0.30);
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       padding: 6px 4px 2px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
       margin-top: 6px;
     }
 
     .highlight-row td {
-      background: #00d4ff0a;
+      background: rgba(10,132,255,0.06);
     }
 
     /* Recipe picker modal */
@@ -522,15 +591,15 @@
     }
 
     #recipeCatTabs::-webkit-scrollbar-thumb {
-      background: var(--accent);
+      background: rgba(10,132,255,0.5);
       border-radius: 2px;
     }
 
     /* ── Collapsible sections (Rezeptrechner) ──────────────── */
     .collapsible-section {
       margin-bottom: 20px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: var(--radius-md);
       overflow: hidden;
     }
 
@@ -539,34 +608,34 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 14px;
-      background: #0d1a2a;
+      background: rgba(255,255,255,0.04);
       cursor: pointer;
       user-select: none;
-      border-bottom: 1px solid var(--border);
-      transition: background 0.15s;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      transition: background 0.18s ease;
     }
 
     .collapsible-header:hover {
-      background: #112236;
+      background: rgba(255,255,255,0.07);
     }
 
     .collapsible-header .ch-title {
-      font-family: "Share Tech Mono", monospace;
       font-size: 11px;
-      color: var(--accent);
-      letter-spacing: 3px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.55);
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
     .collapsible-header .ch-meta {
       font-size: 11px;
-      color: var(--text-dim);
+      color: rgba(255,255,255,0.35);
     }
 
     .collapsible-header .ch-arrow {
       font-size: 13px;
-      color: var(--accent);
-      transition: transform 0.2s;
+      color: rgba(255,255,255,0.35);
+      transition: transform 0.2s ease;
       margin-left: 10px;
     }
 
@@ -590,11 +659,11 @@
     }
 
     .recipe-main-row:hover td {
-      background: #0d1e30;
+      background: rgba(10,132,255,0.08);
     }
 
     .recipe-detail-row td {
-      background: #080f18;
+      background: rgba(0,0,0,0.25);
     }
 
     .recipe-detail-row.collapsed {
@@ -603,8 +672,8 @@
 
     .row-expand-arrow {
       font-size: 10px;
-      color: var(--accent);
-      transition: transform 0.2s;
+      color: rgba(255,255,255,0.40);
+      transition: transform 0.2s ease;
       margin-right: 6px;
       display: inline-block;
     }
@@ -612,6 +681,12 @@
     .row-expand-arrow.open {
       transform: rotate(90deg);
     }
+
+    /* Global scrollbar */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+
   </style>
   <script>
     /* D3 v7 inline */
@@ -634,9 +709,9 @@
       <div class="subtitle">Production & Material Calculator</div>
     </div>
     <div style="margin-left:auto;display:flex;gap:4px;align-items:center;">
-      <button class="__theme-btn" data-theme="default" onclick="__applyTheme('default')" style="background:#0d2a50;border:1px solid var(--accent);color:var(--accent);padding:5px 12px;border-radius:5px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;">Default</button>
-      <button class="__theme-btn" data-theme="dark" onclick="__applyTheme('dark')" style="background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:5px 12px;border-radius:5px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;">Dark</button>
-      <button class="__theme-btn" data-theme="light" onclick="__applyTheme('light')" style="background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:5px 12px;border-radius:5px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;">Light</button>
+      <button class="__theme-btn" data-theme="default" onclick="__applyTheme('default')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(10,132,255,0.6);color:#0a84ff;padding:5px 14px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;font-weight:500;letter-spacing:0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.2);">Default</button>
+      <button class="__theme-btn" data-theme="dark" onclick="__applyTheme('dark')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);padding:5px 14px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;font-weight:500;letter-spacing:0;">Dark</button>
+      <button class="__theme-btn" data-theme="light" onclick="__applyTheme('light')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);padding:5px 14px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;font-weight:500;letter-spacing:0;">Light</button>
     </div>
   </header>
 
@@ -646,17 +721,17 @@
 
       <!-- View Toggle -->
       <div
-        style="display:flex;border:1px solid #2a3a55;border-radius:7px;overflow:hidden;margin-bottom:4px;flex-shrink:0">
+        style="display:flex;border:1px solid rgba(255,255,255,0.10);border-radius:12px;overflow:hidden;margin-bottom:4px;flex-shrink:0;background:rgba(255,255,255,0.04)">
         <button id="toggleRecipeBtn" onclick="switchSidebarView('recipes')"
-          style="flex:1;padding:8px 4px;background:#0d2a50;border:none;color:var(--accent);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s">
+          style="flex:1;padding:8px 4px;background:rgba(10,132,255,0.15);border:none;color:#0a84ff;cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;font-weight:600;letter-spacing:0;transition:all 0.18s">
           ⚙ Rezepte
         </button>
         <button id="toggleBotBtn" onclick="switchSidebarView('bots')"
-          style="flex:1;padding:8px 4px;background:#0a111d;border:none;border-left:1px solid #2a3a55;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s">
+          style="flex:1;padding:8px 4px;background:transparent;border:none;border-left:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.40);cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;font-weight:500;letter-spacing:0;transition:all 0.18s">
           🤖 Bots
         </button>
         <button id="toggleSettingsBtn" onclick="openRecipeSettings()"
-          style="flex:1;padding:8px 4px;background:#0a111d;border:none;border-left:1px solid #2a3a55;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;transition:all 0.15s">
+          style="flex:1;padding:8px 4px;background:transparent;border:none;border-left:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.40);cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;font-weight:500;letter-spacing:0;transition:all 0.18s">
           🔧 Einstellungen
         </button>
       </div>
@@ -692,16 +767,16 @@
           <div class="section-title">Rezept suchen</div>
           <div style="position:relative">
             <input type="text" id="recipeSearch" placeholder="z.B. Building Block, Wire Coil…"
-              style="width:100%;box-sizing:border-box;padding:9px 14px;background:#0d1520;border:1px solid #2a3a55;color:var(--text);border-radius:6px;font-family:inherit;font-size:13px"
+              style="width:100%;box-sizing:border-box;padding:9px 14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:10px;font-family:-apple-system,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s,box-shadow 0.2s"
               oninput="filterRecipesInline(this.value)" onfocus="filterRecipesInline(this.value)" autocomplete="off" />
             <div id="recipeInlineResults"
-              style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:#0a111d;border:1px solid #2a3a55;border-radius:8px;overflow:hidden;max-height:280px;overflow-y:auto;z-index:100">
+              style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:rgba(20,20,40,0.92);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid rgba(255,255,255,0.12);border-radius:12px;overflow:hidden;max-height:280px;overflow-y:auto;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
             </div>
           </div>
         </div>
         <div style="display:flex;gap:6px">
-          <button onclick="openRecipePicker()" title="Rezept-Browser öffnen"
-            style="flex:1;padding:8px;background:#1a2235;border:1px solid #2a3a55;color:var(--accent);border-radius:6px;cursor:pointer;font-size:16px;line-height:1">
+          <button class='btn-picker' onclick="openRecipePicker()" title="Rezept-Browser öffnen"
+            style="flex:1;padding:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.60);border-radius:10px;cursor:pointer;font-size:16px;line-height:1;transition:all 0.18s ease">
             ⊞ Browser
           </button>
         </div>
@@ -713,7 +788,7 @@
         <div id="selectedRecipes"
           style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;min-height:0">
           <div
-            style="color:var(--text-dim);font-size:13px;padding:16px;background:#0d1520;border:1px solid #1a2a3a;border-radius:8px;text-align:center">
+            style="color:rgba(255,255,255,0.30);font-size:13px;padding:20px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;text-align:center">
             Noch kein Rezept ausgewählt. Über Suche oder ⊞ hinzufügen.
           </div>
         </div>
@@ -726,20 +801,20 @@
 
       <!-- Tab-Leiste -->
       <div id="mainTabBar" style="
-        display:flex; border-bottom:1px solid #1a2a3a;
-        background:#06090f; flex-shrink:0">
+        display:flex; border-bottom:1px solid rgba(255,255,255,0.10);
+        background:rgba(255,255,255,0.03); backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); flex-shrink:0">
         <button id="mainTabBtnRecipes" onclick="switchMainTab('recipes')" style="
           padding:11px 22px; background:transparent; border:none;
-          border-bottom:2px solid var(--accent); color:var(--accent);
-          cursor:pointer; font-family:inherit; font-size:11px; font-weight:700;
-          letter-spacing:1.5px; text-transform:uppercase; transition:all 0.15s">
+          border-bottom:2px solid #0a84ff; color:#0a84ff;
+          cursor:pointer; font-family:-apple-system,sans-serif; font-size:12px; font-weight:500;
+          letter-spacing:0; transition:all 0.18s">
           📊 Ergebnisse
         </button>
         <button id="mainTabBtnSankey" onclick="switchMainTab('sankey')" style="
           padding:11px 22px; background:transparent; border:none;
-          border-bottom:2px solid transparent; color:var(--text-dim);
-          cursor:pointer; font-family:inherit; font-size:11px; font-weight:700;
-          letter-spacing:1.5px; text-transform:uppercase; transition:all 0.15s">
+          border-bottom:2px solid transparent; color:rgba(255,255,255,0.40);
+          cursor:pointer; font-family:-apple-system,sans-serif; font-size:12px; font-weight:500;
+          letter-spacing:0; transition:all 0.18s">
           〰 Sankey
         </button>
       </div>
@@ -751,19 +826,21 @@
 
       <!-- Sankey Tab -->
       <div id="tab-sankey" style="flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0">
-        <div id="sankeyWrap" style="flex:1; position:relative; overflow:hidden; background:#06090f; min-height:0">
+        <div id="sankeyWrap" style="flex:1; position:relative; overflow:hidden; background:rgba(4,4,20,0.85); min-height:0">
           <div id="sankeyEmpty" style="
             display:flex; flex-direction:column; align-items:center; justify-content:center;
-            height:100%; color:var(--text-dim); font-size:14px; gap:10px">
-            <span style="font-size:32px">〰</span>
-            <span>Erst Rezepte auswählen und <strong style="color:var(--accent)">Berechnen</strong> klicken.</span>
+            height:100%; color:rgba(255,255,255,0.30); font-size:14px; gap:10px">
+            <span style="font-size:32px;opacity:0.4">〰</span>
+            <span>Erst Rezepte auswählen und <strong style="color:#0a84ff;font-weight:500">Berechnen</strong> klicken.</span>
           </div>
           <svg id="sankeySvg" style="width:100%; height:100%; display:none; cursor:grab"></svg>
           <div id="sankeyTooltip" style="
             position:absolute; pointer-events:none; display:none;
-            background:#0b1525ee; border:1px solid #2a4a6a; border-radius:6px;
+            background:rgba(16,14,36,0.92); border:1px solid rgba(255,255,255,0.12); border-radius:12px;
             padding:9px 13px; font-size:12px; color:var(--text); z-index:99;
-            line-height:1.7; min-width:160px; max-width:240px">
+            line-height:1.7; min-width:160px; max-width:240px;
+            backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+            box-shadow:0 8px 32px rgba(0,0,0,0.5)">
           </div>
           <div id="sankeyLegend" style="
             position:absolute; bottom:14px; left:16px; display:none;
@@ -788,45 +865,51 @@
             display: none;
             position: fixed;
             inset: 0;
-            background: #000a;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 1001;
             align-items: center;
             justify-content: center;
           ">
       <div onclick="event.stopPropagation()" style="
-              background: #0d1520;
-              border: 1px solid #2a3a55;
-              border-radius: 12px;
+              background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+              backdrop-filter: blur(60px) saturate(180%);
+              -webkit-backdrop-filter: blur(60px) saturate(180%);
+              border: 1px solid rgba(255,255,255,0.15);
+              border-radius: 24px;
               width: 720px;
               max-width: 95vw;
               max-height: 80vh;
               display: flex;
               flex-direction: column;
               overflow: hidden;
-              box-shadow: 0 20px 60px #000c;
+              box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.20);
             ">
         <div style="
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 14px 18px;
-                border-bottom: 1px solid #1a2a3a;
+                padding: 16px 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
               ">
           <span style="
                   font-size: 15px;
-                  font-weight: 700;
+                  font-weight: 600;
                   color: var(--text);
-                  font-family: &quot;Rajdhani&quot;, sans-serif;
-                  letter-spacing: 1px;
-                ">⚙ STANDARD-EINSTELLUNGEN</span>
+                  font-family: -apple-system,sans-serif;
+                  letter-spacing: -0.01em;
+                ">⚙ Standard-Einstellungen</span>
           <button onclick="closeRecipeSettings()" style="
-                  padding: 4px 10px;
-                  background: transparent;
-                  border: 1px solid #3a1a1a;
-                  color: #f66;
-                  border-radius: 4px;
+                  width:28px;height:28px;
+                  background: rgba(255,255,255,0.10);
+                  border: 1px solid rgba(255,255,255,0.12);
+                  color: rgba(255,255,255,0.60);
+                  border-radius: 50%;
                   cursor: pointer;
-                  font-size: 16px;
+                  font-size: 14px;
+                  display:flex;align-items:center;justify-content:center;
+                  transition: all 0.18s;
                 ">
             ✕
           </button>
@@ -841,77 +924,85 @@
           <div id="settingsContent"></div>
         </div>
         <div style="
-                padding: 12px 18px;
-                border-top: 1px solid #1a2a3a;
+                padding: 14px 20px;
+                border-top: 1px solid rgba(255,255,255,0.08);
                 display: flex;
                 gap: 10px;
                 justify-content: flex-end;
               ">
-          <button onclick="applySettingsToSelected()" class="calc-btn" style="font-size: 13px; padding: 8px 18px">
+          <button onclick="applySettingsToSelected()" class="calc-btn" style="font-size: 13px; padding: 8px 18px; width:auto">
             Auf bestehende Rezepte anwenden
           </button>
-          <button onclick="closeRecipeSettings()" class="reset-btn" style="font-size: 13px; padding: 8px 18px">
+          <button onclick="closeRecipeSettings()" class="reset-btn" style="font-size: 13px; padding: 8px 18px; width:auto; margin-top:0">
             Schließen
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Recipe Picker Modal -->
     <div id="recipePickerOverlay" onclick="closeRecipePicker(event)" style="
             display: none;
             position: fixed;
             inset: 0;
-            background: #000a;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
           ">
       <div onclick="event.stopPropagation()" style="
-              background: #0d1520;
-              border: 1px solid #2a3a55;
-              border-radius: 12px;
+              background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+              backdrop-filter: blur(60px) saturate(180%);
+              -webkit-backdrop-filter: blur(60px) saturate(180%);
+              border: 1px solid rgba(255,255,255,0.15);
+              border-radius: 24px;
               width: 680px;
               max-width: 95vw;
               height: 75vh;
               display: flex;
               flex-direction: column;
               overflow: hidden;
-              box-shadow: 0 20px 60px #000c;
+              box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.20);
             ">
         <!-- Modal header -->
         <div style="
                 display: flex;
                 align-items: center;
                 gap: 12px;
-                padding: 14px 18px;
-                border-bottom: 1px solid #1a2a3a;
+                padding: 16px 20px;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
               ">
           <span style="
                   font-size: 15px;
-                  font-weight: 700;
+                  font-weight: 600;
                   color: var(--text);
-                  font-family: &quot;Rajdhani&quot;, sans-serif;
-                  letter-spacing: 1px;
-                ">REZEPT-BROWSER</span>
+                  font-family: -apple-system,sans-serif;
+                  letter-spacing: -0.01em;
+                  white-space:nowrap;
+                ">Rezept-Browser</span>
           <input type="text" id="recipePickerSearch" placeholder="Suchen…" style="
                   flex: 1;
-                  padding: 6px 12px;
-                  background: #080f1a;
-                  border: 1px solid #2a3a55;
+                  padding: 7px 12px;
+                  background: rgba(255,255,255,0.08);
+                  border: 1px solid rgba(255,255,255,0.12);
                   color: var(--text);
-                  border-radius: 5px;
-                  font-family: inherit;
+                  border-radius: 10px;
+                  font-family: -apple-system,sans-serif;
                   font-size: 13px;
+                  outline:none;
                 " oninput="renderRecipeBrowser()" autocomplete="off" />
           <button onclick="closeRecipePicker()" style="
-                  padding: 4px 10px;
-                  background: transparent;
-                  border: 1px solid #3a1a1a;
-                  color: #f66;
-                  border-radius: 4px;
+                  width:28px;height:28px;
+                  background: rgba(255,255,255,0.10);
+                  border: 1px solid rgba(255,255,255,0.12);
+                  color: rgba(255,255,255,0.60);
+                  border-radius: 50%;
                   cursor: pointer;
-                  font-size: 16px;
+                  font-size: 14px;
+                  display:flex;align-items:center;justify-content:center;
+                  transition: all 0.18s;
+                  flex-shrink:0;
                 ">
             ✕
           </button>
@@ -920,8 +1011,8 @@
         <div id="recipeCatTabs" style="
                 display: flex;
                 gap: 0;
-                border-bottom: 1px solid #1a2a3a;
-                background: #080f1a;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+                background: rgba(255,255,255,0.03);
                 overflow-x: auto;
                 flex-shrink: 0;
               "></div>
@@ -937,10 +1028,10 @@
               "></div>
         <!-- Modal footer -->
         <div style="
-                padding: 10px 18px;
-                border-top: 1px solid #1a2a3a;
+                padding: 10px 20px;
+                border-top: 1px solid rgba(255,255,255,0.08);
                 font-size: 12px;
-                color: var(--text-dim);
+                color: rgba(255,255,255,0.30);
               ">
           Klicken zum Auswählen · ausgegraut = kein Rezept hinterlegt
         </div>
@@ -1001,7 +1092,7 @@
       const b64 = resolve(name) || (ICON_ALIASES[name] ? resolve(ICON_ALIASES[name]) : null);
       if (b64)
         return `<img src="${b64}" style="width:${size}px;height:${size}px;flex-shrink:0;border-radius:3px;object-fit:cover;" title="${name}">`;
-      return `<div style="width:${size}px;height:${size}px;background:#1a2235;border-radius:4px;border:1px solid #2a3a55;flex-shrink:0" title="${name}"></div>`;
+      return `<div style="width:${size}px;height:${size}px;background:rgba(255,255,255,0.08);border-radius:6px;border:1px solid rgba(255,255,255,0.12);flex-shrink:0" title="${name}"></div>`;
     }
 
     const BOT_ICONS = {
@@ -7363,7 +7454,7 @@
         allBtn.textContent = "✓ Alle";
         allBtn.title = "Alle auswählen / abwählen";
         allBtn.style.cssText =
-          "padding:1px 7px;font-size:10px;background:#1a2a3a;border:1px solid #2a4a6a;color:var(--accent);border-radius:3px;cursor:pointer;font-family:inherit";
+          "padding:1px 7px;font-size:10px;background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.25);color:var(--accent);border-radius:5px;cursor:pointer;font-family:-apple-system,sans-serif";
         allBtn.onclick = function () {
           const allChecked = names.every(n => {
             const c = document.getElementById("chk_" + n); return c && c.checked;
@@ -7394,7 +7485,7 @@
 
           const eff = botEfficiencyOverrides[name] != null ? botEfficiencyOverrides[name] : r.efficiency;
           const effTag = eff != null
-            ? `<span style="font-size:10px;font-family:'Share Tech Mono',monospace;color:var(--accent3);white-space:nowrap;flex-shrink:0">+${eff}%</span>`
+            ? `<span style="font-size:10px;font-family:-apple-system,sans-serif;color:var(--accent3);white-space:nowrap;flex-shrink:0">+${eff}%</span>`
             : "";
 
           item.innerHTML = `
@@ -7569,7 +7660,7 @@
       // ── Section: Machine family defaults ─────────────────────
       const machTitle = document.createElement("div");
       machTitle.style.cssText =
-        "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px";
+        "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
       machTitle.textContent = "Standard-Maschinen";
       el.appendChild(machTitle);
 
@@ -7589,10 +7680,10 @@
           const isActive = (fam.defaultChoice || fam.machines[0]) === machine;
           const btn = document.createElement("button");
           btn.style.cssText =
-            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;white-space:nowrap;" +
+            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
             (isActive
-              ? "background:#0d2a50;border:2px solid var(--accent);color:var(--text);"
-              : "background:#0a111d;border:1px solid #2a3a55;color:var(--text-dim);");
+              ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
+              : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
           btn.innerHTML =
             getIcon(machine + " (Recipe)", 20) +
             "<span>" +
@@ -7605,11 +7696,11 @@
             // Update visuals
             row.querySelectorAll("button").forEach((b) => {
               const active = b.dataset.machine === machine;
-              b.style.background = active ? "#0d2a50" : "#0a111d";
+              b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
               b.style.border = active
-                ? "2px solid var(--accent)"
-                : "1px solid #2a3a55";
-              b.style.color = active ? "var(--text)" : "var(--text-dim)";
+                ? "1px solid rgba(10,132,255,0.5)"
+                : "1px solid rgba(255,255,255,0.10)";
+              b.style.color = active ? "#f5f5f7" : "rgba(255,255,255,0.45)";
             });
           };
           row.appendChild(btn);
@@ -7621,12 +7712,12 @@
 
       // ── Section: Recipe variant defaults ─────────────────────
       const sep = document.createElement("div");
-      sep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
+      sep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
       el.appendChild(sep);
 
       const varTitle = document.createElement("div");
       varTitle.style.cssText =
-        "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px";
+        "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
       varTitle.textContent = "Rezept-Varianten (Standard)";
       el.appendChild(varTitle);
 
@@ -7652,10 +7743,10 @@
           const shortName =
             variant.replace(group.label, "").trim() || variant;
           btn.style.cssText =
-            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;white-space:nowrap;" +
+            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
             (isActive
-              ? "background:#0d2a50;border:2px solid var(--accent);color:var(--text);"
-              : "background:#0a111d;border:1px solid #2a3a55;color:var(--text-dim);");
+              ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
+              : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
           btn.innerHTML =
             getIcon(variant, 20) +
             "<span>" +
@@ -7667,11 +7758,11 @@
             variantSettings[group.label] = variant;
             row.querySelectorAll("button").forEach((b) => {
               const active = b.dataset.variant === variant;
-              b.style.background = active ? "#0d2a50" : "#0a111d";
+              b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
               b.style.border = active
-                ? "2px solid var(--accent)"
-                : "1px solid #2a3a55";
-              b.style.color = active ? "var(--text)" : "var(--text-dim)";
+                ? "1px solid rgba(10,132,255,0.5)"
+                : "1px solid rgba(255,255,255,0.10)";
+              b.style.color = active ? "#f5f5f7" : "rgba(255,255,255,0.45)";
             });
           };
           row.appendChild(btn);
@@ -7683,17 +7774,17 @@
 
       // ── Section: Miner preferences ───────────────────────────────
       const minerSep = document.createElement("div");
-      minerSep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
+      minerSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
       el.appendChild(minerSep);
 
       const minerTitle = document.createElement("div");
       minerTitle.style.cssText =
-        "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px";
+        "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
       minerTitle.textContent = "Abbau-Maschinen (Grundmaterialien)";
       el.appendChild(minerTitle);
 
       const minerDesc = document.createElement("div");
-      minerDesc.style.cssText = "font-size:11px;color:var(--text-dim);margin-bottom:12px";
+      minerDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
       minerDesc.textContent =
         "Welche Maschine soll für jeden Rohstoff in der Grundmaterial-Auflösung verwendet werden?";
       el.appendChild(minerDesc);
@@ -7717,10 +7808,10 @@
           const isActive = currentChoice === miner;
           const btn = document.createElement("button");
           btn.style.cssText =
-            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:5px;cursor:pointer;font-family:inherit;font-size:12px;transition:all 0.15s;white-space:nowrap;" +
+            "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
             (isActive
-              ? "background:#0d2a50;border:2px solid var(--accent);color:var(--text);"
-              : "background:#0a111d;border:1px solid #2a3a55;color:var(--text-dim);");
+              ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
+              : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
           btn.innerHTML = getIcon(miner + " (Recipe)", 20) + "<span>" + miner + "</span>";
           btn.dataset.ore = group.label;
           btn.dataset.miner = miner;
@@ -7728,8 +7819,8 @@
             minerSettings[group.label] = miner;
             row.querySelectorAll("button").forEach((b) => {
               const active = b.dataset.miner === miner;
-              b.style.background = active ? "#0d2a50" : "#0a111d";
-              b.style.border = active ? "2px solid var(--accent)" : "1px solid #2a3a55";
+              b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
+              b.style.border = active ? "1px solid rgba(10,132,255,0.5)" : "1px solid rgba(255,255,255,0.10)";
               b.style.color = active ? "var(--text)" : "var(--text-dim)";
             });
           };
@@ -7743,17 +7834,17 @@
       // ── Section: Bot efficiency overrides ────────────────────────
       // ── Section: Global Research Productivity ────────────────────
       const resSep = document.createElement("div");
-      resSep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
+      resSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
       el.appendChild(resSep);
 
       const resTitle = document.createElement("div");
       resTitle.style.cssText =
-        "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px";
+        "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
       resTitle.textContent = "Globale Forschungsproduktivität";
       el.appendChild(resTitle);
 
       const resDesc = document.createElement("div");
-      resDesc.style.cssText = "font-size:11px;color:var(--text-dim);margin-bottom:12px";
+      resDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
       resDesc.textContent =
         "Mining: gilt für Crusher I/II · Fluid: gilt für Fluid-Assembler, Chemical Processor, Barrel Filler, Greenhouse";
       el.appendChild(resDesc);
@@ -7773,7 +7864,7 @@
       ].forEach(({ label, getter, setter }) => {
         const row = document.createElement("div");
         row.style.cssText =
-          "display:flex;align-items:center;gap:10px;background:#0a111d;border:1px solid #1a2a3a;border-radius:5px;padding:8px 12px";
+          "display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:8px 12px";
 
         const lbl = document.createElement("div");
         lbl.style.cssText = "flex:1;font-size:13px;color:var(--text);font-weight:600";
@@ -7789,8 +7880,7 @@
         inp.step = "10";
         inp.value = getter();
         inp.style.cssText =
-          "width:70px;padding:4px 8px;background:#161c2a;border:1px solid #2a3a55;color:var(--accent3);" +
-          "font-family:'Share Tech Mono',monospace;font-size:14px;border-radius:4px;text-align:right";
+          "width:70px;padding:4px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:14px;border-radius:8px;text-align:right";
         inp.oninput = function () {
           const val = parseFloat(this.value);
           setter(isNaN(val) || val < 0 ? 0 : val);
@@ -7803,7 +7893,7 @@
         const resetBtn = document.createElement("button");
         resetBtn.title = "Zurücksetzen";
         resetBtn.style.cssText =
-          "padding:2px 8px;background:transparent;border:1px solid #2a3a55;color:var(--text-dim);" +
+          "padding:2px 8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.40);" +
           "border-radius:3px;cursor:pointer;font-size:12px;line-height:1";
         resetBtn.textContent = "↺";
         resetBtn.onclick = function () {
@@ -7822,17 +7912,17 @@
       el.appendChild(resGrid);
 
       const effSep = document.createElement("div");
-      effSep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
+      effSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
       el.appendChild(effSep);
 
       const effTitle = document.createElement("div");
       effTitle.style.cssText =
-        "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px";
+        "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
       effTitle.textContent = "Bot Effizienz-Boni";
       el.appendChild(effTitle);
 
       const effDesc = document.createElement("div");
-      effDesc.style.cssText = "font-size:11px;color:var(--text-dim);margin-bottom:12px";
+      effDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
       effDesc.textContent = "Passe die angezeigten Effizienz-Prozentwerte pro Bot an (z.B. durch Upgrades im Spiel).";
       el.appendChild(effDesc);
 
@@ -7851,7 +7941,7 @@
 
         const cell = document.createElement("div");
         cell.style.cssText =
-          "display:flex;align-items:center;gap:8px;background:#0a111d;border:1px solid #1a2a3a;border-radius:5px;padding:6px 10px";
+          "display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:6px 10px";
 
         const icon = document.createElement("div");
         icon.style.cssText = "flex-shrink:0";
@@ -7871,8 +7961,7 @@
         inp.step = "1";
         inp.value = current;
         inp.style.cssText =
-          "width:52px;padding:3px 6px;background:#161c2a;border:1px solid #2a3a55;color:var(--accent3);" +
-          "font-family:'Share Tech Mono',monospace;font-size:13px;border-radius:4px;text-align:right";
+          "width:52px;padding:3px 6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:13px;border-radius:8px;text-align:right";
         inp.oninput = function () {
           const val = parseFloat(this.value);
           if (!isNaN(val) && val >= 0) {
@@ -7891,7 +7980,7 @@
         const resetBtn = document.createElement("button");
         resetBtn.title = "Auf Standardwert zurücksetzen";
         resetBtn.style.cssText =
-          "padding:2px 6px;background:transparent;border:1px solid #2a3a55;color:var(--text-dim);" +
+          "padding:2px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.40);" +
           "border-radius:3px;cursor:pointer;font-size:11px;line-height:1;flex-shrink:0";
         resetBtn.textContent = "↺";
         resetBtn.onclick = function () {
@@ -7913,11 +8002,11 @@
 
       // ── Section: Workstations ─────────────────────────────────────
       const wsSep = document.createElement("div");
-      wsSep.style.cssText = "border-top:1px solid #1a2a3a;margin:18px 0";
+      wsSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
       el.appendChild(wsSep);
 
       const wsTitle = document.createElement("div");
-      wsTitle.style.cssText = "font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px";
+      wsTitle.style.cssText = "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
       wsTitle.textContent = "Workstations (Global)";
       el.appendChild(wsTitle);
 
@@ -7928,7 +8017,7 @@
 
       const wsSummary = document.createElement("div");
       wsSummary.id = "wsBonusSummary";
-      wsSummary.style.cssText = "margin-bottom:10px;padding:8px 10px;background:#0a111d;border:1px solid #1a2a3a;border-radius:6px";
+      wsSummary.style.cssText = "margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px";
       el.appendChild(wsSummary);
 
       const wsContainer = document.createElement("div");
@@ -7971,7 +8060,7 @@
         // Grau ausblenden wenn keine kompatiblen Bots existieren
         const hasNoBots = compatibleBots.length === 0;
         const card = document.createElement("div");
-        card.style.cssText = "background:#0a111d;border:1px solid " + (ws ? "var(--accent)" : "#2a3a55") + ";border-radius:8px;padding:10px 12px" + (hasNoBots ? ";opacity:0.5" : "");
+        card.style.cssText = "background:" + (ws ? "rgba(10,132,255,0.08)" : "rgba(255,255,255,0.04)") + ";border:1px solid " + (ws ? "rgba(10,132,255,0.4)" : "rgba(255,255,255,0.09)") + ";border-radius:12px;padding:10px 12px" + (hasNoBots ? ";opacity:0.5" : "");
 
         // Header: category name + enable toggle
         const header = document.createElement("div");
@@ -8021,8 +8110,8 @@
             btn.textContent = "WS " + t + " (" + t + " Slot" + (t > 1 ? "s" : "") + ")";
             btn.style.cssText = "padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;transition:all 0.15s;" +
               (ws.tier === t
-                ? "background:#0d2a50;border:2px solid var(--accent);color:var(--text);"
-                : "background:#161c2a;border:1px solid #2a3a55;color:var(--text-dim);");
+                ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
+                : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
             btn.onclick = function () {
               ws.tier = t;
               while (ws.robots.length < t) ws.robots.push(null);
@@ -8065,10 +8154,10 @@
 
             const iconWrap = document.createElement("div");
             iconWrap.style.cssText = "width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center";
-            iconWrap.innerHTML = botName ? getIcon(botName, 20, true) : "<span style='color:#2a3a55;font-size:16px'>○</span>";
+            iconWrap.innerHTML = botName ? getIcon(botName, 20, true) : "<span style='color:rgba(255,255,255,0.20);font-size:16px'>○</span>";
 
             const sel = document.createElement("select");
-            sel.style.cssText = "flex:1;padding:4px 6px;background:#161c2a;border:1px solid #2a3a55;color:var(--text);border-radius:4px;font-family:inherit;font-size:11px";
+            sel.style.cssText = "flex:1;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none";
             const emptyOpt = document.createElement("option");
             emptyOpt.value = "";
             emptyOpt.textContent = "— kein Bot —";
@@ -8092,7 +8181,7 @@
               ws.robots[slotIdx] = this.value || null;
               iconWrap.innerHTML = ws.robots[slotIdx]
                 ? getIcon(ws.robots[slotIdx], 20, true)
-                : "<span style='color:#2a3a55;font-size:16px'>○</span>";
+                : "<span style='color:rgba(255,255,255,0.20);font-size:16px'>○</span>";
               updateEffSpan(effSpan, ws.robots[slotIdx]);
               renderWorkstationBonusSummary();
             };
@@ -8154,7 +8243,7 @@
         '<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Aktive globale Boni</div>' +
         '<div style="display:flex;flex-wrap:wrap;gap:5px">' +
         lines.map(({ machine, bonus }) =>
-          `<span style="display:inline-flex;align-items:center;gap:4px;background:#0d1a0d;border:1px solid #1a3a1a;border-radius:4px;padding:3px 8px;font-size:11px;font-family:'Share Tech Mono',monospace">` +
+          `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(48,209,88,0.10);border:1px solid rgba(48,209,88,0.20);border-radius:6px;padding:3px 8px;font-size:11px;font-family:-apple-system,sans-serif">` +
           `<span style="color:var(--text-dim)">${machine}</span>` +
           `<span style="color:var(--accent3)">+${Math.round(bonus * 1000) / 10}%</span></span>`
         ).join("") + "</div>";
@@ -8219,7 +8308,7 @@
         const btn = document.createElement("button");
         btn.textContent = cat;
         btn.style.cssText =
-          "padding:7px 14px;background:transparent;border:none;border-right:1px solid #1a2a3a;border-bottom:3px solid transparent;color:var(--text-dim);cursor:pointer;font-family:inherit;font-size:12px;white-space:nowrap;transition:all 0.15s;flex-shrink:0";
+          "padding:7px 14px;background:transparent;border:none;border-right:1px solid rgba(255,255,255,0.07);border-bottom:2px solid transparent;color:rgba(255,255,255,0.40);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;white-space:nowrap;transition:all 0.18s;flex-shrink:0";
         btn.onclick = function () {
           activeBrowserCat = cat;
           document.querySelectorAll("#recipeCatTabs button").forEach((b) => {
@@ -8229,13 +8318,13 @@
           });
           btn.style.color = "var(--accent)";
           btn.style.borderBottom = "3px solid var(--accent)";
-          btn.style.background = "#0d1520";
+          btn.style.background = "rgba(10,132,255,0.10)";
           renderRecipeBrowser();
         };
         if (cat === "Alle") {
           btn.style.color = "var(--accent)";
           btn.style.borderBottom = "3px solid var(--accent)";
-          btn.style.background = "#0d1520";
+          btn.style.background = "rgba(10,132,255,0.10)";
         }
         tabsEl.appendChild(btn);
       });
@@ -8299,9 +8388,9 @@
           "width:64px",
           "height:64px",
           "flex-shrink:0",
-          "background:" + (isSelected ? "#0d2a50" : "#0a111d"),
+          "background:" + (isSelected ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)"),
           "border:" +
-          (isSelected ? "2px solid var(--accent)" : "1px solid #2a3a55"),
+          (isSelected ? "1px solid rgba(10,132,255,0.5)" : "1px solid rgba(255,255,255,0.09)"),
           "border-radius:7px",
           "cursor:" + (hasMachines ? "pointer" : "default"),
           "display:flex",
@@ -8322,19 +8411,19 @@
 
         const label = document.createElement("div");
         label.style.cssText =
-          "position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);background:#0d1520;border:1px solid #2a3a55;color:var(--text);font-size:10px;padding:3px 7px;border-radius:3px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:20;max-width:160px;overflow:hidden;text-overflow:ellipsis";
+          "position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);background:rgba(20,18,40,0.92);border:1px solid rgba(255,255,255,0.12);color:var(--text);font-size:10px;padding:3px 7px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:20;max-width:160px;overflow:hidden;text-overflow:ellipsis;backdrop-filter:blur(20px)";
         label.textContent = canonicalName;
         cell.appendChild(label);
 
         if (hasMachines) {
           cell.onmouseenter = function () {
-            this.style.background = isSelected ? "#1a3a6a" : "#1a2235";
+            this.style.background = isSelected ? "rgba(10,132,255,0.25)" : "rgba(255,255,255,0.10)";
             this.style.transform = "scale(1.1)";
             this.style.zIndex = "5";
             label.style.opacity = "1";
           };
           cell.onmouseleave = function () {
-            this.style.background = isSelected ? "#0d2a50" : "#0a111d";
+            this.style.background = isSelected ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
             this.style.transform = "scale(1)";
             this.style.zIndex = "1";
             label.style.opacity = "0";
@@ -8405,12 +8494,12 @@
 
         const row = document.createElement("div");
         row.style.cssText =
-          "padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid #1a2a3a;transition:background 0.12s;opacity:" +
+          "padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.06);transition:background 0.12s;opacity:" +
           (hasMachines ? "1" : "0.4");
         if (hasMachines) {
           row.style.cursor = "pointer";
           row.onmouseenter = function () {
-            this.style.background = "#1a2235";
+            this.style.background = "rgba(10,132,255,0.08)";
           };
           row.onmouseleave = function () {
             this.style.background = "transparent";
@@ -8563,7 +8652,7 @@
     function renderSelectedRecipes() {
       const el = document.getElementById("selectedRecipes");
       if (!selectedRecipeList.length) {
-        el.innerHTML = `<div style="color:var(--text-dim);font-size:13px;padding:16px;background:#0d1520;border:1px solid #1a2a3a;border-radius:8px;text-align:center">
+        el.innerHTML = `<div style="color:rgba(255,255,255,0.30);font-size:13px;padding:20px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;text-align:center">
           Noch kein Item ausgewählt. Über Suche oder ⊞ hinzufügen.
         </div>`;
         return;
@@ -8611,10 +8700,10 @@
               const ipm = (60 / ct) * ing.amount * machinesNeeded;
               return `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(ing.item, 14)}${ing.item}: <span style="color:var(--accent3)">${fmt(ipm)}</span></span>`;
             })
-            .join(" <span style='color:#2a3a55'>·</span> ");
+            .join(" <span style='color:rgba(255,255,255,0.20)'>·</span> ");
 
           return `
-          <div style="background:#0d1520;border:1px solid #2a3a55;border-radius:7px;padding:9px 10px">
+          <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:12px;padding:9px 10px">
             <!-- Row 1: icon + name + machines badge + remove -->
             <div style="display:flex;align-items:center;gap:8px">
               ${getIcon(item.itemName, 28)}
@@ -8632,13 +8721,13 @@
             <!-- Row 2: selects + goal -->
             <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;align-items:center">
               ${hasVariants ? `<select data-idx="${idx}" onchange="updateRecipeVariant(this.dataset.idx, this.value)"
-                style="flex:1;min-width:80px;padding:4px 6px;background:#1a2235;border:1px solid #2a3a55;color:var(--text);border-radius:4px;font-family:inherit;font-size:11px">
+                style="flex:1;min-width:80px;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
                 ${variantOptions}
               </select>` : ''}
               <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:100px">
                 ${getIcon(item.machineName, 18)}
                 <select data-idx="${idx}" onchange="updateRecipeMachine(this.dataset.idx, this.value); renderSelectedRecipes()"
-                  style="flex:1;padding:4px 6px;background:#1a2235;border:1px solid #2a3a55;color:var(--text);border-radius:4px;font-family:inherit;font-size:11px">
+                  style="flex:1;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
                   ${machineOptions}
                 </select>
               </div>
@@ -8646,21 +8735,21 @@
                 <span style="font-size:10px;color:var(--text-dim)">Ziel</span>
                 <input type="number" value="${item.goal}" min="1" data-idx="${idx}"
                   onchange="updateRecipeGoal(this.dataset.idx, this.value); renderSelectedRecipes()"
-                  style="width:64px;padding:4px 6px;background:#1a2235;border:1px solid #2a3a55;color:var(--text);border-radius:4px;font-family:inherit;font-size:11px;text-align:right">
+                  style="width:64px;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;text-align:right;outline:none">
               </div>
             </div>
             ${Array.isArray(r.output) && r.output.length > 1
-              ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid #1a2a3a;display:flex;flex-wrap:wrap;gap:5px">
+              ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-wrap:wrap;gap:5px">
               <span style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">Nebenprodukte:</span>
               ${r.output.slice(1).map(op => {
                 const byOpm = (60 / r.machines[item.machineName].cycleTime) * op.amount * machinesNeeded;
                 return `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(op.item, 14)}${op.item}: <span style="color:var(--warn)">${fmt(byOpm)}</span></span>`;
-              }).join(' <span style="color:#2a3a55">·</span> ')}
+              }).join(' <span style="color:rgba(255,255,255,0.20)">·</span> ')}
             </div>`
               : ""
             }
             ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
-              ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid #1a2a3a;display:flex;align-items:center;gap:5px">
+              ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:5px">
               <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance-Output:</span>
               <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} pro Zyklus</span>
               <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(ø ${(r.output.amount * r.output.chance).toFixed(1)}/Zyklus)</span>
@@ -8668,7 +8757,7 @@
               : ""
             }
             ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
-              ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid #1a2a3a;display:flex;align-items:center;gap:5px">
+              ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:5px">
               <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance-Output:</span>
               <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} pro Zyklus</span>
               <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(ø ${(r.output.amount * r.output.chance).toFixed(1)}/Zyklus)</span>
@@ -8676,7 +8765,7 @@
               : ""
             }
             ${r.ingredients.length
-              ? `<div style="margin-top:7px;padding-top:7px;border-top:1px solid #1a2a3a;display:flex;flex-wrap:wrap;gap:5px">
+              ? `<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-wrap:wrap;gap:5px">
               ${ingLines}
             </div>`
               : ""
@@ -8692,7 +8781,7 @@
                 const metaParts = [];
                 if (r.weight) metaParts.push(`⚖ ${r.weight} kg`);
                 if (r.sales_price) metaParts.push(`💰 ${r.sales_price} F`);
-                return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #1a2a3a;display:flex;flex-wrap:wrap;align-items:center;gap:14px">
+                return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-wrap:wrap;align-items:center;gap:14px">
                       <span style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Workstation-Effekt: </span>
                       <span style="display:flex;gap:10px;flex-wrap:wrap">${bonuses.join(" · ")}</span>
                       <span style="font-size:12px;color:var(--text-dim)">→ ${targets}${exempt}</span>
@@ -8702,7 +8791,7 @@
               : ""
             }
           </div>
-            <div style="margin-top:6px;padding-top:6px;border-top:1px solid #1a2a3a">
+            <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.07)">
               ${buildItemWsRow(item, idx)}
             </div>
           </div>`;
@@ -8750,7 +8839,7 @@
           return `<div style="display:flex;align-items:center;gap:6px;margin-top:5px">
               <span style="font-size:10px;color:var(--text-dim);width:38px;flex-shrink:0">Slot ${si + 1}</span>
               <select data-idx="${idx}" data-slot="${si}" onchange="updateItemWsBot(this)"
-                style="flex:1;padding:4px 6px;background:#161c2a;border:1px solid #2a3a55;color:var(--text);border-radius:4px;font-family:inherit;font-size:11px">
+                style="flex:1;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
                 ${opts}
               </select>
             </div>`;
@@ -8767,7 +8856,7 @@
               </label>`
           : "";
 
-        return `<div style="margin-top:6px;background:#080f18;border:1px solid #1a2a3a;border-radius:5px;padding:8px">
+        return `<div style="margin-top:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
               <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Modus:</span>
               ${["none", "global", "custom"].map(mode => {
@@ -8777,14 +8866,14 @@
           const label = mode === "none" ? "Keine WS" : mode === "global" ? "Globale WS" : "Eigene WS";
           return `<button data-action="wsmode" data-idx="${idx}" data-mode="${mode}"
                   style="padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;transition:all 0.15s;${isActive
-              ? 'background:#0d2a50;border:2px solid var(--accent);color:var(--text);font-weight:700;'
-              : 'background:#161c2a;border:1px solid #2a3a55;color:var(--text-dim);'
+              ? 'background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;font-weight:600;'
+              : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);'
             }">${label}</button>`;
         }).join("")}
               ${useOverride ? `
               <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Tier:</span>
               <select data-idx="${idx}" onchange="updateItemWsTier(this)"
-                style="padding:3px 8px;background:#161c2a;border:1px solid #2a3a55;color:var(--text);border-radius:4px;font-family:inherit;font-size:11px">
+                style="padding:4px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
                 ${tierOpts}
               </select>
               ${coreCheck}
@@ -8802,7 +8891,7 @@
       return `<div style="display:flex;align-items:center;gap:6px">
           <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Workstation:</span>
           <button data-action="wstoggle" data-idx="${idx}"
-            style="padding:2px 8px;background:${item.wsExpanded ? "#0d2a50" : "#0a111d"};border:1px solid ${item.wsExpanded ? "var(--accent)" : "#2a3a55"};color:var(--text-dim);border-radius:4px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px">
+            style="padding:2px 8px;background:${item.wsExpanded ? "rgba(10,132,255,0.15)" : "rgba(255,255,255,0.06)"};border:1px solid ${item.wsExpanded ? "rgba(10,132,255,0.4)" : "rgba(255,255,255,0.10)"};color:rgba(255,255,255,0.55);border-radius:6px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px">
             ${modeLabel} ${bonusLabel} <span style="font-size:9px">${item.wsExpanded ? "▲" : "▼"}</span>
           </button>
         </div>
@@ -9186,8 +9275,8 @@
       document.getElementById('sidebar-bots').style.display = isBots ? 'flex' : 'none';
       document.getElementById('sidebar-recipes').style.display = isRecipes ? 'flex' : 'none';
 
-      const activeStyle = { bg: '#0d2a50', color: 'var(--accent)' };
-      const inactiveStyle = { bg: '#0a111d', color: 'var(--text-dim)' };
+      const activeStyle = { bg: 'rgba(10,132,255,0.18)', color: '#0a84ff' };
+      const inactiveStyle = { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.40)' };
 
       [
         { id: 'toggleBotBtn', active: isBots },
@@ -9348,6 +9437,7 @@
 
       _drawSankey(svg, data);
     }
+    window.__renderSankey = renderSankey; // exposed for theme switching
 
     function _drawSankey(svgEl, data) {
       const wrap = document.getElementById('sankeyWrap');
@@ -9361,7 +9451,7 @@
       const IW     = W - PAD.left - PAD.right;
       const IH     = H - PAD.top  - PAD.bottom;
 
-      const COLOR = {
+      const COLOR = window.__sankeyColors || {
         raw:   { fill: '#122a12', stroke: '#2a6a2a', text: '#6adf6a', card: '#0e2010', cborder: '#1a4a1a' },
         mid:   { fill: '#0a1628', stroke: '#1e3a70', text: '#6a9adf', card: '#080f1e', cborder: '#162040' },
         final: { fill: '#2a1206', stroke: '#7a3010', text: '#e08050', card: '#1e0e04', cborder: '#5a2010' },
@@ -9547,45 +9637,45 @@
 <div id="__se-panel" style="
   position:fixed;top:0;right:0;bottom:0;z-index:99998;
   width:280px;background:#0d1525ee;backdrop-filter:blur(12px);
-  border-left:1px solid #00d4ff33;display:none;flex-direction:column;
+  border-left:1px solid rgba(255,255,255,0.10);display:none;flex-direction:column;
   font-family:'Rajdhani',system-ui,sans-serif;
   box-shadow:-8px 0 40px #00000088;overflow:hidden;
 ">
-  <div style="padding:14px 16px 10px;border-bottom:1px solid #2a3a55;display:flex;align-items:center;justify-content:space-between;">
-    <span style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#00d4ff;letter-spacing:3px;">STYLE EDITOR</span>
+  <div style="padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.10);display:flex;align-items:center;justify-content:space-between;">
+    <span style="font-family:-apple-system,sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);letter-spacing:0.06em;">STYLE EDITOR</span>
     <button id="__se-close" style="background:none;border:none;color:#6a82a0;font-size:16px;cursor:pointer;padding:2px 6px;">✕</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:18px;">
 
     <div>
-      <div style="font-size:10px;font-family:'Share Tech Mono',monospace;color:#00d4ff;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid #2a3a55;">Farben</div>
+      <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">Farben</div>
       <div id="__se-colors" style="display:flex;flex-direction:column;gap:8px;"></div>
     </div>
 
     <div>
-      <div style="font-size:10px;font-family:'Share Tech Mono',monospace;color:#00d4ff;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid #2a3a55;">Layout</div>
+      <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:10px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">Layout</div>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <div>
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#6a82a0;margin-bottom:4px;"><span>Sidebar Breite</span><span id="__se-lbl-sw" style="color:#c8d8f0;font-family:monospace;font-size:11px;">360px</span></div>
-          <input id="__se-sw" type="range" min="240" max="520" value="360" style="width:100%;accent-color:#00d4ff;">
+          <input id="__se-sw" type="range" min="240" max="520" value="360" style="width:100%;accent-color:#0a84ff;">
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#6a82a0;margin-bottom:4px;"><span>Schriftgröße</span><span id="__se-lbl-fs" style="color:#c8d8f0;font-family:monospace;font-size:11px;">15px</span></div>
-          <input id="__se-fs" type="range" min="12" max="20" value="15" style="width:100%;accent-color:#00d4ff;">
+          <input id="__se-fs" type="range" min="12" max="20" value="15" style="width:100%;accent-color:#0a84ff;">
         </div>
         <div>
           <div style="display:flex;justify-content:space-between;font-size:13px;color:#6a82a0;margin-bottom:4px;"><span>Panel Padding</span><span id="__se-lbl-pp" style="color:#c8d8f0;font-family:monospace;font-size:11px;">16px</span></div>
-          <input id="__se-pp" type="range" min="8" max="32" value="16" style="width:100%;accent-color:#00d4ff;">
+          <input id="__se-pp" type="range" min="8" max="32" value="16" style="width:100%;accent-color:#0a84ff;">
         </div>
       </div>
     </div>
 
-    <button id="__se-reset" style="background:#1a2235;border:1px solid #2a3a55;color:#6a82a0;padding:8px;border-radius:4px;cursor:pointer;font-size:13px;font-family:'Rajdhani',sans-serif;letter-spacing:1px;" onmouseover="this.style.borderColor='#00d4ff';this.style.color='#00d4ff'" onmouseout="this.style.borderColor='#2a3a55';this.style.color='#6a82a0'">Zurücksetzen</button>
+    <button id="__se-reset" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.45);padding:8px;border-radius:8px;cursor:pointer;font-size:13px;font-family:-apple-system,sans-serif;" onmouseover="this.style.borderColor='rgba(10,132,255,0.6)';this.style.color='#0a84ff'" onmouseout="this.style.borderColor='rgba(255,255,255,0.12)';this.style.color='rgba(255,255,255,0.45)'">Zurücksetzen</button>
 
     <div>
-      <div style="font-size:10px;font-family:'Share Tech Mono',monospace;color:#00d4ff;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid #2a3a55;">CSS exportieren</div>
-      <pre id="__se-css" style="font-size:10px;font-family:monospace;color:#c8d8f0;background:#0a0c10;border:1px solid #2a3a55;border-radius:4px;padding:10px;white-space:pre-wrap;line-height:1.6;max-height:180px;overflow-y:auto;"></pre>
-      <button id="__se-copy" style="margin-top:8px;width:100%;background:#00d4ff22;border:1px solid #00d4ff;color:#00d4ff;padding:7px;border-radius:4px;cursor:pointer;font-size:11px;font-family:'Share Tech Mono',monospace;letter-spacing:2px;">CSS KOPIEREN</button>
+      <div style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.35);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">CSS exportieren</div>
+      <pre id="__se-css" style="font-size:10px;font-family:monospace;color:rgba(255,255,255,0.70);background:rgba(0,0,0,0.30);border:1px solid rgba(255,255,255,0.10);border-radius:8px;padding:10px;white-space:pre-wrap;line-height:1.6;max-height:180px;overflow-y:auto;"></pre>
+      <button id="__se-copy" style="margin-top:8px;width:100%;background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.40);color:#0a84ff;padding:7px;border-radius:8px;cursor:pointer;font-size:11px;font-family:-apple-system,sans-serif;">CSS KOPIEREN</button>
     </div>
   </div>
 </div>
@@ -9759,6 +9849,16 @@ const THEMES = {
         letter-spacing: -0.01em !important;
         color: #1d1d1f;
       }
+        .btn-picker{
+        color: #6e6e737d !important;
+        background: rgba(0,0,0,0.08) !important;
+        border: 1px solid rgba(0,0,0,0.10) !important;
+        border-radius: 10px !important;
+        }
+        .btn-picker:hover{
+        color: #6e6e73 !important
+        
+        }
       header {
         background: rgba(255,255,255,0.38) !important;
         backdrop-filter: blur(60px) saturate(220%) brightness(1.04) !important;
@@ -9801,6 +9901,18 @@ const THEMES = {
           0 2px 8px rgba(0,0,0,0.05) !important;
         border-radius: 16px !important;
       }
+        #toggleRecipeBtn {
+        color: var(--text-dim) !important
+        }
+        #mainTabBtnSankey {
+        color: var(--text-dim) !important
+        }
+        #toggleSettingsBtn{
+        color: var(--text-dim) !important
+        }
+        #toggleBotBtn {
+        color: var(--text-dim) !important
+        }
       .sidebar .panel {
         backdrop-filter: none !important;
         -webkit-backdrop-filter: none !important;
@@ -9816,6 +9928,21 @@ const THEMES = {
         border-radius: 14px !important;
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.98), 0 4px 16px rgba(0,0,0,0.05) !important;
       }
+        .summary-label {
+  color: var(--text-dim) !important;
+}
+
+.summary-unit {
+  color: #6e6e73 !important;
+}
+  .summary-value {
+  color: var(--accent); !important;
+}
+  .collapsible-header { background: rgba(255,255,255,0.04) !important; border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
+      .collapsible-header:hover { background: rgba(255,255,255,0.07) !important; }
+      .collapsible-header .ch-title { color: var(--text-dim) !important; letter-spacing: 0.05em !important; text-transform: uppercase !important; font-size: 10px !important; }
+      .collapsible-header .ch-meta { color: var(--text-dim) !important; }
+      .collapsible-section { border-color: rgba(255,255,255,0.09) !important; border-radius: 14px !important; }
       .summary-box::before { height: 1px !important; }
       .section-title {
         font-size: 10px !important; font-weight: 600 !important;
@@ -9831,7 +9958,7 @@ const THEMES = {
       .results-table th {
         background: rgba(0,0,0,0.03) !important;
         font-size: 10px !important; letter-spacing: 0.05em !important;
-        color: #aeaeb2 !important;
+        color: #6e6e73 !important;
         border-bottom: 1px solid rgba(0,0,0,0.08) !important;
       }
       .results-table td { border-bottom: 1px solid rgba(0,0,0,0.05) !important; font-size: 13px !important; color: #1d1d1f !important; }
@@ -9949,7 +10076,7 @@ THEMES.default.css = `
         backdrop-filter: blur(60px) saturate(200%) !important;
         -webkit-backdrop-filter: blur(60px) saturate(200%) !important;
         border-bottom: none !important;
-        box-shadow: 0 1px 0 rgba(255,255,255,0.10) !important;
+        box-shadow: 0 1px 0 rgba(255,255,255,0.10), inset 0 1px 0 rgba(255,255,255,0.08) !important;
         padding: 14px 28px !important;
       }
       .logo {
@@ -9981,12 +10108,14 @@ THEMES.default.css = `
           inset 0 -1px 0 rgba(0,0,0,0.20),
           0 12px 40px rgba(0,0,0,0.5),
           0 2px 8px rgba(0,0,0,0.3) !important;
-        border-radius: 16px !important;
+        border-radius: 20px !important;
+        transition: box-shadow 0.2s ease !important;
       }
       .sidebar .panel {
         backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
         background: rgba(255,255,255,0.06) !important;
         border-color: rgba(255,255,255,0.09) !important;
+        border-radius: 14px !important;
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 4px 16px rgba(0,0,0,0.3) !important;
       }
       .summary-box {
@@ -9996,8 +10125,14 @@ THEMES.default.css = `
         border: 1px solid rgba(255,255,255,0.10) !important;
         border-radius: 14px !important;
         box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 20px rgba(0,0,0,0.4) !important;
+        transition: transform 0.2s ease, box-shadow 0.2s ease !important;
       }
-      .summary-box::before { height: 1px !important; }
+      .summary-box:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.22), 0 8px 28px rgba(0,0,0,0.5) !important;
+      }
+      .summary-box::before { height: 1px !important; opacity: 0.7 !important; }
+      
       .section-title {
         font-size: 10px !important; font-weight: 600 !important;
         letter-spacing: 0.06em !important;
@@ -10016,10 +10151,16 @@ THEMES.default.css = `
       }
       .results-table td { border-bottom: 1px solid rgba(255,255,255,0.06) !important; font-size: 13px !important; }
       .results-table tr:hover td { background: rgba(10,132,255,0.10) !important; }
+      .recipe-main-row:hover td { background: rgba(10,132,255,0.08) !important; }
+      .recipe-detail-row td { background: rgba(0,0,0,0.20) !important; }
+      .collapsible-header { background: rgba(255,255,255,0.04) !important; border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
+      .collapsible-header:hover { background: rgba(255,255,255,0.07) !important; }
+      .collapsible-header .ch-title { color: rgba(255,255,255,0.55) !important; letter-spacing: 0.05em !important; text-transform: uppercase !important; font-size: 10px !important; }
+      .collapsible-section { border-color: rgba(255,255,255,0.09) !important; border-radius: 14px !important; }
       input, select {
         background: rgba(255,255,255,0.08) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
-        border-radius: 8px !important; color: #f5f5f7 !important; box-shadow: none !important;
+        border-radius: 10px !important; color: #f5f5f7 !important; box-shadow: none !important;
       }
       input:focus, select:focus {
         border-color: rgba(10,132,255,0.6) !important;
@@ -10029,20 +10170,24 @@ THEMES.default.css = `
         background: #0a84ff !important; box-shadow: 0 4px 16px rgba(10,132,255,0.4) !important;
         border-radius: 10px !important; font-weight: 600 !important;
         letter-spacing: 0 !important; text-transform: none !important; font-size: 14px !important;
+        transition: all 0.2s ease !important;
       }
-      .calc-btn:hover { background: #409cff !important; box-shadow: 0 6px 20px rgba(10,132,255,0.5) !important; }
+      .calc-btn:hover { background: #409cff !important; box-shadow: 0 6px 20px rgba(10,132,255,0.5) !important; transform: translateY(-1px) !important; }
+      .calc-btn:active { transform: scale(0.98) !important; }
       .reset-btn {
         background: rgba(255,255,255,0.07) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
         border-radius: 10px !important; color: rgba(255,255,255,0.55) !important;
         letter-spacing: 0 !important; text-transform: none !important; font-size: 13px !important;
+        transition: all 0.2s ease !important;
       }
-      .reset-btn:hover { border-color: rgba(255,69,58,0.5) !important; color: #ff453a !important; }
+      .reset-btn:hover { border-color: rgba(255,69,58,0.5) !important; color: #ff453a !important; background: rgba(255,69,58,0.08) !important; }
       .bot-item {
         background: rgba(255,255,255,0.05) !important;
-        border-radius: 8px !important; border: 1px solid transparent !important;
+        border-radius: 10px !important; border: 1px solid transparent !important;
+        transition: all 0.18s ease !important;
       }
-      .bot-item:hover { border-color: rgba(10,132,255,0.4) !important; background: rgba(10,132,255,0.10) !important; }
+      .bot-item:hover { border-color: rgba(10,132,255,0.4) !important; background: rgba(10,132,255,0.10) !important; transform: scale(1.01) !important; }
       .bot-item.selected { border-color: rgba(10,132,255,0.5) !important; background: rgba(10,132,255,0.12) !important; }
       .badge { border-radius: 6px !important; font-size: 11px !important; background: rgba(10,132,255,0.15) !important; border-color: rgba(10,132,255,0.25) !important; }
       ::-webkit-scrollbar { width: 4px; height: 4px; }
@@ -10052,15 +10197,23 @@ THEMES.default.css = `
         font-size: 13px !important; font-weight: 500 !important;
         letter-spacing: 0 !important; text-transform: none !important;
         border-radius: 8px !important; padding: 5px 14px !important;
+        transition: all 0.18s ease !important;
+      }
+      /* ── Inline icon fallback boxes ─── */
+      div[title][style*="rgba(255,255,255,0.08)"] {
+        background: rgba(255,255,255,0.08) !important;
+        border-color: rgba(255,255,255,0.12) !important;
+        border-radius: 6px !important;
       }
       /* ── SANKEY ──────────────────────────── */
-      #sankeyWrap { background: rgba(4,4,16,0.85) !important; }
+      #sankeyWrap { background: rgba(4,4,20,0.85) !important; }
       #sankeyTooltip {
-        background: rgba(10,8,28,0.92) !important;
+        background: rgba(16,14,36,0.92) !important;
         border: 1px solid rgba(255,255,255,0.12) !important;
-        border-radius: 10px !important;
+        border-radius: 12px !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important;
       }
     `;
 
@@ -10089,6 +10242,48 @@ function __applyTheme(name) {
   });
 
   if (typeof __seRefreshCSS === 'function') __seRefreshCSS();
+
+  // Set Sankey colors for this theme and re-render if visible
+  const sankeyPalettes = {
+    default: null, // use built-in dark palette
+    dark:    null, // use built-in dark palette
+    light: {
+      raw:   { fill: 'rgba(52,199,89,0.14)',   stroke: '#34c759', text: '#1a6e35',  card: 'rgba(240,255,245,0.88)', cborder: 'rgba(52,199,89,0.30)'  },
+      mid:   { fill: 'rgba(0,122,255,0.12)',    stroke: '#007aff', text: '#004eb3',  card: 'rgba(240,246,255,0.88)', cborder: 'rgba(0,122,255,0.25)'  },
+      final: { fill: 'rgba(255,159,10,0.14)',   stroke: '#ff9f0a', text: '#7a4200',  card: 'rgba(255,248,235,0.88)', cborder: 'rgba(255,159,10,0.30)' },
+      link:  'rgba(0,122,255,0.35)',
+    },
+  };
+  window.__sankeyColors = sankeyPalettes[name] || null;
+
+  // Update legend swatches to match the active palette
+  const legendPalette = window.__sankeyColors || {
+    raw:   { fill: '#1a4a1a', stroke: '#2a6a2a', text: '#6aaa6a' },
+    mid:   { fill: '#1a2a4a', stroke: '#2a4a8a', text: '#6a9adf' },
+    final: { fill: '#3a1a08', stroke: '#7a3a10', text: '#e08050' },
+  };
+  const legend = document.getElementById('sankeyLegend');
+  if (legend) {
+    const spans = legend.querySelectorAll(':scope > span');
+    const keys = ['raw', 'mid', 'final'];
+    spans.forEach((outerSpan, i) => {
+      const key = keys[i];
+      if (!key || !legendPalette[key]) return;
+      outerSpan.style.color = legendPalette[key].text;
+      const swatch = outerSpan.querySelector('span');
+      if (swatch) {
+        swatch.style.background = legendPalette[key].fill;
+        swatch.style.borderColor = legendPalette[key].stroke;
+      }
+    });
+  }
+
+  if (typeof window.__renderSankey === 'function') {
+    const sankeyTab = document.getElementById('tab-sankey');
+    if (sankeyTab && sankeyTab.style.display !== 'none') {
+      window.__renderSankey();
+    }
+  }
 }
 
 (function() {
@@ -10185,8 +10380,8 @@ function __applyTheme(name) {
   document.getElementById('__se-copy').addEventListener('click', () => {
     navigator.clipboard.writeText(document.getElementById('__se-css').textContent).then(() => {
       const btn = document.getElementById('__se-copy');
-      btn.textContent = 'KOPIERT ✓'; btn.style.background = '#00d4ff44';
-      setTimeout(() => { btn.textContent = 'CSS KOPIEREN'; btn.style.background = '#00d4ff22'; }, 1800);
+      btn.textContent = 'KOPIERT ✓'; btn.style.background = 'rgba(10,132,255,0.25)';
+      setTimeout(() => { btn.textContent = 'CSS KOPIEREN'; btn.style.background = 'rgba(10,132,255,0.12)'; }, 1800);
     });
   });
 
