@@ -1,18 +1,11 @@
 const ICON_ALIASES = {
-  // Fluids / gases with no standalone icon → nearest existing icon
-  "Hot Air": "Air Intake Base",
-  "Water": "Ignium-Enriched Water",
-  "Blast Furnace Slag": "Mineral Rock",
-  // Molten metals → nearest metal icon
-  "Molten Technum": "Technum Ore",
-  "Molten Xenoferrite": "Xenoferrite Ore",
+  // Molten metals with no wiki icon → nearest metal icon
   "Molten Superalloy": "Firmarlite Sheet",
   "Superalloy": "Firmarlite Sheet",
   // Other items
   "Xeno-Crystal": "Charged Xeno-Crystal",
   "Olumite": "Crude Olumite",
   "Barrel": "Barrel (Empty)",
-  "Air": "Air Intake Base",
 };
 
 function getIcon(name, size = 28, isBot = false) {
@@ -91,21 +84,25 @@ const BUILDING_ICONS = {
 };
 const METALLURGY_ICONS = {
   "Xenoferrite Ore": "icons/Xenoferrite_Ore.png",
+  "Xenoferrite Ore Rubble": "icons/Xenoferrite_Ore_Rubble.png",
   "Xenoferrite Ore (Alternative)": "icons/Xenoferrite_Ore_Alternative.png",
   "Xenoferrite Plates (Tier 1)": "icons/Xenoferrite_Plates_Tier_1.png",
   "Xenoferrite Plates (Tier 2)": "icons/Xenoferrite_Plates_Tier_2.png",
   "Xenoferrite Plates (Tier 3)": "icons/Xenoferrite_Plates_Tier_3.png",
   "Technum Ore": "icons/Technum_Ore.png",
+  "Technum Ore Rubble": "icons/Technum_Ore_Rubble.png",
   "Technum Ore (Alternative)": "icons/Technum_Ore_Alternative.png",
   "Technum Rods (Tier 1)": "icons/Technum_Rods_Tier_1.png",
   "Technum Rods (Tier 2)": "icons/Technum_Rods_Tier_2.png",
   "Technum Rods (Tier 3)": "icons/Technum_Rods_Tier_3.png",
   "Ignium Ore": "icons/Ignium_Ore.png",
+  "Ignium Ore Rubble": "icons/Ignium_Ore_Rubble.png",
   "Xenoferrite-Ignium Ore Blend": "icons/Xenoferrite-Ignium_Ore_Blend.png",
   "Steel Beams (Tier 1)": "icons/Steel_Beams_Tier_1.png",
   "Advanced Xenoferrite-Ignium Ore Blend": "icons/Advanced_Xenoferrite-Ignium_Ore_Blend.png",
   "Steel Beams (Tier 2)": "icons/Steel_Beams_Tier_2.png",
   "Telluxite Ore": "icons/Telluxite_Ore.png",
+  "Telluxite Ore Rubble": "icons/Telluxite_Ore_Rubble.png",
   "Telluxite Ingot": "icons/Telluxite_Ingot.png",
   "Liquid Telluxite": "icons/Liquid_Telluxite.png",
   "Firmarlite Sheet": "icons/Firmarlite_Sheet.png",
@@ -114,6 +111,9 @@ const METALLURGY_ICONS = {
   Steel: "icons/Steel.png",
   "Firmarlite Sheet": "icons/Firmarlite_Sheet.png",
   "Steel Beams": "icons/Steel_Beams.png",
+  "Molten Technum": "icons/Molten_Technum.png",
+  "Molten Xenoferrite": "icons/Molten_Xenoferrite.png",
+  "Blast Furnace Slag": "icons/Blast_Furnace_Slag.png",
 };
 const HANDHELD_ICONS = {
   "Mining Drill": "icons/Mining_Drill.png",
@@ -283,6 +283,11 @@ const COMPONENTS_ICONS = {
   "High Density Olumite": "icons/High_Density_Olumite.png",
   "Rubber": "icons/Rubber.png",
   "Ignium-Enriched Water": "icons/Ignium-Enriched_Water.png",
+  "Water": "icons/Water.png",
+  "Steam": "icons/Steam.png",
+  "Waste Gas": "icons/Waste_Gas.png",
+  "Hot Air": "icons/Hot_Air.png",
+  "Air": "icons/Air.png",
   "Paint": "icons/Paint.png",
   "Fracking Liquid": "icons/Fracking_Liquid.png",
   "Gravel": "icons/Gravel.png",
