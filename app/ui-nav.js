@@ -1,9 +1,25 @@
+// ============================================================
+// app/ui-nav.js
+// ============================================================
+// Navigation helpers: collapsible sections, tab switching,
+// sidebar toggle, viz mode switching, and number formatting.
+//
+// All functions are globals; called directly from HTML onclick
+// attributes and from other JS files.
+// ============================================================
+
+// Toggles a collapsible section open/closed.
+// `header` is the .collapsible-header element; its next sibling
+// must be the .collapsible-body element.
 function toggleSection(header) {
   header.classList.toggle('collapsed');
   const body = header.nextElementSibling;
   body.classList.toggle('collapsed');
 }
 
+// Toggles the detail row of a recipe result table open/closed.
+// `id` is the ID of the <tr class="recipe-detail-row"> element.
+// Also toggles the expand arrow icon (▶ / ▼) next to the recipe name.
 function toggleRecipeRow(id) {
   const row = document.getElementById(id);
   const arrow = document.getElementById('arr_' + id);
@@ -13,8 +29,12 @@ function toggleRecipeRow(id) {
 }
 
 // ============================================================
-// TABS
+// SIDEBAR
 // ============================================================
+
+// Collapses or expands the left sidebar by toggling the
+// 'sidebar-collapsed' class on the .container element.
+// State is persisted in localStorage so it survives page reloads.
 function toggleSidebar() {
   const container = document.querySelector('.container');
   const isCollapsed = container.classList.toggle('sidebar-collapsed');
@@ -28,6 +48,9 @@ function toggleSidebar() {
   }
 })();
 
+// Switches the sidebar between the "Bots" list (#sidebar-bots) and the
+// "Recipes" browser (#sidebar-recipes), and updates button highlight styles.
+// Also activates the corresponding main tab via showTab().
 function switchSidebarView(mode) {
   const isBots = mode === 'bots';
   const isRecipes = mode === 'recipes';
@@ -51,6 +74,11 @@ function switchSidebarView(mode) {
   const tabEl = document.querySelector('.tab[onclick*="\'' + tabName + '\'"]');
   if (tabEl) showTab(tabName, tabEl);
 }
+// ── Number formatter ──────────────────────────────────────────
+// Formats a number for display using German locale (period as
+// thousands separator, comma as decimal separator).
+// Returns "-" for zero so empty cells look clean rather than "0".
+// Examples: 0 → "-", 1500 → "1.500", 3.14159 → "3,14"
 function fmt(n) {
   if (n === 0) return "-";
   if (Number.isInteger(n)) return n.toLocaleString("de");
@@ -61,9 +89,16 @@ function fmt(n) {
 // ============================================================
 // MAIN TAB SWITCHING
 // ============================================================
-// Current viz mode (sankey | boxes)
+
+// Tracks which visualization sub-mode is active ('sankey' | 'boxes').
+// Checked by switchMainTab() to know which renderer to call when
+// the Visualize tab is opened.
 let _currentVizMode = 'sankey';
 
+// Switches between the Sankey and Box visualization sub-views.
+// Updates the sub-tab button styles and triggers the appropriate renderer.
+// If the tab is currently hidden, the dirty flag inside each renderer
+// ensures it will redraw when made visible.
 function switchVizMode(mode) {
   _currentVizMode = mode;
   const isSankey = mode === 'sankey';
@@ -83,6 +118,10 @@ function switchVizMode(mode) {
   }
 }
 
+// Switches between the two main content tabs: 'recipes' and 'visualize'.
+// Shows/hides the corresponding content panels, applies a slide-in animation,
+// updates the tab button styles, and triggers a re-render of the active
+// visualization if switching to the Visualize tab.
 function switchMainTab(tab) {
   const isRecipes   = tab === 'recipes';
   const isVisualize = tab === 'visualize';

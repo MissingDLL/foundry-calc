@@ -1,3 +1,34 @@
+// ============================================================
+// app/theme.js
+// ============================================================
+// Three visual themes: default (purple-dark), dark (grey-dark), light.
+//
+// Structure:
+//   __DARK_VARS        – CSS custom property values shared by dark themes
+//   THEMES             – object keyed by theme name, each entry has:
+//                          vars: { '--var': value }  – CSS custom props
+//                          css:  string              – extra stylesheet
+//   THEMES.default.css – defined separately below the THEMES object
+//                        (avoids forward-reference to __DARK_VARS)
+//   __applyTheme(name) – master theme switcher called by HTML onclick handlers
+//
+// How themes work:
+//   1. CSS custom properties (vars) are applied to :root → all components
+//      that use var(--accent), var(--bg), etc. update automatically.
+//   2. The extra `css` string is injected into a <style id="__theme-extra-css">
+//      element; it overrides specific selectors with !important rules for
+//      elements that set inline styles or use hard-coded colours.
+//   3. __applyTheme() also directly updates a few stateful DOM elements
+//      (theme buttons, the sliding blob indicator, modal styles, tab colours,
+//      Sankey colour palette) that cannot be reached by CSS alone.
+//
+// Called from:
+//   index.html  – onclick="__applyTheme('default')" etc.
+//   visualization.js – window.__renderSankey is called after palette change
+// ============================================================
+
+// Shared CSS custom properties for both dark themes.
+// Pulled out so the default theme can reference them without duplication.
 const __DARK_VARS = {
   '--accent':'#a855f7','--accent2':'#ff453a','--accent3':'#30d158',
   '--bg':'#05000f','--bg2':'rgba(140,50,220,0.06)','--bg3':'rgba(140,50,220,0.10)',
@@ -6,9 +37,18 @@ const __DARK_VARS = {
   '--highlight':'rgba(140,50,220,0.14)',
 };
 
+// Each theme entry: { vars, css }
+//   vars – CSS custom property overrides applied to :root
+//   css  – additional stylesheet injected as a <style> tag;
+//           uses !important to override inline styles set by JS renderers
 const THEMES = {
+  // "default" uses the purple-tinted dark palette.
+  // Its css string is defined after the THEMES object (see below)
+  // because it shares the same CSS as the dark theme but references
+  // additional selectors added later.
   default: { vars: __DARK_VARS, css: null /* filled below */ },
 
+  // "dark" is a neutral dark theme matching the stock iOS/macOS Dark Mode look.
   dark: {
     vars: {
       '--accent':'#0a84ff','--accent2':'#ff453a','--accent3':'#30d158',
@@ -144,6 +184,7 @@ const THEMES = {
     `,
   },
 
+  // "light" is a frosted-glass light theme with a soft gradient background.
   light: {
     vars: {
       '--accent':'#007aff','--accent2':'#ff3b30','--accent3':'#34c759',
@@ -493,7 +534,9 @@ const THEMES = {
   },
 };
 
-// Default shares the dark CSS (defined after THEMES object)
+// The default (purple-dark) CSS is defined here, after the THEMES object,
+// so it can share the same CSS as the dark theme while adding a few
+// unique selectors.  It is assigned back into THEMES.default.css.
 THEMES.default.css = `
       body {
         background:
@@ -659,26 +702,41 @@ THEMES.default.css = `
       }
     `;
 
+// ── Master theme switcher ────────────────────────────────────
+// Called by every theme button: onclick="__applyTheme('default')" etc.
+//
+// Steps performed on each call:
+//   1. Add 'theme-switching' class to body → enables CSS transition rules
+//   2. Remove all CSS custom properties from :root (clean slate)
+//   3. Apply this theme's vars to :root
+//   4. Replace the content of <style id="__theme-extra-css"> with
+//      the theme's CSS string (overrides inline-styled elements)
+//   5. Update visual state of all .__theme-btn elements
+//   6. Animate the blob indicator to the newly active button
+//   7. Fix modal dialog backgrounds (set inline styles)
+//   8. Sync the main-tab button colours with the new palette
+//   9. Set window.__sankeyColors and update the legend swatches
+//  10. Re-render the Sankey diagram if it is currently visible
+//  11. Remove 'theme-switching' after 500 ms (transitions done)
 function __applyTheme(name) {
   const theme = THEMES[name];
   if (!theme) return;
 
-  // Mark body so the universal transition CSS is active during the swap
+  // Step 1: Enable transition rules while swapping colours
   document.body.classList.add('theme-switching');
 
   const root = document.documentElement;
 
-  // Reset all vars from all themes first
+  // Step 2+3: Reset then apply CSS custom properties
   Object.values(THEMES).forEach(t => Object.keys(t.vars).forEach(k => root.style.removeProperty(k)));
-  // Apply this theme's vars
   Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
 
-  // Inject/replace extra CSS
+  // Step 4: Inject/replace the extra CSS block
   let styleEl = document.getElementById('__theme-extra-css');
   if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = '__theme-extra-css'; document.head.appendChild(styleEl); }
   styleEl.textContent = theme.css;
 
-  // Update buttons + move blob
+  // Step 5: Highlight active theme button, dim the others
   document.querySelectorAll('.__theme-btn').forEach(btn => {
     const active = btn.dataset.theme === name;
     if (btn.classList.contains('__theme-icon-btn')) {
@@ -692,7 +750,7 @@ function __applyTheme(name) {
     }
   });
 
-  // Slide blob to active button using transform
+  // Step 6: Slide the floating blob indicator to the active icon button
   const activeBtn = document.querySelector(`.__theme-icon-btn[data-theme="${name}"]`);
   const blob = document.getElementById('themeBlobIndicator');
   if (activeBtn && blob) {
@@ -701,7 +759,9 @@ function __applyTheme(name) {
   }
 
 
-  // Fix modal dialogs for light theme
+  // Step 7: Fix modal dialogs for light vs dark themes.
+  // Modal backgrounds are set as inline styles by animateModalOpen(),
+  // so they must be overridden here whenever the theme changes.
   const lightModal = name === 'light';
   const modalBg     = lightModal ? 'rgba(225,225,235,0.72)'         : 'linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)';
   const modalBorder = lightModal ? 'rgba(255,255,255,0.75)'          : 'rgba(255,255,255,0.15)';
@@ -714,6 +774,9 @@ function __applyTheme(name) {
       el.style.boxShadow = modalShadow;
     }
   });
+  // Step 8: Sync the main-tab buttons (Recipes / Visualize) to the new palette.
+  // These buttons store their active state via border-bottom-color, which we
+  // read back to decide which one is currently active.
   const isLight = name === 'light';
   const activeColor  = isLight ? '#007aff' : 'var(--accent)';
   const inactiveColor = isLight ? '#6e6e73' : 'rgba(255,255,255,0.40)';
@@ -728,7 +791,9 @@ function __applyTheme(name) {
     btnS.style.borderBottomColor = !rIsActive ? activeColor : 'transparent';
   }
 
-  // Set Sankey colors for this theme and re-render if visible
+  // Step 9: Update the Sankey colour palette and legend swatches.
+  // window.__sankeyColors is read by _drawSankey() and _drawBoxes() on each
+  // render.  null means "use the built-in dark palette".
   const sankeyPalettes = {
     default: null, // use built-in dark palette
     dark:    null, // use built-in dark palette
@@ -763,6 +828,8 @@ function __applyTheme(name) {
     });
   }
 
+  // Step 10: Re-render the Sankey diagram with the new palette if visible.
+  // window.__renderSankey is set by visualization.js after it loads.
   if (typeof window.__renderSankey === 'function') {
     const sankeyTab = document.getElementById('tab-sankey');
     if (sankeyTab && sankeyTab.style.display !== 'none') {
@@ -770,9 +837,13 @@ function __applyTheme(name) {
     }
   }
 
-  // Remove switching class after transitions finish
+  // Step 11: Remove the 'theme-switching' helper class once CSS transitions
+  // have had time to complete (500 ms covers the longest transition).
   setTimeout(() => document.body.classList.remove('theme-switching'), 500);
 }
 
-// Apply default theme on load
+// Apply the default (purple-dark) theme immediately when this script loads.
+// This runs before DOMContentLoaded, which is fine because all theme
+// operations target document.documentElement (available immediately)
+// or query elements by ID that exist in the static HTML.
 __applyTheme('default');

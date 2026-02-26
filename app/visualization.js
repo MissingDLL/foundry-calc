@@ -1,21 +1,85 @@
+// ============================================================
+// app/visualization.js
+// ============================================================
+// Provides two interchangeable visualizations of the production
+// graph built from the currently selected recipes:
+//
+//   1. SANKEY  – D3 Sankey diagram (flow-width encodes rate)
+//   2. BOXES   – Custom BFS box-and-arrow layout (equal-size nodes)
+//
+// Both views share the same data source: buildSankeyGraph(), which
+// traverses selectedRecipeList and recursively expands ingredients
+// using RECIPES.  The result is a { nodes, links } graph where:
+//
+//   nodes[i] = { label, rate, kind, machineCount, machineName }
+//     kind = 'raw' | 'mid' | 'final'
+//       raw   – ore / fluid with no recipe ingredients (leaves)
+//       final – explicitly selected output product (roots)
+//       mid   – intermediate product (interior nodes)
+//
+//   links[i] = { source: label, target: label, value: rate/min }
+//
+// Both renderers use D3 zoom/pan so the user can navigate large graphs.
+// A "dirty flag" per renderer skips redraws when the tab is hidden;
+// the render is deferred until the tab becomes visible again.
+//
+// Dependency chain (must be loaded before this file):
+//   data/game-data.js   → M, I (via MINING_MACHINES / FLUID_MACHINES)
+//   data/recipes.js     → RECIPES
+//   data/icons.js       → getIcon()
+//   app/state.js        → selectedRecipeList, resolveRecipeName,
+//                          botEfficiencyOverrides, minerSettings,
+//                          globalMining/FluidProductivity, getItemWsBonus,
+//                          MINING_MACHINES, FLUID_MACHINES
+//   app/calculation.js  → getOutputAmount()
+//   app/ui-nav.js       → fmt()
+// ============================================================
+
+// ============================================================
+// GRAPH DATA BUILDER
+// ============================================================
+
+// Builds the abstract { nodes, links } graph shared by both renderers.
+// Returns null if there is nothing to show (empty list or no links).
+//
+// Algorithm:
+//   For each final product in selectedRecipeList:
+//     1. Mark the product node as 'final' with the actual (rounded-up)
+//        machine count and output rate.
+//     2. For each ingredient, call expand() recursively.
+//
+//   expand(itemName, rateNeeded, depth):
+//     • Resolve variant name (e.g. "Xenoferrite Plates" → tier X)
+//     • If no recipe / no ingredients → mark as 'raw', stop.
+//     • Otherwise compute ingredient rates from cycleTime and recurse.
+//     • Accumulate node.rate (total rate passing through this node)
+//       and node.machineCount (unrounded, for display).
+//     • Record edges via addEdge(), de-duplicating parallel paths.
 function buildSankeyGraph() {
   if (!selectedRecipeList.length) return null;
 
-  const nodeMap = {};
-  const edgeMap = {};
+  const nodeMap = {}; // label → node object
+  const edgeMap = {}; // "src|||tgt" → link object (for de-duplication)
   const links   = [];
 
+  // Returns (and lazily creates) the node for a given label.
   function getNode(label, kind) {
     if (!nodeMap[label]) nodeMap[label] = { label, rate: 0, kind: kind || 'mid', machineCount: 0, machineName: null };
     return nodeMap[label];
   }
 
+  // Adds a directed edge from srcLabel to tgtLabel with flow `value`.
+  // If the edge already exists (two recipes sharing an ingredient),
+  // the value is accumulated instead of creating a duplicate link.
   function addEdge(srcLabel, tgtLabel, value) {
     const key = srcLabel + '|||' + tgtLabel;
     if (edgeMap[key]) { edgeMap[key].value += value; }
     else { const lnk = { source: srcLabel, target: tgtLabel, value }; edgeMap[key] = lnk; links.push(lnk); }
   }
 
+  // Returns true if an item has no further recipe to expand into —
+  // i.e., it is a raw ore, a pumped fluid, or hand-crafted with no
+  // ingredients.  Raw nodes become leaf nodes in the graph.
   function isRaw(name) {
     const r = RECIPES[resolveRecipeName(name)];
     return !r || !r.ingredients || r.ingredients.length === 0 ||
@@ -23,24 +87,28 @@ function buildSankeyGraph() {
            getOutputAmount(r) === 0;
   }
 
+  // Recursively expands an ingredient node.
+  // Returns the resolved label (after variant substitution) so the
+  // caller can connect an edge to it.
+  // depth > 20 is the cycle / infinite-recursion guard.
   function expand(itemName, rateNeeded, depth) {
     if (depth > 20) return null;
     const resolved = resolveRecipeName(itemName);
     const raw  = isRaw(resolved);
     const node = getNode(resolved, raw ? 'raw' : 'mid');
-    node.rate += rateNeeded;
-    if (raw) return resolved;
+    node.rate += rateNeeded; // accumulate total throughput
+    if (raw) return resolved; // leaf — do not recurse further
 
     const r  = RECIPES[resolved];
-    const [machineName, md] = Object.entries(r.machines)[0];
-    const opm  = (60 / md.cycleTime) * getOutputAmount(r);
-    const runs = rateNeeded / opm;
-    const cnt  = rateNeeded / opm;  // Maschinen = runs (nicht gerundet, da aggregiert)
+    const [machineName, md] = Object.entries(r.machines)[0]; // use first machine (default)
+    const opm  = (60 / md.cycleTime) * getOutputAmount(r);   // output items/min per machine
+    const runs = rateNeeded / opm; // how many machines are needed (fractional, not rounded)
 
-    // Maschine + Anzahl akkumulieren
+    // Accumulate machine type and fractional count for display in info cards
     node.machineName   = machineName;
-    node.machineCount += cnt;
+    node.machineCount += runs;
 
+    // Recurse into each ingredient at the computed rate
     r.ingredients.forEach(ing => {
       const ingRate  = runs * ing.amount * (60 / md.cycleTime);
       const ingLabel = expand(ing.item, ingRate, depth + 1);
@@ -50,25 +118,30 @@ function buildSankeyGraph() {
     return resolved;
   }
 
-  // Endprodukte
+  // ── Root nodes: the user's selected final products ────────
   selectedRecipeList.forEach(item => {
     const r = RECIPES[item.recipeName || item.name];
     if (!r || !r.machines[item.machineName]) return;
+
     const ct  = r.machines[item.machineName].cycleTime;
+
+    // Apply the same bonus stack as calculateRecipes()
     const eff = 1 + ((botEfficiencyOverrides[item.itemName] ?? (r.efficiency ?? 0)) / 100);
     const mB  = MINING_MACHINES.has(item.machineName) ? globalMiningProductivity / 100 : 0;
     const fB  = FLUID_MACHINES.has(item.machineName)  ? globalFluidProductivity  / 100 : 0;
     const wsB = getItemWsBonus(item);
+
     const opm      = (60 / ct) * getOutputAmount(r) * eff * (1 + mB + fB + wsB);
-    const machines = Math.ceil(item.goal / opm);
+    const machines = Math.ceil(item.goal / opm); // rounded-up integer
     const actualOpm = machines * opm;
 
     const node = getNode(item.itemName, 'final');
     node.rate        += actualOpm;
-    node.kind         = 'final';
+    node.kind         = 'final';  // override any earlier 'mid' classification
     node.machineName  = item.machineName;
     node.machineCount += machines;
 
+    // Add edges from each ingredient to this final product
     r.ingredients.forEach(ing => {
       const ingRate  = (60 / ct) * ing.amount * machines;
       const ingLabel = expand(ing.item, ingRate, 0);
@@ -77,6 +150,7 @@ function buildSankeyGraph() {
   });
 
   const nodes = Object.values(nodeMap);
+  // Need at least 2 nodes and 1 link to draw a meaningful graph
   if (nodes.length < 2 || links.length === 0) return null;
   return { nodes, links };
 }
@@ -85,11 +159,17 @@ function buildSankeyGraph() {
 // SANKEY — Rendering mit D3
 // ============================================================
 
-let _sankeyDirty = false;  // true = Daten haben sich geändert, neu zeichnen nötig
+// Dirty flag: set to true when data changes but the tab is hidden.
+// renderSankey() checks this on entry and skips the draw if not visible,
+// then redraws on the next call (e.g. when the tab is opened).
+let _sankeyDirty = false;
 
+// Entry point for the Sankey view.
+// Called by calculateRecipes() after every state change, and by
+// switchMainTab() / switchVizMode() when the Sankey tab becomes visible.
 function renderSankey() {
   const tab = document.getElementById('tab-sankey');
-  // Wenn Tab nicht sichtbar: nur als dirty markieren, beim Öffnen neu zeichnen
+  // If the tab is hidden, mark dirty and return — avoids wasted D3 work
   if (!tab || tab.style.display === 'none') {
     _sankeyDirty = true;
     return;
@@ -101,6 +181,7 @@ function renderSankey() {
 
   const data = buildSankeyGraph();
   if (!data) {
+    // No recipes selected → show empty-state placeholder
     svg.style.display    = 'none';
     legend.style.display = 'none';
     empty.style.display  = 'flex';
@@ -114,14 +195,19 @@ function renderSankey() {
 
   _drawSankey(svg, data);
 }
-window.__renderSankey = renderSankey; // exposed for theme switching
+// Expose renderSankey so that __applyTheme() in theme.js can call it
+// after a palette change without importing this module.
+window.__renderSankey = renderSankey;
 
 // ============================================================
 // BOXES & LINES — Renderer
 // ============================================================
 
+// Same dirty-flag pattern as the Sankey view.
 let _boxesDirty = false;
 
+// Entry point for the Box view.
+// Shares the same data builder as Sankey; only the rendering differs.
 function renderBoxes() {
   const tab = document.getElementById('tab-boxes');
   if (!tab || tab.style.display === 'none') { _boxesDirty = true; return; }
@@ -146,11 +232,25 @@ function renderBoxes() {
 }
 window.__renderBoxes = renderBoxes;
 
+// Draws the box-and-arrow layout onto `svgEl`.
+//
+// Layout algorithm:
+//   1. Build an adjacency list from data.links.
+//   2. BFS from source nodes (no incoming edges) to assign each node
+//      a column depth (longest-path assignment ensures correct order).
+//   3. Group nodes by depth → columns.
+//   4. Vertically center each column; assign (x, y) to each node.
+//   5. Draw Bezier curves between box right/left edges.
+//   6. Draw boxes as rounded rectangles with a top accent stripe,
+//      item name, machine type + count, and flow rate label.
+//
+// Uses D3 only for SVG manipulation and zoom/pan; the layout is custom.
 function _drawBoxes(svgEl, data) {
   const wrap = document.getElementById('boxesWrap');
   const W = (wrap ? wrap.getBoundingClientRect().width  : 0) || 1100;
   const H = (wrap ? wrap.getBoundingClientRect().height : 0) || 650;
 
+  // Color palette — overridden by __applyTheme() for the light theme
   const COLOR = window.__sankeyColors || {
     raw:   { fill: '#0e2010', stroke: '#2a6a2a', text: '#6adf6a', card: '#0a1a0a', cborder: '#1a4a1a' },
     mid:   { fill: '#080f1e', stroke: '#1e3a70', text: '#6a9adf', card: '#060c18', cborder: '#162040' },
@@ -158,22 +258,26 @@ function _drawBoxes(svgEl, data) {
     link:  '#4a8adf',
   };
 
-  // ── Topological depth assignment ──────────────────────────
+  // ── Step 1: Assign topological depth (column) to each node ──
   const nodeMap = {};
   data.nodes.forEach(n => { nodeMap[n.label] = n; n.depth = 0; });
 
-  // Build adjacency
-  const inEdges  = {}; // label → [source labels]
-  const outEdges = {}; // label → [target labels]
+  // Build adjacency lists
+  const inEdges  = {}; // label → [source labels that feed into it]
+  const outEdges = {}; // label → [target labels it feeds into]
   data.nodes.forEach(n => { inEdges[n.label] = []; outEdges[n.label] = []; });
   data.links.forEach(l => {
+    // Links may have resolved D3 objects or plain strings as source/target
     const s = typeof l.source === 'object' ? l.source.label : l.source;
     const t = typeof l.target === 'object' ? l.target.label : l.target;
     outEdges[s].push(t);
     inEdges[t].push(s);
   });
 
-  // BFS from sources (no incoming) to assign column depth
+  // BFS from source nodes (no incoming edges).
+  // Uses longest-path assignment: if multiple paths reach a node,
+  // the deepest depth wins so nodes always appear to the right of all
+  // their predecessors.
   const visited = new Set();
   const queue   = data.nodes.filter(n => inEdges[n.label].length === 0).map(n => { n.depth = 0; return n.label; });
   queue.forEach(l => visited.add(l));
@@ -182,32 +286,29 @@ function _drawBoxes(svgEl, data) {
     const cur = queue.shift();
     outEdges[cur].forEach(tgt => {
       const d = nodeMap[cur].depth + 1;
-      if (d > nodeMap[tgt].depth) nodeMap[tgt].depth = d;
+      if (d > nodeMap[tgt].depth) nodeMap[tgt].depth = d; // longest path wins
       if (!visited.has(tgt)) { visited.add(tgt); queue.push(tgt); }
     });
   }
 
-  // Group by depth column
+  // ── Step 2: Group nodes into depth columns ────────────────
   const maxDepth  = Math.max(...data.nodes.map(n => n.depth));
   const columns   = Array.from({ length: maxDepth + 1 }, () => []);
   data.nodes.forEach(n => columns[n.depth].push(n));
 
-  // ── Layout constants ──────────────────────────────────────
+  // ── Step 3: Compute (x, y) positions ─────────────────────
   const BOX_W  = 140;
   const BOX_H  = 64;
-  const GAP_X  = 110;  // horizontal gap between columns
-  const GAP_Y  = 24;   // vertical gap between nodes in same column
-  const PAD    = { top: 40, left: 40 };
+  const GAP_X  = 110; // horizontal spacing between column left edges
+  const GAP_Y  = 24;  // vertical spacing between boxes in the same column
 
-  // Total width / height needed
-  const totalW = (maxDepth + 1) * (BOX_W + GAP_X) - GAP_X;
-  const colH   = columns.map(col => col.length * (BOX_H + GAP_Y) - GAP_Y);
+  const totalW  = (maxDepth + 1) * (BOX_W + GAP_X) - GAP_X;
+  const colH    = columns.map(col => col.length * (BOX_H + GAP_Y) - GAP_Y);
   const maxColH = Math.max(...colH);
-  const totalH  = maxColH;
 
-  // Assign (x, y) to each node
+  // Vertically center each column relative to the tallest column
   columns.forEach((col, ci) => {
-    const x = ci * (BOX_W + GAP_X);
+    const x         = ci * (BOX_W + GAP_X);
     const colTotalH = col.length * (BOX_H + GAP_Y) - GAP_Y;
     const offsetY   = (maxColH - colTotalH) / 2;
     col.forEach((n, ri) => {
@@ -216,26 +317,25 @@ function _drawBoxes(svgEl, data) {
     });
   });
 
-  // ── SVG setup ─────────────────────────────────────────────
+  // ── Step 4: SVG setup with D3 zoom/pan ───────────────────
   const svg = d3.select(svgEl);
-  svg.selectAll('*').remove();
+  svg.selectAll('*').remove(); // clear previous render
 
-  // Declare g first so zoom handler can reference it
-  const g = svg.append('g');
+  const g = svg.append('g'); // main drawing group (transformed by zoom)
 
   const zoom = d3.zoom().scaleExtent([0.15, 4]).on('zoom', e => g.attr('transform', e.transform));
   svg.call(zoom);
   svgEl.style.cursor = 'grab';
 
-  // Initial zoom to fit
+  // Fit the whole graph into the visible area on first render
   const scaleX = (W - 80) / (totalW || 1);
-  const scaleY = (H - 80) / (totalH || 1);
-  const scale  = Math.min(scaleX, scaleY, 1);
+  const scaleY = (H - 80) / (maxColH || 1);
+  const scale  = Math.min(scaleX, scaleY, 1); // never zoom in beyond 1:1
   const tx = (W - totalW * scale) / 2;
-  const ty = (H - totalH * scale) / 2;
+  const ty = (H - maxColH * scale) / 2;
   svg.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
 
-  // Arrow marker
+  // ── Step 5: Arrow markers (one per node kind) ────────────
   const defs = svg.append('defs');
   ['raw','mid','final'].forEach(kind => {
     const c = COLOR[kind];
@@ -247,6 +347,7 @@ function _drawBoxes(svgEl, data) {
       .attr('orient', 'auto')
       .append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', c.stroke).attr('opacity', 0.85);
   });
+  // Fallback arrow for links whose target kind is undefined
   defs.append('marker')
     .attr('id', 'arrow-default')
     .attr('viewBox', '0 -5 10 10')
@@ -255,25 +356,26 @@ function _drawBoxes(svgEl, data) {
     .attr('orient', 'auto')
     .append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', COLOR.link).attr('opacity', 0.7);
 
-  // ── Draw links ────────────────────────────────────────────
+  // ── Step 6: Draw links (Bezier curves) ───────────────────
   const linkG = g.append('g');
   data.links.forEach(link => {
     const s = nodeMap[typeof link.source === 'object' ? link.source.label : link.source];
     const t = nodeMap[typeof link.target === 'object' ? link.target.label : link.target];
     if (!s || !t) return;
 
+    // Connect right edge of source to left edge of target, mid-point control
     const x1 = s._x + BOX_W;
     const y1 = s._y + BOX_H / 2;
     const x2 = t._x;
     const y2 = t._y + BOX_H / 2;
-    const mx = (x1 + x2) / 2;
+    const mx = (x1 + x2) / 2; // x of both cubic Bezier control points
 
-    const markerKind = t.kind || 'mid';
-    const strokeColor = t.kind === 'raw' ? COLOR.raw.stroke
+    const markerKind  = t.kind || 'mid';
+    const strokeColor = t.kind === 'raw'   ? COLOR.raw.stroke
                       : t.kind === 'final' ? COLOR.final.stroke
                       : COLOR.mid.stroke;
 
-    // Bezier path
+    // Cubic Bezier curve: C mx,y1  mx,y2  x2,y2
     linkG.append('path')
       .attr('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`)
       .attr('fill', 'none')
@@ -282,8 +384,8 @@ function _drawBoxes(svgEl, data) {
       .attr('stroke-opacity', 0.65)
       .attr('marker-end', `url(#arrow-${markerKind})`);
 
-    // Rate label on midpoint
-    const rateVal = link.value;
+    // Flow rate label centred on the Bezier midpoint
+    const rateVal  = link.value;
     const rateText = rateVal >= 1000
       ? (rateVal / 1000).toFixed(1) + 'k/min'
       : Math.round(rateVal * 10) / 10 + '/min';
@@ -291,6 +393,7 @@ function _drawBoxes(svgEl, data) {
     const lx = mx;
     const ly = (y1 + y2) / 2 - 6;
 
+    // Pill background for readability
     linkG.append('rect')
       .attr('x', lx - 26).attr('y', ly - 11)
       .attr('width', 52).attr('height', 16)
@@ -308,15 +411,15 @@ function _drawBoxes(svgEl, data) {
       .text('× ' + rateText);
   });
 
-  // ── Draw nodes (boxes) ────────────────────────────────────
+  // ── Step 7: Draw node boxes ───────────────────────────────
   const nodeG = g.append('g');
   data.nodes.forEach(n => {
-    const C = COLOR[n.kind] || COLOR.mid;
+    const C  = COLOR[n.kind] || COLOR.mid;
     const ng = nodeG.append('g')
       .attr('transform', `translate(${n._x},${n._y})`)
       .style('cursor', 'default');
 
-    // Shadow rect
+    // Drop shadow for depth effect
     ng.append('rect')
       .attr('x', 2).attr('y', 3)
       .attr('width', BOX_W).attr('height', BOX_H)
@@ -324,7 +427,7 @@ function _drawBoxes(svgEl, data) {
       .attr('fill', 'rgba(0,0,0,0.35)')
       .attr('filter', 'blur(4px)');
 
-    // Main box
+    // Main box rectangle
     ng.append('rect')
       .attr('width', BOX_W).attr('height', BOX_H)
       .attr('rx', 10)
@@ -333,7 +436,7 @@ function _drawBoxes(svgEl, data) {
       .attr('stroke-width', 1.5)
       .attr('stroke-opacity', 0.9);
 
-    // Top accent line
+    // Top accent stripe (matches node kind colour)
     ng.append('rect')
       .attr('x', 10).attr('y', 0)
       .attr('width', BOX_W - 20).attr('height', 2)
@@ -341,7 +444,7 @@ function _drawBoxes(svgEl, data) {
       .attr('fill', C.stroke)
       .attr('opacity', 0.8);
 
-    // Item name (wrapping)
+    // Item label (truncated at 18 chars to fit box width)
     const label = n.label.length > 18 ? n.label.slice(0, 17) + '…' : n.label;
     ng.append('text')
       .attr('x', BOX_W / 2).attr('y', 20)
@@ -353,13 +456,13 @@ function _drawBoxes(svgEl, data) {
       .attr('font-family', '-apple-system,sans-serif')
       .text(label);
 
-    // Divider
+    // Divider line between label and stats
     ng.append('line')
       .attr('x1', 10).attr('y1', 32)
       .attr('x2', BOX_W - 10).attr('y2', 32)
       .attr('stroke', C.stroke).attr('stroke-opacity', 0.3);
 
-    // Machine count
+    // Machine name (left) + count (right)
     if (n.machineName && n.machineCount > 0) {
       const mcText = n.machineName.length > 12 ? n.machineName.slice(0,11)+'…' : n.machineName;
       ng.append('text')
@@ -371,6 +474,7 @@ function _drawBoxes(svgEl, data) {
         .attr('font-family', 'monospace')
         .text(mcText);
 
+      // Show one decimal for small counts, integer for large ones
       const cnt = Math.ceil(n.machineCount * 10) / 10;
       ng.append('text')
         .attr('x', BOX_W - 8).attr('y', 46)
@@ -383,7 +487,7 @@ function _drawBoxes(svgEl, data) {
         .text('×' + (cnt === Math.floor(cnt) ? cnt : cnt.toFixed(1)));
     }
 
-    // Rate
+    // Flow rate at bottom centre
     const rate = n.rate >= 1000 ? (n.rate/1000).toFixed(1)+'k' : Math.round(n.rate*10)/10;
     ng.append('text')
       .attr('x', BOX_W / 2).attr('y', 57)
@@ -397,18 +501,31 @@ function _drawBoxes(svgEl, data) {
   });
 }
 
+// ============================================================
+// SANKEY — D3 Rendering
+// ============================================================
+//
+// Uses d3-sankey (v0.12.3) embedded in index.html.
+// The layout computes vertical node position and link widths
+// proportional to flow rate.
+//
+// Info cards are rendered as HTML <div>s inside SVG <foreignObject>
+// elements placed left or right of each node depending on which side
+// has more space (determined by whether x0 < half the inner width).
 function _drawSankey(svgEl, data) {
   const wrap = document.getElementById('sankeyWrap');
   const W = (wrap ? wrap.getBoundingClientRect().width  : 0) || 1100;
   const H = (wrap ? wrap.getBoundingClientRect().height : 0) || 650;
 
-  const NODE_W = 18;
-  const CARD_W = 150;   // Breite der Info-Karte neben dem Node
-  const CARD_H = 62;    // Höhe der Karte
+  const NODE_W = 18;          // width of each Sankey bar
+  const CARD_W = 150;         // info card width (rendered as HTML div)
+  const CARD_H = 62;          // minimum info card height
+  // Horizontal padding reserves space for the info cards on both sides
   const PAD    = { top: 20, right: CARD_W + 20, bottom: 40, left: CARD_W + 20 };
-  const IW     = W - PAD.left - PAD.right;
-  const IH     = H - PAD.top  - PAD.bottom;
+  const IW     = W - PAD.left - PAD.right;   // inner drawable width
+  const IH     = H - PAD.top  - PAD.bottom;  // inner drawable height
 
+  // Color palette — overridden by __applyTheme() for the light theme
   const COLOR = window.__sankeyColors || {
     raw:   { fill: '#122a12', stroke: '#2a6a2a', text: '#6adf6a', card: '#0e2010', cborder: '#1a4a1a' },
     mid:   { fill: '#0a1628', stroke: '#1e3a70', text: '#6a9adf', card: '#080f1e', cborder: '#162040' },
@@ -419,29 +536,35 @@ function _drawSankey(svgEl, data) {
   const svg = d3.select(svgEl);
   svg.selectAll('*').remove();
 
+  // D3 zoom/pan — applies to the inner <g> group
   const zoom = d3.zoom().scaleExtent([0.25, 4]).on('zoom', e => {
     g.attr('transform', e.transform);
   });
   svg.call(zoom);
   svgEl.style.cursor = 'grab';
 
+  // g is declared before zoom handler so closure captures it correctly
   const g = svg.append('g').attr('transform', `translate(${PAD.left},${PAD.top})`);
 
+  // Configure the d3-sankey layout
   const sankeyLayout = d3.sankey()
-    .nodeId(d => d.label)
+    .nodeId(d => d.label)      // unique node identifier
     .nodeWidth(NODE_W)
-    .nodePadding(16)
+    .nodePadding(16)            // vertical gap between stacked nodes
     .extent([[0, 0], [IW, IH]]);
 
+  // Run the layout — mutates copies of nodes/links with x0,x1,y0,y1,width
   const graph = sankeyLayout({
-    nodes: data.nodes.map(d => ({ ...d })),
+    nodes: data.nodes.map(d => ({ ...d })), // shallow copy to avoid mutating originals
     links: data.links.map(d => ({ ...d })),
   });
 
-  // ── Links ──────────────────────────────────────────────
+  // ── Draw flow links ───────────────────────────────────────
+  // Link width is proportional to flow value (items/min).
+  // Opacity increases on hover for readability; tooltip shows exact rate.
   g.append('g').attr('fill', 'none')
     .selectAll('path').data(graph.links).join('path')
-      .attr('d', d3.sankeyLinkHorizontal())
+      .attr('d', d3.sankeyLinkHorizontal()) // d3-sankey cubic Bezier path generator
       .attr('stroke', COLOR.link)
       .attr('stroke-width', d => Math.max(1, d.width))
       .attr('stroke-opacity', 0.18)
@@ -457,20 +580,22 @@ function _drawSankey(svgEl, data) {
         _hideTooltip();
       });
 
-  // ── Node-Bars ──────────────────────────────────────────
+  // ── Draw node bars ────────────────────────────────────────
   const nodeG = g.append('g').selectAll('g').data(graph.nodes).join('g');
 
   nodeG.append('rect')
     .attr('x',      d => d.x0).attr('y', d => d.y0)
     .attr('width',  d => d.x1 - d.x0)
-    .attr('height', d => Math.max(3, d.y1 - d.y0))
+    .attr('height', d => Math.max(3, d.y1 - d.y0)) // minimum 3px so tiny flows remain visible
     .attr('rx', 3)
     .attr('fill',   d => COLOR[d.kind].fill)
     .attr('stroke', d => COLOR[d.kind].stroke)
     .attr('stroke-width', 1.5);
 
-  // ── Info-Karten via foreignObject ──────────────────────
-  // Karte links vom Node wenn Node rechts von Mitte, sonst rechts
+  // ── Info cards (HTML inside foreignObject) ────────────────
+  // Cards are placed to the right of nodes in the left half of the
+  // diagram, and to the left of nodes in the right half, so they
+  // never overlap the main layout area.
   nodeG.append('foreignObject')
     .attr('x', d => {
       const onLeft = d.x0 < IW / 2;
@@ -483,20 +608,22 @@ function _drawSankey(svgEl, data) {
     .attr('width',  CARD_W)
     .attr('height', d => Math.max(CARD_H, d.y1 - d.y0))
     .append('xhtml:div')
-    .style('width',         CARD_W + 'px')
-    .style('height',        '100%')
-    .style('display',       'flex')
-    .style('align-items',   'center')
-    .style('box-sizing',    'border-box')
+    .style('width',       CARD_W + 'px')
+    .style('height',      '100%')
+    .style('display',     'flex')
+    .style('align-items', 'center')
+    .style('box-sizing',  'border-box')
     .html(d => {
-      const c = COLOR[d.kind];
-      const nodeH = Math.max(CARD_H, d.y1 - d.y0);
+      const c      = COLOR[d.kind];
+      const nodeH  = Math.max(CARD_H, d.y1 - d.y0);
 
-      // Icons
       const itemIconHtml    = getIcon(d.label, 24);
       const machineIconHtml = d.machineName ? getIcon(d.machineName, 20) : '';
 
-      // Maschinenzahl: gerundet (Miner/Pumps immer ceil, Zwischenprodukte 1 Dezimale)
+      // Machine count display:
+      //   raw nodes (ores/miners) → ceil to integer
+      //   small intermediate counts → one decimal
+      //   large intermediate counts → ceil
       const cntRaw = d.machineCount || 0;
       const cntFmt = d.kind === 'raw'
         ? Math.ceil(cntRaw)
@@ -533,13 +660,20 @@ function _drawSankey(svgEl, data) {
     });
 }
 
-// Tooltip-Hilfsfunktionen
+// ============================================================
+// TOOLTIP HELPERS (Sankey link hover)
+// ============================================================
+
+// Shows the link tooltip with given HTML content near the cursor.
 function _showTooltip(event, html) {
-  const tt   = document.getElementById('sankeyTooltip');
+  const tt         = document.getElementById('sankeyTooltip');
   tt.innerHTML     = html;
   tt.style.display = 'block';
   _moveTooltip(event);
 }
+
+// Repositions the tooltip to follow the cursor, keeping it within
+// the sankeyWrap container bounds.
 function _moveTooltip(event) {
   const tt   = document.getElementById('sankeyTooltip');
   const wrap = document.getElementById('sankeyWrap');
@@ -547,38 +681,55 @@ function _moveTooltip(event) {
   const rect = wrap.getBoundingClientRect();
   let x = event.clientX - rect.left + 14;
   let y = event.clientY - rect.top  - 10;
-  // Rand-Korrektur
+  // Flip to the left / up if the tooltip would overflow the container
   if (x + 250 > wrap.clientWidth)  x = event.clientX - rect.left - 260;
   if (y + 100 > wrap.clientHeight) y = event.clientY - rect.top  - 80;
   tt.style.left = x + 'px';
   tt.style.top  = y + 'px';
 }
+
+// Hides the tooltip.
 function _hideTooltip() {
   document.getElementById('sankeyTooltip').style.display = 'none';
 }
 
+// ============================================================
+// GLOBAL CLICK HANDLER
+// ============================================================
+// Handles two click-delegation patterns to avoid attaching many
+// individual listeners to dynamically rendered elements:
+//
+//   1. Close the recipe search dropdown when clicking outside it.
+//   2. Workstation row expand/collapse and mode-switch buttons
+//      (data-action="wstoggle" / "wsmode") in the recipe list.
 document.addEventListener("click", function (e) {
-  // Suche-Dropdown schließen
-  const search = document.getElementById("recipeSearch");
+  // Close recipe inline search dropdown on outside click
+  const search  = document.getElementById("recipeSearch");
   const results = document.getElementById("recipeInlineResults");
   if (results && search && !search.contains(e.target) && !results.contains(e.target)) {
     results.style.display = "none";
   }
 
-  // Workstation-Modus-Buttons (data-action="wsmode")
+  // Workstation expand / mode buttons use data-action attribute delegation
   const btn = e.target.closest("[data-action]");
   if (!btn) return;
   const action = btn.dataset.action;
-  const idx = parseInt(btn.dataset.idx);
+  const idx    = parseInt(btn.dataset.idx);
 
   if (action === "wstoggle") {
+    // Toggle the workstation config section open/closed for this recipe row
     selectedRecipeList[idx].wsExpanded = !selectedRecipeList[idx].wsExpanded;
     renderSelectedRecipes();
   } else if (action === "wsmode") {
+    // Switch the workstation assignment mode (global / per-item / disabled)
     updateItemWsMode2(idx, btn.dataset.mode);
   }
 });
+
 // ============================================================
 // INIT
 // ============================================================
+// Build the bot sidebar list on first load.
+// The recipe list itself is initialised by initRecipeCalc() called
+// from the inline <script> at the bottom of index.html.
 buildRecipeCategoryList();

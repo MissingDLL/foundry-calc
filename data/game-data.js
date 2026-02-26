@@ -1,4 +1,21 @@
+// ============================================================
+// data/game-data.js
+// ============================================================
+// Central constants for all game entities.
+// All three objects are frozen (read-only) so accidental mutations
+// are caught at runtime as TypeError (strict mode) or silently
+// ignored (sloppy mode).
+//
+// Usage pattern throughout the codebase:
+//   RECIPES["Iron Plate"].machines[M.ASSEMBLER_I]
+//   r.category === CAT.METALLURGY
+//   ing.item === I.STEEL_BEAMS
+// ============================================================
+
 // ── Machine name constants ────────────────────────────────────
+// M is used as the key in every recipe's `machines` object.
+// Referencing M.ASSEMBLER_I instead of the raw string prevents
+// typos and enables IDE auto-complete / rename refactoring.
 const M = Object.freeze({
   ADVANCED_SMELTER: "Advanced Smelter",
   ASSEMBLER_I: "Assembler I",
@@ -7,7 +24,7 @@ const M = Object.freeze({
   BARREL_FILLER_I: "Barrel Filler I",
   BLAST_FURNACE: "Blast Furnace",
   CASTING_MACHINE: "Casting Machine",
-  CHARACTER: "Character",
+  CHARACTER: "Character",           // hand-crafting by the player
   CHEMICAL_PROCESSOR: "Chemical Processor",
   CRYSTAL_REFINER: "Crystal Refiner",
   CRUSHER_I: "Crusher I",
@@ -27,6 +44,10 @@ const M = Object.freeze({
 });
 
 // ── Item name constants ───────────────────────────────────────
+// I is used for ingredient/output item names in recipes.
+// The key (e.g. I.STEEL_BEAMS) is the JS constant; the value
+// ("Steel Beams") is the human-readable in-game name that also
+// matches the icon filename and recipe lookup key.
 const I = Object.freeze({
   ADVANCED_MACHINERY_PARTS: "Advanced Machinery Parts",
   ADVANCED_XENOFERRITE_IGNIUM_ORE_BLEND: "Advanced Xenoferrite-Ignium Ore Blend",
@@ -140,6 +161,9 @@ const I = Object.freeze({
 });
 
 // ── Category constants ────────────────────────────────────────
+// CAT values appear as the `category` field of every recipe.
+// They drive the recipe browser filter tabs and the bot list
+// sidebar (which shows only the "Robots" category).
 const CAT = Object.freeze({
   METALLURGY: "Metallurgy",
   COMPONENTS: "Components",
