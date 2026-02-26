@@ -9,22 +9,22 @@
     rel="stylesheet" />
   <style>
     :root {
-      --bg: #060612;
-      --bg2: rgba(255,255,255,0.04);
-      --bg3: rgba(255,255,255,0.07);
-      --panel: rgba(255,255,255,0.07);
-      --border: rgba(255,255,255,0.12);
-      --accent: #0a84ff;
+      --bg: #05000f;
+      --bg2: rgba(140,50,220,0.06);
+      --bg3: rgba(140,50,220,0.10);
+      --panel: rgba(40,10,80,0.45);
+      --border: rgba(160,60,255,0.20);
+      --accent: #a855f7;
       --accent2: #ff453a;
       --accent3: #30d158;
       --text: #f5f5f7;
       --text-dim: #98989f;
-      --highlight: rgba(10,132,255,0.12);
+      --highlight: rgba(140,50,220,0.14);
       --warn: #ffd60a;
-      --glass-bg: rgba(255,255,255,0.07);
-      --glass-border: rgba(255,255,255,0.13);
-      --glass-highlight: rgba(255,255,255,0.18);
-      --shadow-deep: 0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3);
+      --glass-bg: rgba(40,10,80,0.45);
+      --glass-border: rgba(160,60,255,0.18);
+      --glass-highlight: rgba(200,100,255,0.15);
+      --shadow-deep: 0 20px 60px rgba(60,0,120,0.4), 0 4px 16px rgba(0,0,0,0.3);
       --radius-lg: 20px;
       --radius-md: 14px;
       --radius-sm: 10px;
@@ -38,11 +38,13 @@
 
     body {
       background:
-        radial-gradient(ellipse 100% 80% at 0% 0%,   #1e0a5e 0%, transparent 50%),
-        radial-gradient(ellipse 80%  70% at 100% 0%,  #0a2d6e 0%, transparent 50%),
-        radial-gradient(ellipse 70%  60% at 100% 100%,#2e0a5e 0%, transparent 50%),
-        radial-gradient(ellipse 80%  70% at 0%   100%,#041230 0%, transparent 50%),
-        #060612;
+        radial-gradient(ellipse 120% 90% at 70% 40%,   rgba(130,40,200,0.55) 0%, transparent 55%),
+        radial-gradient(ellipse 80%  70% at 20% 80%,   rgba(80,20,160,0.45) 0%, transparent 50%),
+        radial-gradient(ellipse 60%  50% at 90% 10%,   rgba(180,60,220,0.35) 0%, transparent 45%),
+        radial-gradient(ellipse 90%  80% at 50% 60%,   rgba(100,0,180,0.30) 0%, transparent 60%),
+        radial-gradient(ellipse 50%  40% at 30% 20%,   rgba(60,10,120,0.40) 0%, transparent 45%),
+        radial-gradient(ellipse 40%  60% at 80% 80%,   rgba(200,80,255,0.20) 0%, transparent 40%),
+        #05000f;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
       font-size: 14px;
@@ -51,19 +53,53 @@
       letter-spacing: -0.01em;
     }
 
+    /* Nebula overlay effect */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 30% 20% at 65% 35%, rgba(220,120,255,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse 25% 35% at 75% 55%, rgba(160,60,240,0.12) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* App wrapper card */
+    .app-wrapper {
+      margin: 16px;
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid rgba(160,60,255,0.20);
+      box-shadow:
+        0 0 80px rgba(120,40,200,0.25),
+        0 0 200px rgba(100,20,180,0.15),
+        0 30px 80px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.10);
+      height: calc(100vh - 32px);
+      display: flex;
+      flex-direction: column;
+    }
+
     /* Header */
     header {
-      background: rgba(255,255,255,0.06);
+      background: rgba(30,5,60,0.75);
       backdrop-filter: blur(60px) saturate(200%);
       -webkit-backdrop-filter: blur(60px) saturate(200%);
-      border-bottom: none;
+      border-bottom: 1px solid rgba(160,60,255,0.20);
       box-shadow:
-        0 1px 0 rgba(255,255,255,0.10),
+        0 1px 0 rgba(200,100,255,0.10),
         inset 0 1px 0 rgba(255,255,255,0.08);
       padding: 14px 28px;
       display: flex;
       align-items: center;
       gap: 20px;
+      flex-shrink: 0;
     }
 
     .logo {
@@ -91,21 +127,67 @@
       display: grid;
       grid-template-columns: 360px 1fr;
       gap: 0;
-      height: calc(100vh - 62px);
+      flex: 1;
       overflow: hidden;
+      min-height: 0;
+      transition: grid-template-columns 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    .container.sidebar-collapsed {
+      grid-template-columns: 0px 1fr;
     }
 
     /* Sidebar */
     .sidebar {
-      background: rgba(255,255,255,0.04);
+      background: rgba(20,5,45,0.65);
       backdrop-filter: blur(60px) saturate(180%);
       -webkit-backdrop-filter: blur(60px) saturate(180%);
-      border-right: 1px solid rgba(255,255,255,0.08);
+      border-right: 1px solid rgba(140,50,220,0.18);
       padding: 16px 14px;
       display: flex;
       flex-direction: column;
       gap: 10px;
       overflow: hidden;
+      min-width: 0;
+      transition: padding 0.3s cubic-bezier(0.4,0,0.2,1), min-width 0.3s;
+    }
+    .container.sidebar-collapsed .sidebar {
+      padding: 0 !important;
+      border-right: none !important;
+      border-right-width: 0 !important;
+      width: 0 !important;
+      min-width: 0 !important;
+      max-width: 0 !important;
+      pointer-events: none !important;
+    }
+    .container.sidebar-collapsed .sidebar > * {
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .sidebar > * {
+      transition: opacity 0.2s 0.1s;
+      opacity: 1;
+    }
+
+    /* Hamburger button */
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(160,60,255,0.20);
+      color: rgba(255,255,255,0.65);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.18s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.15);
+      flex-shrink: 0;
+    }
+    .hamburger-btn:hover {
+      background: rgba(140,50,220,0.30);
+      border-color: rgba(160,60,255,0.45);
+      color: #c088ff;
     }
 
     /* Main */
@@ -130,17 +212,17 @@
     /* Panels */
     .panel {
       background:
-        linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%),
-        rgba(255,255,255,0.05);
+        linear-gradient(150deg, rgba(180,80,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
+        rgba(30,10,60,0.45);
       backdrop-filter: blur(40px) saturate(180%);
       -webkit-backdrop-filter: blur(40px) saturate(180%);
-      border: 1px solid rgba(255,255,255,0.10);
+      border: 1px solid rgba(160,60,255,0.18);
       border-radius: var(--radius-lg);
       padding: 16px;
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.18),
+        inset 0 1px 0 rgba(200,100,255,0.15),
         inset 0 -1px 0 rgba(0,0,0,0.20),
-        0 12px 40px rgba(0,0,0,0.5),
+        0 12px 40px rgba(80,0,160,0.25),
         0 2px 8px rgba(0,0,0,0.3);
       transition: box-shadow 0.2s ease;
     }
@@ -148,12 +230,12 @@
     .sidebar .panel {
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
-      background: rgba(255,255,255,0.06);
-      border-color: rgba(255,255,255,0.09);
+      background: rgba(40,10,80,0.50);
+      border-color: rgba(140,50,220,0.20);
       border-radius: var(--radius-md);
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.14),
-        0 4px 16px rgba(0,0,0,0.3);
+        inset 0 1px 0 rgba(180,80,255,0.12),
+        0 4px 16px rgba(60,0,120,0.25);
     }
 
     /* Config grid */
@@ -304,10 +386,11 @@
 
     .results-table th {
       background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.35);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.05em;
+      color: rgba(255,255,255,0.45);
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       padding: 8px 12px;
       text-align: left;
@@ -327,15 +410,21 @@
     }
 
     .results-table td.num {
-      font-family: -apple-system, BlinkMacSystemFont, monospace;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
       color: var(--accent3);
       text-align: right;
+      letter-spacing: 0.02em;
     }
 
     .results-table td.num-warn {
-      font-family: -apple-system, BlinkMacSystemFont, monospace;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
       color: var(--warn);
       text-align: right;
+      letter-spacing: 0.02em;
     }
 
     .results-table td.label {
@@ -353,24 +442,23 @@
 
     .summary-box {
       background:
-        linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.03) 100%),
-        rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.10);
+        linear-gradient(150deg, rgba(160,60,255,0.12) 0%, rgba(30,10,60,0.40) 100%);
+      border: 1px solid rgba(160,60,255,0.20);
       border-radius: var(--radius-md);
       padding: 14px;
       position: relative;
       overflow: hidden;
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.18),
-        0 4px 20px rgba(0,0,0,0.4);
+        inset 0 1px 0 rgba(200,100,255,0.15),
+        0 4px 20px rgba(80,0,160,0.20);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .summary-box:hover {
       transform: translateY(-1px);
       box-shadow:
-        inset 0 1px 0 rgba(255,255,255,0.22),
-        0 8px 28px rgba(0,0,0,0.5);
+        inset 0 1px 0 rgba(200,100,255,0.22),
+        0 8px 28px rgba(100,0,200,0.30);
     }
 
     .summary-box::before {
@@ -393,19 +481,22 @@
     }
 
     .summary-label {
-      font-size: 10px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0.06em;
+      font-size: 11px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 6px;
     }
 
     .summary-value {
-      font-size: 22px;
-      font-weight: 600;
+      font-size: 28px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
       color: var(--accent);
-      letter-spacing: -0.02em;
+      letter-spacing: 0.01em;
+      line-height: 1.1;
     }
 
     .summary-box.orange .summary-value {
@@ -417,8 +508,11 @@
     }
 
     .summary-unit {
-      font-size: 12px;
+      font-size: 11px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
       color: rgba(255,255,255,0.35);
+      letter-spacing: 0.04em;
       margin-top: 2px;
     }
 
@@ -476,8 +570,8 @@
 
     /* Calc button */
     .calc-btn {
-      background: #0a84ff;
-      border: none;
+      background: linear-gradient(135deg, #8a2be2, #6a0dad);
+      border: 1px solid rgba(180,80,255,0.50);
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       font-size: 14px;
@@ -489,12 +583,12 @@
       cursor: pointer;
       width: 100%;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 16px rgba(10,132,255,0.4);
+      box-shadow: 0 4px 16px rgba(120,30,220,0.45);
     }
 
     .calc-btn:hover {
-      background: #409cff;
-      box-shadow: 0 6px 20px rgba(10,132,255,0.5);
+      background: linear-gradient(135deg, #a040ff, #8020d0);
+      box-shadow: 0 6px 20px rgba(140,40,240,0.55);
       transform: translateY(-1px);
     }
 
@@ -503,8 +597,8 @@
     }
 
     .reset-btn {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(140,50,220,0.22);
       color: rgba(255,255,255,0.55);
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       font-size: 13px;
@@ -620,16 +714,20 @@
     }
 
     .collapsible-header .ch-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: rgba(255,255,255,0.55);
-      letter-spacing: 0.05em;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.60);
+      letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
     .collapsible-header .ch-meta {
+      font-family: 'Rajdhani', sans-serif;
       font-size: 11px;
+      font-weight: 600;
       color: rgba(255,255,255,0.35);
+      letter-spacing: 0.03em;
     }
 
     .collapsible-header .ch-arrow {
@@ -687,6 +785,300 @@
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
 
+    /* =============================================
+       APPLE-LIKE ANIMATIONS
+       ============================================= */
+
+    /* Spring easing custom property */
+    :root {
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --ease-in-out: cubic-bezier(0.45, 0, 0.15, 1);
+    }
+
+    /* --- App entry animation --- */
+    @keyframes appFadeIn {
+      0%   { opacity: 0; transform: scale(0.94) translateY(20px); filter: blur(4px); }
+      60%  { opacity: 1; filter: blur(0); }
+      100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+    }
+    .app-wrapper {
+      animation: appFadeIn 0.9s var(--ease-out) both;
+    }
+
+    /* --- Header fade down --- */
+    @keyframes headerSlideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    header {
+      animation: headerSlideDown 0.6s var(--ease-out) 0.2s both;
+    }
+
+    /* --- Sidebar slides in --- */
+    @keyframes sidebarSlideIn {
+      from { opacity: 0; transform: translateX(-18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .sidebar {
+      animation: sidebarSlideIn 0.65s var(--ease-out) 0.25s both;
+    }
+
+    /* --- Main content fades in --- */
+    @keyframes mainFadeIn {
+      from { opacity: 0; transform: translateX(12px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .main {
+      animation: mainFadeIn 0.65s var(--ease-out) 0.3s both;
+    }
+
+    /* --- Modal open --- */
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(0.90) translateY(20px); filter: blur(2px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+    }
+    /* --- Modal close --- */
+    @keyframes modalOut {
+      from { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+      to   { opacity: 0; transform: scale(0.92) translateY(14px); filter: blur(3px); }
+    }
+    /* --- Overlay fade in --- */
+    @keyframes overlayIn {
+      from { opacity: 0; backdrop-filter: blur(0px); }
+      to   { opacity: 1; }
+    }
+    /* --- Overlay fade out --- */
+    @keyframes overlayOut {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
+    /* --- Reset flash: results area flashes and content drops away --- */
+    @keyframes resetFlash {
+      0%   { opacity: 1; transform: scale(1); }
+      15%  { opacity: 0.6; transform: scale(0.99); background: rgba(255,69,58,0.08); }
+      100% { opacity: 0; transform: scale(0.97) translateY(8px); }
+    }
+    .reset-flash {
+      animation: resetFlash 0.35s var(--ease-in-out) both;
+      pointer-events: none;
+    }
+
+    /* --- Buttons: spring press + smooth hover --- */
+    .calc-btn {
+      transition: transform 0.2s var(--spring), box-shadow 0.2s var(--ease-out), background 0.18s ease !important;
+      will-change: transform;
+    }
+    .calc-btn:hover {
+      transform: translateY(-2px) scale(1.01) !important;
+      box-shadow: 0 8px 28px rgba(140,40,240,0.60) !important;
+    }
+    .calc-btn:active {
+      transform: scale(0.96) !important;
+      transition: transform 0.1s ease !important;
+    }
+
+    .reset-btn {
+      transition: transform 0.2s var(--spring), box-shadow 0.2s var(--ease-out), background 0.18s ease, color 0.18s ease, border-color 0.18s ease !important;
+      will-change: transform;
+    }
+    .reset-btn:hover {
+      transform: translateY(-1px) !important;
+    }
+    .reset-btn:active {
+      transform: scale(0.96) !important;
+      transition: transform 0.1s ease !important;
+    }
+
+    /* Hamburger + header icon buttons */
+    .hamburger-btn,
+    header button {
+      transition: transform 0.2s var(--spring), background 0.18s ease, box-shadow 0.18s ease !important;
+      will-change: transform;
+    }
+    .hamburger-btn:active,
+    header button:active {
+      transform: scale(0.88) !important;
+      transition: transform 0.08s ease !important;
+    }
+
+    /* --- Tabs: smooth underline + spring hover --- */
+    .tab {
+      transition: color 0.2s ease, transform 0.2s var(--spring) !important;
+      will-change: transform;
+    }
+    .tab:hover:not(.active) {
+      transform: translateY(-1px) !important;
+      color: var(--text) !important;
+    }
+    .tab:active {
+      transform: scale(0.95) translateY(0) !important;
+      transition: transform 0.08s ease !important;
+    }
+
+    /* --- Tab content transition --- */
+    .tab-content {
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: tabContentIn 0.3s var(--ease-out) both;
+      pointer-events: auto;
+      opacity: 1;
+      transform: none;
+    }
+    @keyframes tabContentIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* --- Panels: hover lift with spring --- */
+    .panel {
+      transition: box-shadow 0.25s var(--ease-out), transform 0.25s var(--spring) !important;
+      will-change: transform;
+    }
+    .panel:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 1px 0 rgba(200,100,255,0.20),
+        inset 0 -1px 0 rgba(0,0,0,0.20),
+        0 18px 50px rgba(80,0,160,0.32),
+        0 4px 12px rgba(0,0,0,0.35) !important;
+    }
+
+    /* --- Summary boxes: spring lift --- */
+    .summary-box {
+      transition: transform 0.25s var(--spring), box-shadow 0.25s var(--ease-out) !important;
+      will-change: transform;
+    }
+    .summary-box:hover {
+      transform: translateY(-3px) scale(1.01) !important;
+    }
+
+    /* --- Bot items: spring select --- */
+    .bot-item {
+      transition: all 0.2s var(--spring) !important;
+      will-change: transform;
+    }
+    .bot-item:hover {
+      transform: translateX(3px) scale(1.01) !important;
+    }
+    .bot-item:active {
+      transform: scale(0.97) !important;
+      transition: transform 0.08s ease !important;
+    }
+    .bot-item.selected {
+      transform: translateX(2px) !important;
+    }
+
+    /* --- Inputs: focus ring spring --- */
+    input[type="number"],
+    input[type="text"],
+    select {
+      transition: border-color 0.2s ease, box-shadow 0.25s var(--ease-out), transform 0.2s var(--spring) !important;
+      will-change: transform;
+    }
+    input[type="number"]:focus,
+    input[type="text"]:focus,
+    select:focus {
+      transform: scale(1.01) !important;
+    }
+
+    /* --- Result rows: staggered fade-in --- */
+    @keyframes rowFadeIn {
+      from { opacity: 0; transform: translateX(-6px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .results-table tbody tr {
+      animation: rowFadeIn 0.3s var(--ease-out) both;
+    }
+    .results-table tbody tr:nth-child(1)  { animation-delay: 0.02s; }
+    .results-table tbody tr:nth-child(2)  { animation-delay: 0.04s; }
+    .results-table tbody tr:nth-child(3)  { animation-delay: 0.06s; }
+    .results-table tbody tr:nth-child(4)  { animation-delay: 0.08s; }
+    .results-table tbody tr:nth-child(5)  { animation-delay: 0.10s; }
+    .results-table tbody tr:nth-child(6)  { animation-delay: 0.12s; }
+    .results-table tbody tr:nth-child(7)  { animation-delay: 0.14s; }
+    .results-table tbody tr:nth-child(8)  { animation-delay: 0.16s; }
+    .results-table tbody tr:nth-child(9)  { animation-delay: 0.18s; }
+    .results-table tbody tr:nth-child(10) { animation-delay: 0.20s; }
+
+    /* --- Modal open handled above --- */
+
+    /* --- Collapsible sections: smooth height --- */
+    .collapsible-content {
+      transition: max-height 0.35s var(--ease-in-out), opacity 0.25s ease !important;
+    }
+
+    /* --- Recipe list items: hover spring --- */
+    @keyframes recipeRowIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    #recipeDropdown li,
+    .recipe-result-row {
+      animation: recipeRowIn 0.2s var(--ease-out) both;
+      transition: background 0.15s ease, transform 0.2s var(--spring) !important;
+    }
+    #recipeDropdown li:hover,
+    .recipe-result-row:hover {
+      transform: translateX(3px) !important;
+    }
+
+    /* --- Reduce motion for accessibility --- */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ── Theme pill hover + active ── */
+    .__theme-icon-btn svg {
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease, filter 0.2s ease;
+    }
+    .__theme-icon-btn:hover svg {
+      transform: scale(1.28) !important;
+      color: #60a5fa !important;
+      stroke: #60a5fa !important;
+      filter: drop-shadow(0 0 5px rgba(96,165,250,0.65)) !important;
+    }
+    .__theme-icon-btn.active-theme svg {
+      color: rgba(255,255,255,0.92) !important;
+      filter: none !important;
+    }
+    /* Blob must always have its transform-transition, never let theme-switching kill it */
+    #themeBlobIndicator {
+      transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1) !important;
+    }
+
+    /* ── Theme Transition: smooth crossfade on all elements ── */
+    .theme-switching *,
+    .theme-switching *::before,
+    .theme-switching *::after {
+      transition:
+        background-color 0.4s cubic-bezier(0.22,1,0.36,1),
+        background       0.4s cubic-bezier(0.22,1,0.36,1),
+        border-color     0.4s cubic-bezier(0.22,1,0.36,1),
+        color            0.35s cubic-bezier(0.22,1,0.36,1),
+        box-shadow       0.4s cubic-bezier(0.22,1,0.36,1) !important;
+    }
+    /* Keep transform snappy even during theme switch */
+    .theme-switching button,
+    .theme-switching .calc-btn,
+    .theme-switching .reset-btn {
+      transition:
+        background-color 0.4s cubic-bezier(0.22,1,0.36,1),
+        background       0.4s cubic-bezier(0.22,1,0.36,1),
+        border-color     0.4s cubic-bezier(0.22,1,0.36,1),
+        color            0.35s cubic-bezier(0.22,1,0.36,1),
+        box-shadow       0.4s cubic-bezier(0.22,1,0.36,1),
+        transform        0.2s cubic-bezier(0.34,1.56,0.64,1) !important;
+    }
+
   </style>
   <script>
     /* D3 v7 inline */
@@ -703,15 +1095,101 @@
 </head>
 
 <body>
+  <div class="app-wrapper">
   <header>
+    <button class="hamburger-btn" onclick="toggleSidebar()" title="Seitenleiste ein-/ausblenden" id="hamburgerBtn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+      </svg>
+    </button>
     <div>
       <div class="logo">FOUNDRY <span>CALC</span></div>
-      <div class="subtitle">Production & Material Calculator</div>
+      <div class="subtitle">Production Material Calculator</div>
     </div>
     <div style="margin-left:auto;display:flex;gap:4px;align-items:center;">
-      <button class="__theme-btn" data-theme="default" onclick="__applyTheme('default')" style="background:rgba(255,255,255,0.15);border:1px solid rgba(10,132,255,0.6);color:#0a84ff;padding:5px 14px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;font-weight:500;letter-spacing:0;box-shadow:inset 0 1px 0 rgba(255,255,255,0.2);">Default</button>
-      <button class="__theme-btn" data-theme="dark" onclick="__applyTheme('dark')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);padding:5px 14px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;font-weight:500;letter-spacing:0;">Dark</button>
-      <button class="__theme-btn" data-theme="light" onclick="__applyTheme('light')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,255,255,0.45);padding:5px 14px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;font-weight:500;letter-spacing:0;">Light</button>
+      <!-- Icon Theme Pill -->
+      <div id="themePill" style="
+        display:flex; align-items:center; gap:2px;
+        background: rgba(255,255,255,0.10);
+        border: 1px solid rgba(255,255,255,0.18);
+        border-radius: 999px;
+        padding: 4px;
+        position: relative;
+        box-shadow:
+          inset 0 1px 3px rgba(0,0,0,0.30),
+          inset 0 -1px 0 rgba(255,255,255,0.08),
+          0 1px 0 rgba(255,255,255,0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      ">
+        <!-- Sliding blob indicator -->
+        <div id="themeBlobIndicator" style="
+          position:absolute;
+          width:40px; height:40px;
+          border-radius:50%;
+          background: rgba(255,255,255,0.18);
+          box-shadow: 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.35);
+          pointer-events:none;
+          left:0; top:0;
+          z-index: 0;
+          will-change: transform;
+        "></div>
+
+        <!-- Default (Sunrise) -->
+        <button class="__theme-btn __theme-icon-btn" data-theme="default" onclick="__applyTheme('default')" title="Default" style="
+          width:40px; height:40px; border-radius:50%; border:none; cursor:pointer;
+          background: transparent; box-shadow: none;
+          display:flex; align-items:center; justify-content:center;
+          transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease;
+          color: rgba(255,255,255,0.92);
+          position:relative; z-index:1;
+        ">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 18a5 5 0 0 0-10 0"/>
+            <line x1="12" y1="9" x2="12" y2="2"/>
+            <line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/>
+            <line x1="1" y1="18" x2="3" y2="18"/>
+            <line x1="21" y1="18" x2="23" y2="18"/>
+            <line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/>
+          </svg>
+        </button>
+        <!-- Dark (Moon) -->
+        <button class="__theme-btn __theme-icon-btn" data-theme="dark" onclick="__applyTheme('dark')" title="Dark" style="
+          width:40px; height:40px; border-radius:50%; border:none; cursor:pointer;
+          background: transparent; box-shadow: none;
+          display:flex; align-items:center; justify-content:center;
+          transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease;
+          color: rgba(255,255,255,0.45);
+          position:relative; z-index:1;
+        ">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+        <!-- Light (Sun) -->
+        <button class="__theme-btn __theme-icon-btn" data-theme="light" onclick="__applyTheme('light')" title="Light" style="
+          width:40px; height:40px; border-radius:50%; border:none; cursor:pointer;
+          background: transparent; box-shadow: none;
+          display:flex; align-items:center; justify-content:center;
+          transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease;
+          color: rgba(255,255,255,0.45);
+          position:relative; z-index:1;
+        ">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </button>
+      </div>
+      <button onclick="openRecipeSettings()" title="Einstellungen" style="width:40px;height:40px;background:rgba(255,255,255,0.10);border:1px solid rgba(160,60,255,0.20);color:rgba(255,255,255,0.65);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;margin-left:6px;box-shadow:0 2px 8px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.15);">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
     </div>
   </header>
 
@@ -721,18 +1199,20 @@
 
       <!-- View Toggle -->
       <div
-        style="display:flex;border:1px solid rgba(255,255,255,0.10);border-radius:12px;overflow:hidden;margin-bottom:4px;flex-shrink:0;background:rgba(255,255,255,0.04)">
+        style="display:flex;border:1px solid rgba(140,50,220,0.25);border-radius:12px;overflow:hidden;margin-bottom:4px;flex-shrink:0;background:rgba(255,255,255,0.04)">
         <button id="toggleRecipeBtn" onclick="switchSidebarView('recipes')"
-          style="flex:1;padding:8px 4px;background:rgba(10,132,255,0.15);border:none;color:#0a84ff;cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;font-weight:600;letter-spacing:0;transition:all 0.18s">
-          ⚙ Rezepte
+          style="flex:1;padding:9px 4px;background:rgba(100,40,200,0.30);border:none;color:#c088ff;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          Rezepte
         </button>
         <button id="toggleBotBtn" onclick="switchSidebarView('bots')"
-          style="flex:1;padding:8px 4px;background:transparent;border:none;border-left:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.40);cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;font-weight:500;letter-spacing:0;transition:all 0.18s">
-          🤖 Bots
-        </button>
-        <button id="toggleSettingsBtn" onclick="openRecipeSettings()"
-          style="flex:1;padding:8px 4px;background:transparent;border:none;border-left:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.40);cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;font-weight:500;letter-spacing:0;transition:all 0.18s">
-          🔧 Einstellungen
+          style="flex:1;padding:9px 4px;background:transparent;border:none;border-left:1px solid rgba(140,50,220,0.20);color:rgba(255,255,255,0.45);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
+          </svg>
+          Bots
         </button>
       </div>
 
@@ -747,8 +1227,14 @@
                 <input type="number" id="goalProd" value="32" min="1" />
               </div>
             </div>
-            <button class="calc-btn" onclick="calculateRecipes()">⚙ Berechnen</button>
-            <button class="reset-btn" onclick="resetRecipes()">↺ Zurücksetzen</button>
+            <button class="calc-btn" onclick="calculateRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+              Berechnen
+            </button>
+            <button class="reset-btn" onclick="resetRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+              Zurücksetzen
+            </button>
           </div>
         </div>
         <div>
@@ -766,23 +1252,30 @@
         <div>
           <div class="section-title">Rezept suchen</div>
           <div style="position:relative">
-            <input type="text" id="recipeSearch" placeholder="z.B. Building Block, Wire Coil…"
-              style="width:100%;box-sizing:border-box;padding:9px 14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:10px;font-family:-apple-system,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s,box-shadow 0.2s"
+            <input type="text" id="recipeSearch" placeholder="Z.B. Building Block, Wire Coil…"
+              style="width:100%;box-sizing:border-box;padding:9px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(140,50,220,0.25);color:var(--text);border-radius:10px;font-family:-apple-system,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s,box-shadow 0.2s"
               oninput="filterRecipesInline(this.value)" onfocus="filterRecipesInline(this.value)" autocomplete="off" />
             <div id="recipeInlineResults"
-              style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:rgba(20,20,40,0.92);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid rgba(255,255,255,0.12);border-radius:12px;overflow:hidden;max-height:280px;overflow-y:auto;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
+              style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:rgba(20,5,45,0.95);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid rgba(140,50,220,0.25);border-radius:12px;overflow:hidden;max-height:280px;overflow-y:auto;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
             </div>
           </div>
         </div>
         <div style="display:flex;gap:6px">
           <button class='btn-picker' onclick="openRecipePicker()" title="Rezept-Browser öffnen"
-            style="flex:1;padding:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.60);border-radius:10px;cursor:pointer;font-size:16px;line-height:1;transition:all 0.18s ease">
-            ⊞ Browser
+            style="flex:1;padding:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(140,50,220,0.22);color:rgba(255,255,255,0.65);border-radius:10px;cursor:pointer;font-size:13px;font-family:-apple-system,sans-serif;font-weight:500;line-height:1;transition:all 0.18s ease;display:flex;align-items:center;justify-content:center;gap:7px">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            Browser
           </button>
         </div>
 
-        <button class="calc-btn" onclick="calculateRecipes()">⚙ Berechnen</button>
-        <button class="reset-btn" onclick="resetRecipes()">↺ Zurücksetzen</button>
+        <button class="calc-btn" onclick="calculateRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+          Berechnen
+        </button>
+        <button class="reset-btn" onclick="resetRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Zurücksetzen
+        </button>
 
         <!-- Selected recipe list -->
         <div id="selectedRecipes"
@@ -801,21 +1294,28 @@
 
       <!-- Tab-Leiste -->
       <div id="mainTabBar" style="
-        display:flex; border-bottom:1px solid rgba(255,255,255,0.10);
-        background:rgba(255,255,255,0.03); backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); flex-shrink:0">
+        display:flex; border-bottom:1px solid rgba(140,50,220,0.20);
+        background:rgba(15,5,35,0.60); backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); flex-shrink:0">
         <button id="mainTabBtnRecipes" onclick="switchMainTab('recipes')" style="
           padding:11px 22px; background:transparent; border:none;
-          border-bottom:2px solid #0a84ff; color:#0a84ff;
+          border-bottom:2px solid #a855f7; color:#a855f7;
           cursor:pointer; font-family:-apple-system,sans-serif; font-size:12px; font-weight:500;
-          letter-spacing:0; transition:all 0.18s">
-          📊 Ergebnisse
+          letter-spacing:0; transition:all 0.18s; display:flex; align-items:center; gap:7px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
+          </svg>
+          Ergebnisse
         </button>
-        <button id="mainTabBtnSankey" onclick="switchMainTab('sankey')" style="
+        <button id="mainTabBtnVisualize" onclick="switchMainTab('visualize')" style="
           padding:11px 22px; background:transparent; border:none;
           border-bottom:2px solid transparent; color:rgba(255,255,255,0.40);
           cursor:pointer; font-family:-apple-system,sans-serif; font-size:12px; font-weight:500;
-          letter-spacing:0; transition:all 0.18s">
-          〰 Sankey
+          letter-spacing:0; transition:all 0.18s; display:flex; align-items:center; gap:7px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/>
+            <line x1="9" y1="6" x2="15" y2="6"/><line x1="7.5" y1="9" x2="10.5" y2="15"/><line x1="16.5" y1="9" x2="13.5" y2="15"/>
+          </svg>
+          Visualisieren
         </button>
       </div>
 
@@ -824,9 +1324,72 @@
         <div id="recipeResults"></div>
       </div>
 
-      <!-- Sankey Tab -->
-      <div id="tab-sankey" style="flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0">
-        <div id="sankeyWrap" style="flex:1; position:relative; overflow:hidden; background:rgba(4,4,20,0.85); min-height:0">
+      <!-- Visualize Tab (contains both Sankey + Boxes with switcher) -->
+      <div id="tab-visualize" style="flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0">
+
+        <!-- View switcher pill -->
+        <div style="
+          display:flex; align-items:center; justify-content:center;
+          padding:10px 0 0 0; flex-shrink:0; z-index:2">
+          <div id="vizModePill" style="
+            display:flex; align-items:center; gap:3px;
+            background: rgba(255,255,255,0.07);
+            border: 1px solid rgba(255,255,255,0.13);
+            border-radius: 999px;
+            padding: 4px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.30), inset 0 -1px 0 rgba(255,255,255,0.06);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px)">
+
+            <!-- Sankey icon button -->
+            <button id="vizBtnSankey" onclick="switchVizMode('sankey')" title="Sankey-Diagramm" style="
+              width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
+              background:rgba(255,255,255,0.18);
+              box-shadow: 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
+              color:rgba(255,255,255,0.92); display:flex; align-items:center; justify-content:center;
+              transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1)">
+              <!-- Sankey: one wide stream splitting into 3 thinner streams -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <!-- left thick source block -->
+                <rect x="1" y="5" width="5" height="14" rx="2"/>
+                <!-- top thin output -->
+                <path d="M6 7 Q13 7 13 4 L17 4 Q17 4 17 6 Q13 6 13 9 L6 9 Z"/>
+                <!-- middle medium output -->
+                <path d="M6 10.5 L17 10.5 L17 13.5 L6 13.5 Z" rx="1"/>
+                <!-- bottom thin output -->
+                <path d="M6 15 Q13 15 13 18 L17 18 Q17 20 17 20 Q13 20 13 17 L6 17 Z"/>
+                <!-- right caps -->
+                <rect x="17" y="4" width="6" height="3" rx="1.2"/>
+                <rect x="17" y="10.5" width="6" height="3" rx="1.2"/>
+                <rect x="17" y="18" width="6" height="3" rx="1.2"/>
+              </svg>
+            </button>
+
+            <!-- Boxes & Lines icon button -->
+            <button id="vizBtnBoxes" onclick="switchVizMode('boxes')" title="Boxen & Linien" style="
+              width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
+              background:transparent; box-shadow:none;
+              color:rgba(255,255,255,0.40); display:flex; align-items:center; justify-content:center;
+              transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1)">
+              <!-- Box & Lines: two input boxes → arrow → output box -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                <!-- left top box -->
+                <rect x="0" y="1" width="7" height="5" rx="1.2" opacity="0.9"/>
+                <!-- left bottom box -->
+                <rect x="0" y="9" width="7" height="5" rx="1.2" opacity="0.9"/>
+                <!-- connecting lines -->
+                <path d="M7 3.5 Q11 3.5 11 7.5 Q11 11.5 15 11.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                <path d="M7 11.5 Q11 11.5 15 11.5" stroke="currentColor" stroke-width="1.4" fill="none" stroke-linecap="round"/>
+                <!-- right output box -->
+                <rect x="15" y="8" width="9" height="7" rx="1.5" opacity="0.9"/>
+              </svg>
+            </button>
+
+          </div>
+        </div>
+
+        <!-- Sankey view -->
+        <div id="tab-sankey" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0">
+          <div id="sankeyWrap" style="flex:1; position:relative; overflow:hidden; background:rgba(4,4,20,0.85); min-height:0">
           <div id="sankeyEmpty" style="
             display:flex; flex-direction:column; align-items:center; justify-content:center;
             height:100%; color:rgba(255,255,255,0.30); font-size:14px; gap:10px">
@@ -858,6 +1421,34 @@
         </div>
       </div>
 
+      <!-- Boxes & Lines Tab -->
+      <div id="tab-boxes" style="flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0">
+        <div id="boxesWrap" style="flex:1; position:relative; overflow:hidden; background:rgba(4,4,20,0.85); min-height:0">
+          <div id="boxesEmpty" style="
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+            height:100%; color:rgba(255,255,255,0.30); font-size:14px; gap:10px">
+            <span style="font-size:32px;opacity:0.4">⬛</span>
+            <span>Erst Rezepte auswählen und <strong style="color:#0a84ff;font-weight:500">Berechnen</strong> klicken.</span>
+          </div>
+          <svg id="boxesSvg" style="width:100%; height:100%; display:none; cursor:grab"></svg>
+          <div id="boxesLegend" style="
+            position:absolute; bottom:14px; left:16px; display:none;
+            gap:16px; flex-wrap:wrap">
+            <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6aaa6a;font-family:monospace">
+              <span style="display:inline-block;width:12px;height:12px;background:#1a4a1a;border:1px solid #2a6a2a;border-radius:2px"></span>Rohstoff
+            </span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6a9adf;font-family:monospace">
+              <span style="display:inline-block;width:12px;height:12px;background:#1a2a4a;border:1px solid #2a4a8a;border-radius:2px"></span>Zwischenprodukt
+            </span>
+            <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#e08050;font-family:monospace">
+              <span style="display:inline-block;width:12px;height:12px;background:#3a1a08;border:1px solid #7a3a10;border-radius:2px"></span>Endprodukt
+            </span>
+          </div>
+        </div>
+      </div>
+
+      </div><!-- end tab-visualize -->
+
     </main>
 
     <!-- Recipe Settings Modal -->
@@ -872,7 +1463,7 @@
             align-items: center;
             justify-content: center;
           ">
-      <div onclick="event.stopPropagation()" style="
+      <div id="recipeSettingsModal" onclick="event.stopPropagation()" style="
               background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
               backdrop-filter: blur(60px) saturate(180%);
               -webkit-backdrop-filter: blur(60px) saturate(180%);
@@ -951,7 +1542,7 @@
             align-items: center;
             justify-content: center;
           ">
-      <div onclick="event.stopPropagation()" style="
+      <div id="recipePickerModal" onclick="event.stopPropagation()" style="
               background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
               backdrop-filter: blur(60px) saturate(180%);
               -webkit-backdrop-filter: blur(60px) saturate(180%);
@@ -7638,9 +8229,35 @@
     ];
 
 
+    // ── Modal animation helpers ─────────────────────────────────
+    function animateModalOpen(overlayId, modalId) {
+      const overlay = document.getElementById(overlayId);
+      const modal   = document.getElementById(modalId);
+      overlay.style.display = 'flex';
+      overlay.style.animation = 'none';
+      modal.style.animation   = 'none';
+      overlay.offsetHeight; // reflow
+      overlay.style.animation = 'overlayIn 0.3s ease both';
+      modal.style.animation   = 'modalIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both';
+    }
+
+    function animateModalClose(overlayId, modalId, callback) {
+      const overlay = document.getElementById(overlayId);
+      const modal   = document.getElementById(modalId);
+      overlay.style.animation = 'overlayOut 0.25s ease both';
+      modal.style.animation   = 'modalOut 0.25s cubic-bezier(0.45,0,0.15,1) both';
+      modal.addEventListener('animationend', function handler() {
+        modal.removeEventListener('animationend', handler);
+        overlay.style.display = 'none';
+        overlay.style.animation = '';
+        modal.style.animation   = '';
+        if (callback) callback();
+      }, { once: true });
+    }
+
     function openRecipeSettings() {
       renderSettingsContent('settingsContent');
-      document.getElementById("recipeSettingsOverlay").style.display = "flex";
+      animateModalOpen('recipeSettingsOverlay', 'recipeSettingsModal');
     }
 
     function closeRecipeSettings(e) {
@@ -7648,8 +8265,7 @@
         !e ||
         e.target === document.getElementById("recipeSettingsOverlay")
       ) {
-        document.getElementById("recipeSettingsOverlay").style.display =
-          "none";
+        animateModalClose('recipeSettingsOverlay', 'recipeSettingsModal');
       }
     }
 
@@ -7850,28 +8466,34 @@
       el.appendChild(resDesc);
 
       const resGrid = document.createElement("div");
-      resGrid.style.cssText = "display:flex;flex-direction:column;gap:10px";
+      resGrid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:8px";
 
       [
         {
-          label: "⛏ Mining Produktivität", key: "mining", getter: () => globalMiningProductivity,
+          label: "Mining", icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L2 14l8 8 12-12-8-8z"/><path d="M7 13l4 4"/><path d="M19 3l2 2"/></svg>`,
+          key: "mining", getter: () => globalMiningProductivity,
           setter: (v) => { globalMiningProductivity = v; }
         },
         {
-          label: "💧 Fluid Produktivität", key: "fluid", getter: () => globalFluidProductivity,
+          label: "Fluid", icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6 8 4 12 4 15a8 8 0 0 0 16 0c0-3-2-7-8-13z"/></svg>`,
+          key: "fluid", getter: () => globalFluidProductivity,
           setter: (v) => { globalFluidProductivity = v; }
         },
-      ].forEach(({ label, getter, setter }) => {
-        const row = document.createElement("div");
-        row.style.cssText =
-          "display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:8px 12px";
+      ].forEach(({ label, icon, getter, setter }) => {
+        const cell = document.createElement("div");
+        cell.style.cssText =
+          "display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:6px 10px";
+
+        const iconEl = document.createElement("div");
+        iconEl.style.cssText = "flex-shrink:0;color:var(--text-dim)";
+        iconEl.innerHTML = icon;
 
         const lbl = document.createElement("div");
-        lbl.style.cssText = "flex:1;font-size:13px;color:var(--text);font-weight:600";
+        lbl.style.cssText = "flex:1;font-size:12px;color:var(--text);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap";
         lbl.textContent = label;
 
         const inputWrap = document.createElement("div");
-        inputWrap.style.cssText = "display:flex;align-items:center;gap:4px;flex-shrink:0";
+        inputWrap.style.cssText = "display:flex;align-items:center;gap:3px;flex-shrink:0";
 
         const inp = document.createElement("input");
         inp.type = "number";
@@ -7880,21 +8502,21 @@
         inp.step = "10";
         inp.value = getter();
         inp.style.cssText =
-          "width:70px;padding:4px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:14px;border-radius:8px;text-align:right";
+          "width:52px;padding:3px 6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:13px;border-radius:8px;text-align:right";
         inp.oninput = function () {
           const val = parseFloat(this.value);
           setter(isNaN(val) || val < 0 ? 0 : val);
         };
 
         const pct = document.createElement("span");
-        pct.style.cssText = "font-size:12px;color:var(--text-dim)";
+        pct.style.cssText = "font-size:11px;color:var(--text-dim)";
         pct.textContent = "%";
 
         const resetBtn = document.createElement("button");
         resetBtn.title = "Zurücksetzen";
         resetBtn.style.cssText =
-          "padding:2px 8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.40);" +
-          "border-radius:3px;cursor:pointer;font-size:12px;line-height:1";
+          "padding:2px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.40);" +
+          "border-radius:3px;cursor:pointer;font-size:11px;line-height:1;flex-shrink:0";
         resetBtn.textContent = "↺";
         resetBtn.onclick = function () {
           setter(0);
@@ -7904,9 +8526,10 @@
         inputWrap.appendChild(inp);
         inputWrap.appendChild(pct);
         inputWrap.appendChild(resetBtn);
-        row.appendChild(lbl);
-        row.appendChild(inputWrap);
-        resGrid.appendChild(row);
+        cell.appendChild(iconEl);
+        cell.appendChild(lbl);
+        cell.appendChild(inputWrap);
+        resGrid.appendChild(cell);
       });
 
       el.appendChild(resGrid);
@@ -8331,7 +8954,7 @@
     }
 
     function openRecipePicker() {
-      document.getElementById("recipePickerOverlay").style.display = "flex";
+      animateModalOpen('recipePickerOverlay', 'recipePickerModal');
       document.getElementById("recipePickerSearch").value = "";
       renderRecipeBrowser();
       document.getElementById("recipePickerSearch").focus();
@@ -8339,7 +8962,7 @@
 
     function closeRecipePicker(e) {
       if (!e || e.target === document.getElementById("recipePickerOverlay")) {
-        document.getElementById("recipePickerOverlay").style.display = "none";
+        animateModalClose('recipePickerOverlay', 'recipePickerModal');
       }
     }
 
@@ -8545,6 +9168,19 @@
     }
 
     function resetRecipes() {
+      // Animate results out first, then clear
+      const resultsEl = document.getElementById("recipeResults");
+      if (resultsEl.innerHTML.trim()) {
+        resultsEl.style.animation = 'none';
+        resultsEl.offsetHeight;
+        resultsEl.style.animation = 'resetFlash 0.35s cubic-bezier(0.45,0,0.15,1) both';
+        resultsEl.addEventListener('animationend', function handler() {
+          resultsEl.removeEventListener('animationend', handler);
+          resultsEl.style.animation = '';
+          resultsEl.innerHTML = '';
+        }, { once: true });
+      }
+
       // Suche zurücksetzen
       clearRecipeSearch();
 
@@ -8572,13 +9208,13 @@
       // Grid neu rendern
       if (document.getElementById("recipeGrid")) renderRecipeBrowser();
 
-      // Ergebnisliste leeren
-      document.getElementById("recipeResults").innerHTML = "";
-
-      // Sankey zurücksetzen
+      // Sankey + Boxen zurücksetzen
       document.getElementById("sankeySvg").style.display    = "none";
       document.getElementById("sankeyLegend").style.display = "none";
       document.getElementById("sankeyEmpty").style.display  = "flex";
+      document.getElementById("boxesSvg").style.display    = "none";
+      document.getElementById("boxesLegend").style.display = "none";
+      document.getElementById("boxesEmpty").style.display  = "flex";
     }
 
 
@@ -9246,8 +9882,9 @@
         </div>
       `;
 
-      // Sankey im Hintergrund mitaktualisieren
+      // Sankey + Boxen im Hintergrund mitaktualisieren
       renderSankey();
+      renderBoxes();
     }
 
     // ── Collapsible section toggle ──────────────────────────
@@ -9268,6 +9905,19 @@
     // ============================================================
     // TABS
     // ============================================================
+    function toggleSidebar() {
+      const container = document.querySelector('.container');
+      const isCollapsed = container.classList.toggle('sidebar-collapsed');
+      localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
+    }
+
+    // Restore sidebar state on load
+    (function() {
+      if (localStorage.getItem('sidebarCollapsed') === '1') {
+        document.querySelector('.container').classList.add('sidebar-collapsed');
+      }
+    })();
+
     function switchSidebarView(mode) {
       const isBots = mode === 'bots';
       const isRecipes = mode === 'recipes';
@@ -9301,20 +9951,56 @@
     // ============================================================
     // MAIN TAB SWITCHING
     // ============================================================
-    function switchMainTab(tab) {
-      const isRecipes = tab === 'recipes';
-      document.getElementById('tab-recipes').style.display = isRecipes ? 'block' : 'none';
-      document.getElementById('tab-sankey').style.display  = isRecipes ? 'none'  : 'flex';
+    // Current viz mode (sankey | boxes)
+    let _currentVizMode = 'sankey';
 
-      const ab = { borderBottomColor: 'var(--accent)',     color: 'var(--accent)'   };
-      const ib = { borderBottomColor: 'transparent',       color: 'var(--text-dim)' };
-      Object.assign(document.getElementById('mainTabBtnRecipes').style, isRecipes ? ab : ib);
-      Object.assign(document.getElementById('mainTabBtnSankey').style,  isRecipes ? ib : ab);
+    function switchVizMode(mode) {
+      _currentVizMode = mode;
+      const isSankey = mode === 'sankey';
 
-      if (!isRecipes) {
-        // Warten bis DOM gerendert ist, dann korrekte SVG-Größe
+      document.getElementById('tab-sankey').style.display = isSankey ? 'flex' : 'none';
+      document.getElementById('tab-boxes').style.display  = isSankey ? 'none'  : 'flex';
+
+      const activeStyle   = { background: 'rgba(255,255,255,0.18)', boxShadow: '0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.92)' };
+      const inactiveStyle = { background: 'transparent', boxShadow: 'none', color: 'rgba(255,255,255,0.40)' };
+      Object.assign(document.getElementById('vizBtnSankey').style, isSankey  ? activeStyle : inactiveStyle);
+      Object.assign(document.getElementById('vizBtnBoxes').style,  !isSankey ? activeStyle : inactiveStyle);
+
+      if (isSankey) {
         requestAnimationFrame(() => requestAnimationFrame(renderSankey));
-        _sankeyDirty = false;
+      } else {
+        requestAnimationFrame(() => requestAnimationFrame(renderBoxes));
+      }
+    }
+
+    function switchMainTab(tab) {
+      const isRecipes   = tab === 'recipes';
+      const isVisualize = tab === 'visualize';
+
+      const recipesEl   = document.getElementById('tab-recipes');
+      const vizEl       = document.getElementById('tab-visualize');
+
+      recipesEl.style.display = isRecipes   ? 'block' : 'none';
+      vizEl.style.display     = isVisualize ? 'flex'  : 'none';
+
+      const incoming = isRecipes ? recipesEl : vizEl;
+      incoming.style.animation = 'none';
+      incoming.offsetHeight;
+      incoming.style.animation = 'tabContentIn 0.32s cubic-bezier(0.22,1,0.36,1) both';
+
+      const isLight = document.documentElement.style.getPropertyValue('--text').trim() === '#1d1d1f';
+      const inactiveColor = isLight ? '#6e6e73' : 'rgba(255,255,255,0.40)';
+      const ab = { borderBottomColor: 'var(--accent)', color: 'var(--accent)'  };
+      const ib = { borderBottomColor: 'transparent',   color: inactiveColor    };
+      Object.assign(document.getElementById('mainTabBtnRecipes').style,   isRecipes   ? ab : ib);
+      Object.assign(document.getElementById('mainTabBtnVisualize').style, isVisualize ? ab : ib);
+
+      if (isVisualize) {
+        // Render whichever sub-view is active
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          if (_currentVizMode === 'sankey') renderSankey();
+          else renderBoxes();
+        }));
       }
     }
 
@@ -9438,6 +10124,287 @@
       _drawSankey(svg, data);
     }
     window.__renderSankey = renderSankey; // exposed for theme switching
+
+    // ============================================================
+    // BOXES & LINES — Renderer
+    // ============================================================
+
+    let _boxesDirty = false;
+
+    function renderBoxes() {
+      const tab = document.getElementById('tab-boxes');
+      if (!tab || tab.style.display === 'none') { _boxesDirty = true; return; }
+
+      const svg    = document.getElementById('boxesSvg');
+      const empty  = document.getElementById('boxesEmpty');
+      const legend = document.getElementById('boxesLegend');
+      const data   = buildSankeyGraph();
+
+      if (!data) {
+        svg.style.display    = 'none';
+        legend.style.display = 'none';
+        empty.style.display  = 'flex';
+        _boxesDirty = false;
+        return;
+      }
+      empty.style.display  = 'none';
+      svg.style.display    = 'block';
+      legend.style.display = 'flex';
+      _boxesDirty = false;
+      _drawBoxes(svg, data);
+    }
+    window.__renderBoxes = renderBoxes;
+
+    function _drawBoxes(svgEl, data) {
+      const wrap = document.getElementById('boxesWrap');
+      const W = (wrap ? wrap.getBoundingClientRect().width  : 0) || 1100;
+      const H = (wrap ? wrap.getBoundingClientRect().height : 0) || 650;
+
+      const COLOR = window.__sankeyColors || {
+        raw:   { fill: '#0e2010', stroke: '#2a6a2a', text: '#6adf6a', card: '#0a1a0a', cborder: '#1a4a1a' },
+        mid:   { fill: '#080f1e', stroke: '#1e3a70', text: '#6a9adf', card: '#060c18', cborder: '#162040' },
+        final: { fill: '#1e0e04', stroke: '#7a3010', text: '#e08050', card: '#180a02', cborder: '#5a2010' },
+        link:  '#4a8adf',
+      };
+
+      // ── Topological depth assignment ──────────────────────────
+      const nodeMap = {};
+      data.nodes.forEach(n => { nodeMap[n.label] = n; n.depth = 0; });
+
+      // Build adjacency
+      const inEdges  = {}; // label → [source labels]
+      const outEdges = {}; // label → [target labels]
+      data.nodes.forEach(n => { inEdges[n.label] = []; outEdges[n.label] = []; });
+      data.links.forEach(l => {
+        const s = typeof l.source === 'object' ? l.source.label : l.source;
+        const t = typeof l.target === 'object' ? l.target.label : l.target;
+        outEdges[s].push(t);
+        inEdges[t].push(s);
+      });
+
+      // BFS from sources (no incoming) to assign column depth
+      const visited = new Set();
+      const queue   = data.nodes.filter(n => inEdges[n.label].length === 0).map(n => { n.depth = 0; return n.label; });
+      queue.forEach(l => visited.add(l));
+
+      while (queue.length) {
+        const cur = queue.shift();
+        outEdges[cur].forEach(tgt => {
+          const d = nodeMap[cur].depth + 1;
+          if (d > nodeMap[tgt].depth) nodeMap[tgt].depth = d;
+          if (!visited.has(tgt)) { visited.add(tgt); queue.push(tgt); }
+        });
+      }
+
+      // Group by depth column
+      const maxDepth  = Math.max(...data.nodes.map(n => n.depth));
+      const columns   = Array.from({ length: maxDepth + 1 }, () => []);
+      data.nodes.forEach(n => columns[n.depth].push(n));
+
+      // ── Layout constants ──────────────────────────────────────
+      const BOX_W  = 140;
+      const BOX_H  = 64;
+      const GAP_X  = 110;  // horizontal gap between columns
+      const GAP_Y  = 24;   // vertical gap between nodes in same column
+      const PAD    = { top: 40, left: 40 };
+
+      // Total width / height needed
+      const totalW = (maxDepth + 1) * (BOX_W + GAP_X) - GAP_X;
+      const colH   = columns.map(col => col.length * (BOX_H + GAP_Y) - GAP_Y);
+      const maxColH = Math.max(...colH);
+      const totalH  = maxColH;
+
+      // Assign (x, y) to each node
+      columns.forEach((col, ci) => {
+        const x = ci * (BOX_W + GAP_X);
+        const colTotalH = col.length * (BOX_H + GAP_Y) - GAP_Y;
+        const offsetY   = (maxColH - colTotalH) / 2;
+        col.forEach((n, ri) => {
+          n._x = x;
+          n._y = offsetY + ri * (BOX_H + GAP_Y);
+        });
+      });
+
+      // ── SVG setup ─────────────────────────────────────────────
+      const svg = d3.select(svgEl);
+      svg.selectAll('*').remove();
+
+      // Declare g first so zoom handler can reference it
+      const g = svg.append('g');
+
+      const zoom = d3.zoom().scaleExtent([0.15, 4]).on('zoom', e => g.attr('transform', e.transform));
+      svg.call(zoom);
+      svgEl.style.cursor = 'grab';
+
+      // Initial zoom to fit
+      const scaleX = (W - 80) / (totalW || 1);
+      const scaleY = (H - 80) / (totalH || 1);
+      const scale  = Math.min(scaleX, scaleY, 1);
+      const tx = (W - totalW * scale) / 2;
+      const ty = (H - totalH * scale) / 2;
+      svg.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+
+      // Arrow marker
+      const defs = svg.append('defs');
+      ['raw','mid','final'].forEach(kind => {
+        const c = COLOR[kind];
+        defs.append('marker')
+          .attr('id', `arrow-${kind}`)
+          .attr('viewBox', '0 -5 10 10')
+          .attr('refX', 10).attr('refY', 0)
+          .attr('markerWidth', 7).attr('markerHeight', 7)
+          .attr('orient', 'auto')
+          .append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', c.stroke).attr('opacity', 0.85);
+      });
+      defs.append('marker')
+        .attr('id', 'arrow-default')
+        .attr('viewBox', '0 -5 10 10')
+        .attr('refX', 10).attr('refY', 0)
+        .attr('markerWidth', 7).attr('markerHeight', 7)
+        .attr('orient', 'auto')
+        .append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', COLOR.link).attr('opacity', 0.7);
+
+      // ── Draw links ────────────────────────────────────────────
+      const linkG = g.append('g');
+      data.links.forEach(link => {
+        const s = nodeMap[typeof link.source === 'object' ? link.source.label : link.source];
+        const t = nodeMap[typeof link.target === 'object' ? link.target.label : link.target];
+        if (!s || !t) return;
+
+        const x1 = s._x + BOX_W;
+        const y1 = s._y + BOX_H / 2;
+        const x2 = t._x;
+        const y2 = t._y + BOX_H / 2;
+        const mx = (x1 + x2) / 2;
+
+        const markerKind = t.kind || 'mid';
+        const strokeColor = t.kind === 'raw' ? COLOR.raw.stroke
+                          : t.kind === 'final' ? COLOR.final.stroke
+                          : COLOR.mid.stroke;
+
+        // Bezier path
+        linkG.append('path')
+          .attr('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`)
+          .attr('fill', 'none')
+          .attr('stroke', strokeColor)
+          .attr('stroke-width', 1.8)
+          .attr('stroke-opacity', 0.65)
+          .attr('marker-end', `url(#arrow-${markerKind})`);
+
+        // Rate label on midpoint
+        const rateVal = link.value;
+        const rateText = rateVal >= 1000
+          ? (rateVal / 1000).toFixed(1) + 'k/min'
+          : Math.round(rateVal * 10) / 10 + '/min';
+
+        const lx = mx;
+        const ly = (y1 + y2) / 2 - 6;
+
+        linkG.append('rect')
+          .attr('x', lx - 26).attr('y', ly - 11)
+          .attr('width', 52).attr('height', 16)
+          .attr('rx', 4)
+          .attr('fill', 'rgba(8,8,24,0.75)')
+          .attr('stroke', strokeColor).attr('stroke-opacity', 0.4).attr('stroke-width', 0.8);
+
+        linkG.append('text')
+          .attr('x', lx).attr('y', ly)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'middle')
+          .attr('fill', strokeColor)
+          .attr('font-size', 9)
+          .attr('font-family', 'monospace')
+          .text('× ' + rateText);
+      });
+
+      // ── Draw nodes (boxes) ────────────────────────────────────
+      const nodeG = g.append('g');
+      data.nodes.forEach(n => {
+        const C = COLOR[n.kind] || COLOR.mid;
+        const ng = nodeG.append('g')
+          .attr('transform', `translate(${n._x},${n._y})`)
+          .style('cursor', 'default');
+
+        // Shadow rect
+        ng.append('rect')
+          .attr('x', 2).attr('y', 3)
+          .attr('width', BOX_W).attr('height', BOX_H)
+          .attr('rx', 10)
+          .attr('fill', 'rgba(0,0,0,0.35)')
+          .attr('filter', 'blur(4px)');
+
+        // Main box
+        ng.append('rect')
+          .attr('width', BOX_W).attr('height', BOX_H)
+          .attr('rx', 10)
+          .attr('fill', C.fill)
+          .attr('stroke', C.stroke)
+          .attr('stroke-width', 1.5)
+          .attr('stroke-opacity', 0.9);
+
+        // Top accent line
+        ng.append('rect')
+          .attr('x', 10).attr('y', 0)
+          .attr('width', BOX_W - 20).attr('height', 2)
+          .attr('rx', 1)
+          .attr('fill', C.stroke)
+          .attr('opacity', 0.8);
+
+        // Item name (wrapping)
+        const label = n.label.length > 18 ? n.label.slice(0, 17) + '…' : n.label;
+        ng.append('text')
+          .attr('x', BOX_W / 2).attr('y', 20)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'middle')
+          .attr('fill', C.text)
+          .attr('font-size', 11)
+          .attr('font-weight', 600)
+          .attr('font-family', '-apple-system,sans-serif')
+          .text(label);
+
+        // Divider
+        ng.append('line')
+          .attr('x1', 10).attr('y1', 32)
+          .attr('x2', BOX_W - 10).attr('y2', 32)
+          .attr('stroke', C.stroke).attr('stroke-opacity', 0.3);
+
+        // Machine count
+        if (n.machineName && n.machineCount > 0) {
+          const mcText = n.machineName.length > 12 ? n.machineName.slice(0,11)+'…' : n.machineName;
+          ng.append('text')
+            .attr('x', 10).attr('y', 46)
+            .attr('dominant-baseline', 'middle')
+            .attr('fill', C.text)
+            .attr('font-size', 9.5)
+            .attr('opacity', 0.75)
+            .attr('font-family', 'monospace')
+            .text(mcText);
+
+          const cnt = Math.ceil(n.machineCount * 10) / 10;
+          ng.append('text')
+            .attr('x', BOX_W - 8).attr('y', 46)
+            .attr('text-anchor', 'end')
+            .attr('dominant-baseline', 'middle')
+            .attr('fill', C.text)
+            .attr('font-size', 10)
+            .attr('font-weight', 700)
+            .attr('font-family', 'monospace')
+            .text('×' + (cnt === Math.floor(cnt) ? cnt : cnt.toFixed(1)));
+        }
+
+        // Rate
+        const rate = n.rate >= 1000 ? (n.rate/1000).toFixed(1)+'k' : Math.round(n.rate*10)/10;
+        ng.append('text')
+          .attr('x', BOX_W / 2).attr('y', 57)
+          .attr('text-anchor', 'middle')
+          .attr('dominant-baseline', 'middle')
+          .attr('fill', C.text)
+          .attr('font-size', 8.5)
+          .attr('opacity', 0.55)
+          .attr('font-family', 'monospace')
+          .text(rate + '/min');
+      });
+    }
 
     function _drawSankey(svgEl, data) {
       const wrap = document.getElementById('sankeyWrap');
@@ -9639,7 +10606,7 @@
   width:280px;background:#0d1525ee;backdrop-filter:blur(12px);
   border-left:1px solid rgba(255,255,255,0.10);display:none;flex-direction:column;
   font-family:'Rajdhani',system-ui,sans-serif;
-  box-shadow:-8px 0 40px #00000088;overflow:hidden;
+  box-shadow:-8px 0 40px #00000088;overflow:hidden;transition:background 0.2s,border-color 0.2s;
 ">
   <div style="padding:14px 16px 10px;border-bottom:1px solid rgba(255,255,255,0.10);display:flex;align-items:center;justify-content:space-between;">
     <span style="font-family:-apple-system,sans-serif;font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);letter-spacing:0.06em;">STYLE EDITOR</span>
@@ -9682,11 +10649,11 @@
 
 <script>
 const __DARK_VARS = {
-  '--accent':'#0a84ff','--accent2':'#ff453a','--accent3':'#30d158',
-  '--bg':'transparent','--bg2':'rgba(255,255,255,0.04)','--bg3':'rgba(255,255,255,0.07)',
-  '--panel':'rgba(255,255,255,0.07)','--border':'rgba(255,255,255,0.12)',
+  '--accent':'#a855f7','--accent2':'#ff453a','--accent3':'#30d158',
+  '--bg':'#05000f','--bg2':'rgba(140,50,220,0.06)','--bg3':'rgba(140,50,220,0.10)',
+  '--panel':'rgba(40,10,80,0.45)','--border':'rgba(160,60,255,0.20)',
   '--text':'#f5f5f7','--text-dim':'#98989f','--warn':'#ffd60a',
-  '--highlight':'rgba(10,132,255,0.12)',
+  '--highlight':'rgba(140,50,220,0.14)',
 };
 
 const THEMES = {
@@ -9814,6 +10781,9 @@ const THEMES = {
         letter-spacing: 0 !important; text-transform: none !important;
         border-radius: 8px !important; padding: 5px 14px !important;
       }
+      .__theme-btn.__theme-icon-btn {
+        border-radius: 50% !important; padding: 0 !important;
+      }
       /* ── SANKEY ──────────────────────────── */
       #sankeyWrap { background: #0a0a14 !important; }
       #sankeyTooltip {
@@ -9869,6 +10839,19 @@ const THEMES = {
           0 1px 0 rgba(0,0,0,0.06) !important;
         padding: 14px 28px !important;
       }
+      #themePill {
+        background: rgba(0,0,0,0.07) !important;
+        border-color: rgba(0,0,0,0.12) !important;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.12), inset 0 -1px 0 rgba(255,255,255,0.50) !important;
+      }
+      .__theme-icon-btn { color: rgba(20,20,60,0.50) !important; }
+      .__theme-icon-btn:hover svg { color: #2563eb !important; stroke: #2563eb !important; filter: drop-shadow(0 0 5px rgba(37,99,235,0.6)) !important; }
+      .__theme-icon-btn[data-theme="light"] {
+        background: rgba(255,255,255,0.70) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.90) !important;
+        color: rgba(20,20,60,0.85) !important;
+        border-radius: 50% !important;
+      }
       .logo {
         font-size: 18px !important; font-weight: 700 !important;
         color: #1d1d1f !important; letter-spacing: 0.06em !important;
@@ -9904,7 +10887,7 @@ const THEMES = {
         #toggleRecipeBtn {
         color: var(--text-dim) !important
         }
-        #mainTabBtnSankey {
+        #mainTabBtnVisualize {
         color: var(--text-dim) !important
         }
         #toggleSettingsBtn{
@@ -9993,6 +10976,17 @@ const THEMES = {
         letter-spacing: 0 !important; text-transform: none !important; font-size: 13px !important;
       }
       .reset-btn:hover { border-color: rgba(255,59,48,0.4) !important; color: #ff3b30 !important; }
+      /* ── Tab bar ── */
+      #mainTabBar {
+        background: rgba(255,255,255,0.30) !important;
+        border-bottom-color: rgba(0,0,0,0.10) !important;
+      }
+      /* Empty state & placeholder text */
+      #selectedRecipes > div {
+        color: #6e6e73 !important;
+        background: rgba(0,0,0,0.04) !important;
+        border-color: rgba(0,0,0,0.08) !important;
+      }
       .bot-item {
         background: rgba(255,255,255,0.45) !important;
         border-radius: 8px !important; border: 1px solid rgba(255,255,255,0.70) !important;
@@ -10013,8 +11007,103 @@ const THEMES = {
         letter-spacing: 0 !important; text-transform: none !important;
         border-radius: 8px !important; padding: 5px 14px !important;
       }
+      .__theme-btn.__theme-icon-btn {
+        border-radius: 50% !important; padding: 0 !important;
+      }
       #__se-panel, #__se-panel * { color: #f5f5f7 !important; }
-      /* ── SANKEY ──────────────────────────── */
+      /* ── Settings panel light theme ── */
+      #__se-panel {
+        background: rgba(240,240,248,0.97) !important;
+        backdrop-filter: blur(40px) saturate(200%) !important;
+        -webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+        border-left: 1px solid rgba(0,0,0,0.10) !important;
+        box-shadow: -8px 0 40px rgba(0,0,0,0.12) !important;
+      }
+      #__se-panel * { color: #1d1d1f !important; }
+      #__se-panel > div:first-child {
+        background: rgba(255,255,255,0.70) !important;
+        border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+      }
+      #__se-panel span[style*="color:rgba(255,255,255,0.50)"],
+      #__se-panel div[style*="color:rgba(255,255,255,0.35)"] {
+        color: #6e6e73 !important;
+      }
+      #__se-panel div[style*="border-bottom:1px solid rgba(255,255,255,0.08)"],
+      #__se-panel div[style*="border-bottom: 1px solid rgba(255,255,255,0.08)"] {
+        border-bottom-color: rgba(0,0,0,0.08) !important;
+      }
+      #__se-panel [style*="color:#6a82a0"] { color: #6e6e73 !important; }
+      #__se-panel [style*="color:#c8d8f0"] { color: #007aff !important; }
+      #__se-panel input[type="range"] { accent-color: #007aff !important; }
+      #__se-reset {
+        background: rgba(0,0,0,0.05) !important;
+        border: 1px solid rgba(0,0,0,0.10) !important;
+        color: #6e6e73 !important;
+      }
+      #__se-css {
+        background: rgba(0,0,0,0.05) !important;
+        border: 1px solid rgba(0,0,0,0.10) !important;
+        color: #3a3a4a !important;
+      }
+      #__se-copy {
+        background: rgba(0,122,255,0.10) !important;
+        border: 1px solid rgba(0,122,255,0.30) !important;
+        color: #007aff !important;
+      }
+      #__se-close { color: #8e8e93 !important; }
+      /* ── Modals light theme ── */
+      #recipeSettingsModal,
+      #recipePickerModal {
+        background: rgba(225,225,235,0.72) !important;
+        backdrop-filter: blur(60px) saturate(200%) brightness(1.08) !important;
+        -webkit-backdrop-filter: blur(60px) saturate(200%) brightness(1.08) !important;
+        border-color: rgba(255,255,255,0.75) !important;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.14), inset 0 1.5px 0 rgba(255,255,255,0.90) !important;
+      }
+      #recipeSettingsModal > div,
+      #recipePickerModal > div {
+        border-bottom-color: rgba(0,0,0,0.07) !important;
+        border-top-color: rgba(0,0,0,0.07) !important;
+      }
+      /* All text inside settings/picker modals */
+      #settingsContent * { color: #1d1d1f !important; }
+      #settingsContent div[style*="color:rgba(255,255,255,0.50)"],
+      #settingsContent div[style*="color:rgba(255,255,255,0.35)"] {
+        color: #6e6e73 !important;
+      }
+      /* Separator lines */
+      #settingsContent div[style*="border-top:1px solid rgba(255,255,255"] {
+        border-top-color: rgba(0,0,0,0.08) !important;
+      }
+      /* Inactive buttons */
+      #settingsContent button[style*="rgba(255,255,255,0.05)"] {
+        background: rgba(0,0,0,0.05) !important;
+        border-color: rgba(0,0,0,0.12) !important;
+        color: #3a3a4a !important;
+      }
+      /* Active buttons */
+      #settingsContent button[style*="rgba(10,132,255,0.18)"] {
+        background: rgba(0,122,255,0.14) !important;
+        border-color: rgba(0,122,255,0.45) !important;
+        color: #004eb3 !important;
+      }
+      /* Recipe picker category tabs & content */
+      #recipePickerModal * { color: #1d1d1f !important; }
+      #recipePickerModal [style*="color:rgba(255,255,255"] { color: #6e6e73 !important; }
+      #recipePickerModal [style*="background:rgba(255,255,255,0.05)"],
+      #recipePickerModal [style*="background: rgba(255,255,255,0.05)"] {
+        background: rgba(0,0,0,0.04) !important;
+        border-color: rgba(0,0,0,0.10) !important;
+      }
+      #recipePickerModal [style*="background:rgba(10,132,255"],
+      #recipePickerModal [style*="background: rgba(10,132,255"] {
+        background: rgba(0,122,255,0.14) !important;
+        border-color: rgba(0,122,255,0.45) !important;
+      }
+      #recipePickerModal [style*="border-bottom:1px solid rgba(255,255,255"],
+      #recipePickerModal [style*="border-top:1px solid rgba(255,255,255"] {
+        border-color: rgba(0,0,0,0.07) !important;
+      }
       #sankeyWrap {
         background: rgba(255,255,255,0.25) !important;
         backdrop-filter: blur(40px) !important;
@@ -10199,6 +11288,9 @@ THEMES.default.css = `
         border-radius: 8px !important; padding: 5px 14px !important;
         transition: all 0.18s ease !important;
       }
+      .__theme-btn.__theme-icon-btn {
+        border-radius: 50% !important; padding: 0 !important;
+      }
       /* ── Inline icon fallback boxes ─── */
       div[title][style*="rgba(255,255,255,0.08)"] {
         background: rgba(255,255,255,0.08) !important;
@@ -10220,6 +11312,10 @@ THEMES.default.css = `
 function __applyTheme(name) {
   const theme = THEMES[name];
   if (!theme) return;
+
+  // Mark body so the universal transition CSS is active during the swap
+  document.body.classList.add('theme-switching');
+
   const root = document.documentElement;
 
   // Reset all vars from all themes first
@@ -10232,16 +11328,74 @@ function __applyTheme(name) {
   if (!styleEl) { styleEl = document.createElement('style'); styleEl.id = '__theme-extra-css'; document.head.appendChild(styleEl); }
   styleEl.textContent = theme.css;
 
-  // Update buttons
+  // Update buttons + move blob
   document.querySelectorAll('.__theme-btn').forEach(btn => {
     const active = btn.dataset.theme === name;
-    btn.style.background = active ? 'rgba(255,255,255,0.15)' : 'transparent';
-    btn.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
-    btn.style.color = active ? 'var(--accent)' : 'var(--text-dim)';
-    btn.style.boxShadow = active ? 'inset 0 1px 0 rgba(255,255,255,0.2)' : 'none';
+    if (btn.classList.contains('__theme-icon-btn')) {
+      btn.classList.toggle('active-theme', active);
+      btn.style.color = active ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.45)';
+    } else {
+      btn.style.background = active ? 'rgba(255,255,255,0.15)' : 'transparent';
+      btn.style.borderColor = active ? 'var(--accent)' : 'var(--border)';
+      btn.style.color = active ? 'var(--accent)' : 'var(--text-dim)';
+      btn.style.boxShadow = active ? 'inset 0 1px 0 rgba(255,255,255,0.2)' : 'none';
+    }
   });
 
+  // Slide blob to active button using transform
+  const activeBtn = document.querySelector(`.__theme-icon-btn[data-theme="${name}"]`);
+  const blob = document.getElementById('themeBlobIndicator');
+  if (activeBtn && blob) {
+    blob.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+    blob.style.top = activeBtn.offsetTop + 'px';
+  }
+
   if (typeof __seRefreshCSS === 'function') __seRefreshCSS();
+
+  // Fix settings panel background for light theme
+  const sePanel = document.getElementById('__se-panel');
+  if (sePanel) {
+    if (name === 'light') {
+      sePanel.style.background = 'rgba(235,235,242,0.98)';
+      sePanel.style.borderLeftColor = 'rgba(0,0,0,0.10)';
+      sePanel.style.boxShadow = '-8px 0 40px rgba(0,0,0,0.12)';
+    } else if (name === 'dark') {
+      sePanel.style.background = '#1c1c1eee';
+      sePanel.style.borderLeftColor = 'rgba(255,255,255,0.10)';
+      sePanel.style.boxShadow = '-8px 0 40px #00000088';
+    } else {
+      sePanel.style.background = '#0d1525ee';
+      sePanel.style.borderLeftColor = 'rgba(255,255,255,0.10)';
+      sePanel.style.boxShadow = '-8px 0 40px #00000088';
+    }
+  }
+
+  // Fix modal dialogs for light theme
+  const lightModal = name === 'light';
+  const modalBg     = lightModal ? 'rgba(225,225,235,0.72)'         : 'linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%)';
+  const modalBorder = lightModal ? 'rgba(255,255,255,0.75)'          : 'rgba(255,255,255,0.15)';
+  const modalShadow = lightModal ? '0 20px 60px rgba(0,0,0,0.14), inset 0 1.5px 0 rgba(255,255,255,0.90)' : '0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.20)';
+  ['recipeSettingsModal', 'recipePickerModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.background = modalBg;
+      el.style.border = `1px solid ${modalBorder}`;
+      el.style.boxShadow = modalShadow;
+    }
+  });
+  const isLight = name === 'light';
+  const activeColor  = isLight ? '#007aff' : 'var(--accent)';
+  const inactiveColor = isLight ? '#6e6e73' : 'rgba(255,255,255,0.40)';
+  const btnR = document.getElementById('mainTabBtnRecipes');
+  const btnS = document.getElementById('mainTabBtnVisualize');
+  if (btnR && btnS) {
+    // determine which is currently active by its border-bottom
+    const rIsActive = btnR.style.borderBottomColor !== 'transparent' && btnR.style.borderBottomColor !== '';
+    btnR.style.color = rIsActive ? activeColor : inactiveColor;
+    btnR.style.borderBottomColor = rIsActive ? activeColor : 'transparent';
+    btnS.style.color = !rIsActive ? activeColor : inactiveColor;
+    btnS.style.borderBottomColor = !rIsActive ? activeColor : 'transparent';
+  }
 
   // Set Sankey colors for this theme and re-render if visible
   const sankeyPalettes = {
@@ -10284,6 +11438,9 @@ function __applyTheme(name) {
       window.__renderSankey();
     }
   }
+
+  // Remove switching class after transitions finish
+  setTimeout(() => document.body.classList.remove('theme-switching'), 500);
 }
 
 (function() {
@@ -10401,8 +11558,22 @@ function __applyTheme(name) {
   // Dark als Standard beim Laden anwenden
   __applyTheme('default');
   refreshCSS();
+
+  // Reposition blob after layout is settled
+  requestAnimationFrame(() => {
+    const activeBtn = document.querySelector('.__theme-icon-btn.active-theme');
+    const blob = document.getElementById('themeBlobIndicator');
+    if (activeBtn && blob) {
+      // No transition on first paint
+      blob.style.transition = 'none !important';
+      blob.style.transform = `translateX(${activeBtn.offsetLeft}px)`;
+      blob.style.top = activeBtn.offsetTop + 'px';
+      requestAnimationFrame(() => { blob.style.transition = ''; });
+    }
+  });
 })();
 </script>
+  </div><!-- end app-wrapper -->
 </body>
 
 </html>
