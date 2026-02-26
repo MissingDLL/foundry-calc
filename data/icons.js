@@ -1,9 +1,4 @@
 const ICON_ALIASES = {
-  // Rubble / raw ore → map to processed ore icon where available
-  "Xenoferrite Ore Rubble": "Xenoferrite Ore",
-  "Telluxite Ore Rubble": "Telluxite Ore",
-  "Ignium Ore Rubble": "Ignium Ore",
-  "Technum Ore Rubble": "Technum Ore",
   // Fluids / gases with no standalone icon → nearest existing icon
   "Hot Air": "Air Intake Base",
   "Water": "Ignium-Enriched Water",
