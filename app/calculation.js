@@ -197,7 +197,14 @@ function calculateRecipes() {
         ${getIcon(r.displayName, 28)}<span class="label">${r.displayName}</span>
         ${r.recipeName !== r.itemName && r.itemName ? '<span style="font-size:10px;color:var(--text-dim);margin-left:4px">' + (r.recipeName || "") + "</span>" : ""}
       </div></td>
-      <td style="padding:7px 12px"><div style="display:flex;align-items:center;gap:8px">${getIcon(r.machineName, 24)}<span style="color:var(--text-dim);font-size:13px">${r.machineName}</span></div></td>
+      <td style="padding:7px 12px">
+        <div style="display:flex;align-items:center;gap:8px">${getIcon(r.machineName, 24)}<span style="color:var(--text-dim);font-size:13px">${r.machineName}</span></div>
+        ${r.machineName === M.ASSEMBLY_LINE ? `<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;padding-left:2px;line-height:1.7">
+          └&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.start.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.start.name}
+          &nbsp;·&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.producer.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.producer.name}
+          &nbsp;·&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.painter.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.painter.name}
+        </div>` : ''}
+      </td>
       <td class="num">${r.machines}</td>
       <td class="num" style="white-space:nowrap">${fmt(r.actualOpm)}${chanceBadge ? ' ' + chanceBadge : ''}</td>
       <td style="text-align:right;padding:7px 12px">

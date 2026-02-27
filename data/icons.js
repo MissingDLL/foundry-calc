@@ -6,6 +6,15 @@ const ICON_ALIASES = {
   "Xeno-Crystal": "Charged Xeno-Crystal",
   "Olumite": "Crude Olumite",
   "Barrel": "Barrel (Empty)",
+  // Assembly Line (compound machine) → use Start segment as icon
+  "Assembly Line": "Assembly Line Start",
+  // Complete robot recipes → use Torso icon as representative icon
+  "Combat Robot": "Combat Robot Torso",
+  "Farmer Robot": "Farmer Robot Torso",
+  "Miner Robot": "Miner Robot Torso",
+  "Operator Robot": "Operator Robot Torso",
+  "Personal Assistant Robot": "Personal Assistant Robot Torso",
+  "Science Robot": "Science Robot Torso",
 };
 
 function getIcon(name, size = 28, isBot = false) {
@@ -71,6 +80,7 @@ const BOT_ICONS = {
   "Science Robot Head": "icons/robots/Science_Robot_Head.png",
   "Science Robot Arm": "icons/robots/Science_Robot_Arm.png",
   "Science Robot Leg": "icons/robots/Science_Robot_Leg.png",
+  
 };
 const BUILDING_ICONS = {
   "Long Range Scanner Base": "icons/buildings/Long_Range_Scanner_Base.png",

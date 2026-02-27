@@ -41,6 +41,20 @@ const M = Object.freeze({
   LAVA_SMELTER_II: "Lava-Smelter II",
   SMELTER_SMALL: "Smelter (Small)",
   DISTILLATION_COLUMN: "Distillation Column",
+  ASSEMBLY_LINE:          "Assembly Line",
+  ASSEMBLY_LINE_START:    "Assembly Line Start",
+  ASSEMBLY_LINE_PRODUCER: "Assembly Line Producer",
+  ASSEMBLY_LINE_PAINTER:  "Assembly Line Painter",
+});
+
+// ── Assembly Line sub-machine composition ─────────────────────
+// One fully-loaded Assembly Line (32 robots/min) consists of:
+//   1× Start, 10× Producer (5 parts × 2 per part), 1× Painter
+// Scale all three by the number of Assembly Lines in use.
+const ASSEMBLY_LINE_COMPOSITION = Object.freeze({
+  start:    { count: 1,  name: "Assembly Line Start"    },
+  producer: { count: 10, name: "Assembly Line Producer" }, // 5 parts × 2
+  painter:  { count: 1,  name: "Assembly Line Painter"  },
 });
 
 // ── Item name constants ───────────────────────────────────────
@@ -158,6 +172,39 @@ const I = Object.freeze({
   XENOFERRITE_ORE: "Xenoferrite Ore",
   XENOFERRITE_ORE_RUBBLE: "Xenoferrite Ore Rubble",
   XENOFERRITE_PLATES: "Xenoferrite Plates",
+  // ── Complete robots ──────────────────────────────────────────────
+  COMBAT_ROBOT: "Combat Robot",
+  FARMER_ROBOT: "Farmer Robot",
+  MINER_ROBOT: "Miner Robot",
+  OPERATOR_ROBOT: "Operator Robot",
+  PERSONAL_ASSISTANT_ROBOT: "Personal Assistant Robot",
+  SCIENCE_ROBOT: "Science Robot",
+  // ── Robot parts (used as ingredients in complete-robot recipes) ──
+  COMBAT_ROBOT_ARM: "Combat Robot Arm",
+  COMBAT_ROBOT_HEAD: "Combat Robot Head",
+  COMBAT_ROBOT_LEG: "Combat Robot Leg",
+  COMBAT_ROBOT_TORSO: "Combat Robot Torso",
+  FARMER_ROBOT_ARM: "Farmer Robot Arm",
+  FARMER_ROBOT_HEAD: "Farmer Robot Head",
+  FARMER_ROBOT_LEG: "Farmer Robot Leg",
+  FARMER_ROBOT_TORSO: "Farmer Robot Torso",
+  MINER_ROBOT_ARM: "Miner Robot Arm",
+  MINER_ROBOT_HEAD: "Miner Robot Head",
+  MINER_ROBOT_LEG: "Miner Robot Leg",
+  MINER_ROBOT_TORSO: "Miner Robot Torso",
+  OPERATOR_ROBOT_ARM: "Operator Robot Arm",
+  OPERATOR_ROBOT_HEAD: "Operator Robot Head",
+  OPERATOR_ROBOT_LEG: "Operator Robot Leg",
+  OPERATOR_ROBOT_TORSO: "Operator Robot Torso",
+  PERSONAL_ASSISTANT_ROBOT_ARM: "Personal Assistant Robot Arm",
+  PERSONAL_ASSISTANT_ROBOT_HEAD: "Personal Assistant Robot Head",
+  PERSONAL_ASSISTANT_ROBOT_LEG: "Personal Assistant Robot Leg",
+  PERSONAL_ASSISTANT_ROBOT_TORSO: "Personal Assistant Robot Torso",
+  SCIENCE_ROBOT_ARM: "Science Robot Arm",
+  SCIENCE_ROBOT_HEAD: "Science Robot Head",
+  SCIENCE_ROBOT_LEG: "Science Robot Leg",
+  SCIENCE_ROBOT_TORSO: "Science Robot Torso",
+  PAINT: "Paint",
 });
 
 // ── Category constants ────────────────────────────────────────

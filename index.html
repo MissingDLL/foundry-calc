@@ -151,11 +151,14 @@
           <div class="panel">
             <div class="config-grid">
               <div class="input-group" style="grid-column: 1/-1">
-                <label>Produktionsziel (pro Bot-Typ / Min)</label>
+                <label>Vollständige Roboter / Min</label>
                 <input type="number" id="goalProd" value="32" min="1" />
+                <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;line-height:1.5">
+                  Wähle z.B. „Combat Robot" für das komplette Rezept inkl. aller Teile &amp; Paint
+                </div>
               </div>
             </div>
-            <button class="calc-btn" onclick="calculateRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
+            <button class="calc-btn" onclick="calculateBots()" style="display:flex;align-items:center;justify-content:center;gap:7px">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
               Berechnen
             </button>
@@ -560,16 +563,16 @@
   </div>
 
 
-  <script src="app/theme.js"></script>
-  <script src="data/game-data.js"></script>
-  <script src="data/icons.js"></script>
-  <script src="data/recipes.js"></script>
-  <script src="app/state.js"></script>
-  <script src="app/ui-settings.js"></script>
-  <script src="app/ui-recipes.js"></script>
-  <script src="app/calculation.js"></script>
-  <script src="app/ui-nav.js"></script>
-  <script src="app/visualization.js"></script>
+  <script src="app/theme.js?v=2"></script>
+  <script src="data/game-data.js?v=2"></script>
+  <script src="data/icons.js?v=2"></script>
+  <script src="data/recipes.js?v=2"></script>
+  <script src="app/state.js?v=2"></script>
+  <script src="app/ui-settings.js?v=2"></script>
+  <script src="app/ui-recipes.js?v=2"></script>
+  <script src="app/calculation.js?v=2"></script>
+  <script src="app/ui-nav.js?v=2"></script>
+  <script src="app/visualization.js?v=2"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();

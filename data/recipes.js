@@ -3840,6 +3840,81 @@ const RECIPES = {
       applies_to: ["Casting Machines"],
     },
   },
+  // ── Vollständige Roboter (Assembly Line) ─────────────────────
+  // Eine voll ausgelastete Assembly Line produziert 32 Roboter/min.
+  // Zykluszeit = 60 / 32 = 1.875 s. Painter verbraucht 100 Paint/Roboter.
+  "Combat Robot": {
+    category: CAT.ROBOTS,
+    ingredients: [
+      { item: I.COMBAT_ROBOT_HEAD,  amount: 1 },
+      { item: I.COMBAT_ROBOT_TORSO, amount: 1 },
+      { item: I.COMBAT_ROBOT_ARM,   amount: 2 },
+      { item: I.COMBAT_ROBOT_LEG,   amount: 2 },
+      { item: I.PAINT,              amount: 100 },
+    ],
+    output: { amount: 1 },
+    machines: { [M.ASSEMBLY_LINE]: { cycleTime: 1.875 } },
+  },
+  "Farmer Robot": {
+    category: CAT.ROBOTS,
+    ingredients: [
+      { item: I.FARMER_ROBOT_HEAD,  amount: 1 },
+      { item: I.FARMER_ROBOT_TORSO, amount: 1 },
+      { item: I.FARMER_ROBOT_ARM,   amount: 2 },
+      { item: I.FARMER_ROBOT_LEG,   amount: 2 },
+      { item: I.PAINT,              amount: 100 },
+    ],
+    output: { amount: 1 },
+    machines: { [M.ASSEMBLY_LINE]: { cycleTime: 1.875 } },
+  },
+  "Miner Robot": {
+    category: CAT.ROBOTS,
+    ingredients: [
+      { item: I.MINER_ROBOT_HEAD,  amount: 1 },
+      { item: I.MINER_ROBOT_TORSO, amount: 1 },
+      { item: I.MINER_ROBOT_ARM,   amount: 2 },
+      { item: I.MINER_ROBOT_LEG,   amount: 2 },
+      { item: I.PAINT,             amount: 100 },
+    ],
+    output: { amount: 1 },
+    machines: { [M.ASSEMBLY_LINE]: { cycleTime: 1.875 } },
+  },
+  "Operator Robot": {
+    category: CAT.ROBOTS,
+    ingredients: [
+      { item: I.OPERATOR_ROBOT_HEAD,  amount: 1 },
+      { item: I.OPERATOR_ROBOT_TORSO, amount: 1 },
+      { item: I.OPERATOR_ROBOT_ARM,   amount: 2 },
+      { item: I.OPERATOR_ROBOT_LEG,   amount: 2 },
+      { item: I.PAINT,                amount: 100 },
+    ],
+    output: { amount: 1 },
+    machines: { [M.ASSEMBLY_LINE]: { cycleTime: 1.875 } },
+  },
+  "Personal Assistant Robot": {
+    category: CAT.ROBOTS,
+    ingredients: [
+      { item: I.PERSONAL_ASSISTANT_ROBOT_HEAD,  amount: 1 },
+      { item: I.PERSONAL_ASSISTANT_ROBOT_TORSO, amount: 1 },
+      { item: I.PERSONAL_ASSISTANT_ROBOT_ARM,   amount: 2 },
+      { item: I.PERSONAL_ASSISTANT_ROBOT_LEG,   amount: 2 },
+      { item: I.PAINT,                          amount: 100 },
+    ],
+    output: { amount: 1 },
+    machines: { [M.ASSEMBLY_LINE]: { cycleTime: 1.875 } },
+  },
+  "Science Robot": {
+    category: CAT.ROBOTS,
+    ingredients: [
+      { item: I.SCIENCE_ROBOT_HEAD,  amount: 1 },
+      { item: I.SCIENCE_ROBOT_TORSO, amount: 1 },
+      { item: I.SCIENCE_ROBOT_ARM,   amount: 2 },
+      { item: I.SCIENCE_ROBOT_LEG,   amount: 2 },
+      { item: I.PAINT,               amount: 100 },
+    ],
+    output: { amount: 1 },
+    machines: { [M.ASSEMBLY_LINE]: { cycleTime: 1.875 } },
+  },
   "Combat Drone": {
     category: CAT.ROBOTS,
     ingredients: [

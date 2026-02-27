@@ -654,5 +654,24 @@ function updateItemWsCore(chk) {
   renderSelectedRecipes();
 }
 
+// ── Bot-aware calculation ─────────────────────────────────────
+//
+// Reads the "goalProd" input (complete robots / min) and sets the
+// production goal for every selected Robots-category recipe so that
+// the assembly ratio is respected:
+//   Head  × 1  (1 per complete robot)
+//   Torso × 1  (1 per complete robot)
+//   Arm   × 2  (2 per complete robot)
+//   Leg   × 2  (2 per complete robot)
+// Non-assembly robots/bots/drones get the raw goalProd value directly.
+function calculateBots() {
+  const goal = parseFloat(document.getElementById("goalProd").value) || 32;
+  selectedRecipeList.forEach(item => {
+    const r = RECIPES[item.recipeName];
+    if (r && r.category === "Robots") item.goal = goal;
+  });
+  calculateRecipes();
+}
+
 // Helper: get primary output amount (supports both single object and array)
 // Multiplies by chance if present (e.g. 0.5 → expected value)

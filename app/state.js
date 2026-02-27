@@ -136,25 +136,33 @@ function toggleRecipeCategoryAll() {
 // Determines which sub-section of the bot sidebar a recipe belongs to,
 // based on simple name pattern matching.
 // The order of checks matters: more specific patterns come first.
+// Complete robot names (exact match) → own top-level group
+const COMPLETE_ROBOT_NAMES = new Set([
+  "Combat Robot", "Farmer Robot", "Miner Robot",
+  "Operator Robot", "Personal Assistant Robot", "Science Robot",
+]);
+
 function getBotSubgroup(name) {
+  if (COMPLETE_ROBOT_NAMES.has(name)) return "Vollständige Roboter";
   const n = name.toLowerCase();
   if (n.includes("drone")) return "Drones";
   if (n.includes(" bot")) return "Bots";
-  if (n.startsWith("combat robot")) return "Combat Robot";
-  if (n.startsWith("farmer robot")) return "Farmer Robot";
-  if (n.startsWith("miner robot")) return "Miner Robot";
-  if (n.startsWith("operator robot")) return "Operator Robot";
-  if (n.startsWith("personal assistant robot")) return "Personal Assistant Robot";
-  if (n.startsWith("science robot")) return "Science Robot";
+  if (n.startsWith("combat robot")) return "Combat Robot Teile";
+  if (n.startsWith("farmer robot")) return "Farmer Robot Teile";
+  if (n.startsWith("miner robot")) return "Miner Robot Teile";
+  if (n.startsWith("operator robot")) return "Operator Robot Teile";
+  if (n.startsWith("personal assistant robot")) return "Personal Assistant Robot Teile";
+  if (n.startsWith("science robot")) return "Science Robot Teile";
   return "Robots (Sonstige)";
 }
 
 // Defines the display order of bot subgroups in the sidebar.
 // Any subgroup not in this list is appended at the end.
 const BOT_SUBGROUP_ORDER = [
+  "Vollständige Roboter",
   "Bots", "Drones",
-  "Personal Assistant Robot", "Operator Robot",
-  "Miner Robot", "Farmer Robot", "Combat Robot", "Science Robot",
+  "Personal Assistant Robot Teile", "Operator Robot Teile",
+  "Miner Robot Teile", "Farmer Robot Teile", "Combat Robot Teile", "Science Robot Teile",
   "Robots (Sonstige)",
 ];
 
@@ -289,6 +297,7 @@ const APPLIES_TO_MACHINES = {
   "Research Servers":  [],
   "Incinerators":      [],
   "Flare Stacks":      [],
+  "Assembly Lines":    [M.ASSEMBLY_LINE],
 };
 
 // Reverse lookup: machine name → its APPLIES_TO_MACHINES category.
