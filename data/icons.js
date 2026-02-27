@@ -179,7 +179,7 @@ const BUILDINGS2_ICONS = {
   "Burner Generator": "icons/Burner_Generator.png",
   "Boiler": "icons/Boiler.png",
   "Geothermal Boiler": "icons/Geothermal_Boiler.png",
-  "Steamturbine": "icons/Steamturbine.png",
+  "Steam Turbine": "icons/Steamturbine.png",
   "Solar Panel (Small)": "icons/Solar_Panel_Small.png",
   "Solar Panel (Large)": "icons/Solar_Panel_Large.png",
   "Battery (Small)": "icons/Battery_Small.png",
