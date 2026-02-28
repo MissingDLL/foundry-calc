@@ -36,6 +36,33 @@
 // ============================================================
 
 // ============================================================
+// COLOR PALETTES
+// ============================================================
+// Single source of truth for visualization colors.
+//
+// VIZ_COLORS_DARK  – built-in palette used for the "default" and "dark"
+//                    themes.  Both _drawSankey and _drawBoxes fall back to
+//                    this when window.__sankeyColors is null.
+//
+// window.__sankeyColors  – set by __applyTheme() in theme.js whenever the
+//                          active theme needs a different palette (e.g. light).
+//                          null means "use VIZ_COLORS_DARK".
+//
+// Shape of each palette:
+//   raw   / mid / final: { fill, stroke, text, card, cborder }
+//   link: string  (CSS color for flow paths)
+const VIZ_COLORS_DARK = {
+  raw:   { fill: '#122a12', stroke: '#2a6a2a', text: '#6adf6a', card: '#0e2010', cborder: '#1a4a1a' },
+  mid:   { fill: '#0a1628', stroke: '#1e3a70', text: '#6a9adf', card: '#080f1e', cborder: '#162040' },
+  final: { fill: '#2a1206', stroke: '#7a3010', text: '#e08050', card: '#1e0e04', cborder: '#5a2010' },
+  link:  '#4a8adf',
+};
+// Expose so theme.js can reference the same palette for legend swatches
+// (theme.js is loaded before this file, so it reads this on user-triggered
+// theme switches, which always happen after all scripts have loaded).
+window.__vizDefaultColors = VIZ_COLORS_DARK;
+
+// ============================================================
 // GRAPH DATA BUILDER
 // ============================================================
 
@@ -251,12 +278,7 @@ function _drawBoxes(svgEl, data) {
   const H = (wrap ? wrap.getBoundingClientRect().height : 0) || 650;
 
   // Color palette — overridden by __applyTheme() for the light theme
-  const COLOR = window.__sankeyColors || {
-    raw:   { fill: '#0e2010', stroke: '#2a6a2a', text: '#6adf6a', card: '#0a1a0a', cborder: '#1a4a1a' },
-    mid:   { fill: '#080f1e', stroke: '#1e3a70', text: '#6a9adf', card: '#060c18', cborder: '#162040' },
-    final: { fill: '#1e0e04', stroke: '#7a3010', text: '#e08050', card: '#180a02', cborder: '#5a2010' },
-    link:  '#4a8adf',
-  };
+  const COLOR = window.__sankeyColors || VIZ_COLORS_DARK;
 
   // ── Step 1: Assign topological depth (column) to each node ──
   const nodeMap = {};
@@ -526,12 +548,7 @@ function _drawSankey(svgEl, data) {
   const IH     = H - PAD.top  - PAD.bottom;  // inner drawable height
 
   // Color palette — overridden by __applyTheme() for the light theme
-  const COLOR = window.__sankeyColors || {
-    raw:   { fill: '#122a12', stroke: '#2a6a2a', text: '#6adf6a', card: '#0e2010', cborder: '#1a4a1a' },
-    mid:   { fill: '#0a1628', stroke: '#1e3a70', text: '#6a9adf', card: '#080f1e', cborder: '#162040' },
-    final: { fill: '#2a1206', stroke: '#7a3010', text: '#e08050', card: '#1e0e04', cborder: '#5a2010' },
-    link:  '#4a8adf',
-  };
+  const COLOR = window.__sankeyColors || VIZ_COLORS_DARK;
 
   const svg = d3.select(svgEl);
   svg.selectAll('*').remove();

@@ -809,14 +809,13 @@ function __applyTheme(name) {
   };
   window.__sankeyColors = sankeyPalettes[name] || null;
 
-  // Update legend swatches to match the active palette
-  const legendPalette = window.__sankeyColors || {
-    raw:   { fill: '#1a4a1a', stroke: '#2a6a2a', text: '#6aaa6a' },
-    mid:   { fill: '#1a2a4a', stroke: '#2a4a8a', text: '#6a9adf' },
-    final: { fill: '#3a1a08', stroke: '#7a3a10', text: '#e08050' },
-  };
+  // Update legend swatches to match the active palette.
+  // Falls back to window.__vizDefaultColors (set by visualization.js).
+  // On the very first call (before visualization.js loads) the legend is
+  // hidden anyway, so skipping the update is safe.
+  const legendPalette = window.__sankeyColors || window.__vizDefaultColors;
   const legend = document.getElementById('sankeyLegend');
-  if (legend) {
+  if (legend && legendPalette) {
     const spans = legend.querySelectorAll(':scope > span');
     const keys = ['raw', 'mid', 'final'];
     spans.forEach((outerSpan, i) => {
