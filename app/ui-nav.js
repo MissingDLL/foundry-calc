@@ -41,9 +41,13 @@ function toggleSidebar() {
   localStorage.setItem('sidebarCollapsed', isCollapsed ? '1' : '0');
 }
 
-// Restore sidebar state on load
+// Restore sidebar state on load.
+// On mobile (≤ 640 px) the sidebar becomes an overlay drawer, so we default
+// to collapsed if no explicit preference has been saved yet.
 (function() {
-  if (localStorage.getItem('sidebarCollapsed') === '1') {
+  const saved    = localStorage.getItem('sidebarCollapsed');
+  const isMobile = window.matchMedia('(max-width: 640px)').matches;
+  if (saved === '1' || (saved === null && isMobile)) {
     document.querySelector('.container').classList.add('sidebar-collapsed');
   }
 })();
