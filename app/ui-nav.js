@@ -257,5 +257,94 @@ function _applyImportedPlan(plan) {
 }
 
 // ============================================================
+// SHAREABLE URL
+// ============================================================
+// Encodes the current plan as a Base64 URL hash and copies the link
+// to the clipboard.  The same plan format as export is used (version 1)
+// so _applyImportedPlan() can restore it on the receiving end.
+//
+// URL shape:  https://…/foundry-calc/#plan=<base64>
+//
+// Notes:
+//   • btoa/atob only handle Latin-1; encodeURIComponent + escape/unescape
+//     bridges the gap for any Unicode characters in item names.
+//   • After applying a shared plan the hash is cleared via history.replaceState
+//     so that subsequent reloads start fresh rather than re-applying the URL.
+
+function sharePlan() {
+  if (!selectedRecipeList.length) {
+    alert('Keine Rezepte ausgewählt – bitte zuerst Rezepte hinzufügen.');
+    return;
+  }
+
+  const famDefaults = {};
+  MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
+
+  const plan = {
+    version: 1,
+    selectedRecipeList: selectedRecipeList.map(item => ({
+      itemName:    item.itemName,
+      recipeName:  item.recipeName,
+      machineName: item.machineName,
+      goal:        item.goal,
+      wsOverride:  item.wsOverride,
+    })),
+    settings: {
+      variantSettings,
+      minerSettings,
+      botEfficiencyOverrides,
+      globalMiningProductivity,
+      globalFluidProductivity,
+      workstationConfigs,
+      machineFamilyDefaults: famDefaults,
+    },
+  };
+
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(plan))));
+  const url     = location.href.split('#')[0] + '#plan=' + encoded;
+
+  const btn = document.getElementById('sharePlanBtn');
+
+  function _flashBtn(text, color, borderColor) {
+    if (!btn) return;
+    const origHtml   = btn.innerHTML;
+    const origColor  = btn.style.color;
+    const origBorder = btn.style.borderColor;
+    btn.textContent  = text;
+    btn.style.color       = color;
+    btn.style.borderColor = borderColor;
+    setTimeout(() => {
+      btn.innerHTML         = origHtml;
+      btn.style.color       = origColor;
+      btn.style.borderColor = origBorder;
+    }, 2000);
+  }
+
+  navigator.clipboard.writeText(url)
+    .then(() => _flashBtn('✓ Kopiert!', 'var(--accent3)', 'rgba(48,209,88,0.4)'))
+    .catch(() => {
+      // Fallback for environments without clipboard API (e.g. plain file://)
+      prompt('Link kopieren:', url);
+    });
+}
+
+// Called once on startup (from the inline <script> in index.html).
+// If the URL contains a #plan=… hash the encoded plan is decoded and
+// applied, overriding any locally saved state.  The hash is then removed
+// so that a subsequent reload starts with the user's own saved state.
+function _loadPlanFromUrl() {
+  const hash = location.hash;
+  if (!hash.startsWith('#plan=')) return;
+  try {
+    const encoded = hash.slice('#plan='.length);
+    const plan    = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+    _applyImportedPlan(plan);
+    history.replaceState(null, '', location.pathname + location.search);
+  } catch (e) {
+    console.warn('foundry-calc: could not load plan from URL:', e);
+  }
+}
+
+// ============================================================
 // SANKEY — Datenaufbau
 // ============================================================
