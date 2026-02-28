@@ -242,7 +242,19 @@ function _applyImportedPlan(plan) {
       }));
   }
 
-  // Restore settings
+  // Reset all settings to their defaults before applying imported values.
+  // Without this, Object.assign() would only merge — leaving any keys that
+  // exist in the current session but not in the imported plan in place,
+  // causing different behaviour than opening a fresh share link.
+  Object.keys(variantSettings).forEach(k => delete variantSettings[k]);
+  Object.keys(minerSettings).forEach(k => delete minerSettings[k]);
+  Object.keys(botEfficiencyOverrides).forEach(k => delete botEfficiencyOverrides[k]);
+  Object.keys(workstationConfigs).forEach(k => delete workstationConfigs[k]);
+  globalMiningProductivity = 0;
+  globalFluidProductivity  = 0;
+  MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
+
+  // Restore settings from the imported plan
   const s = plan.settings || {};
   if (s.variantSettings)        Object.assign(variantSettings,        s.variantSettings);
   if (s.minerSettings)          Object.assign(minerSettings,          s.minerSettings);
