@@ -108,7 +108,10 @@ function getVariantsFor(canonicalName) {
 // Updates the checkboxes in the bot sidebar and the label of the
 // "✓ Alle" / "✗ Keine" button.
 function toggleRecipeCategoryAll() {
-  const entries = Object.entries(RECIPES).filter(([, r]) => r.category === 'Robots');
+  // Only act on entries that have a visible checkbox (parts are display-only)
+  const entries = Object.entries(RECIPES)
+    .filter(([, r]) => r.category === 'Robots')
+    .filter(([name]) => !!document.getElementById("chk_" + name));
   const allActive = entries.every(([name]) => {
     const chk = document.getElementById("chk_" + name);
     return chk && chk.checked;
@@ -213,17 +216,12 @@ function buildRecipeCategoryList() {
   const prefixes = ["Combat Robot ", "Farmer Robot ", "Miner Robot ",
     "Operator Robot ", "Personal Assistant Robot ", "Science Robot "];
 
-  // Helper: render a single bot-item row and append it to `list`
-  function renderBotItem(name, { iconSize = 28, fontSize = 13, indent = false } = {}) {
+  // Helper: render a selectable bot-item row (with checkbox + efficiency tag).
+  function renderBotItem(name) {
     const r    = RECIPES[name];
     const item = document.createElement("div");
     item.className = "bot-item";
     item.id = "botItem_" + name;
-    if (indent) {
-      item.style.marginLeft = "10px";
-      item.style.paddingTop = "4px";
-      item.style.paddingBottom = "4px";
-    }
 
     const prefix    = prefixes.find(p => name.startsWith(p));
     const shortName = prefix ? name.slice(prefix.length) : name;
@@ -237,11 +235,31 @@ function buildRecipeCategoryList() {
     <div class="bot-check">
       <input type="checkbox" id="chk_${name}" onchange="toggleRecipeFromGrid('${name}', this.checked)">
     </div>
-    ${getIcon(name, iconSize, true)}
+    ${getIcon(name, 28, true)}
     <label for="chk_${name}" style="cursor:pointer;flex:1;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden">
-      <span class="bot-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:${fontSize}px">${shortName}</span>
+      <span class="bot-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px">${shortName}</span>
     </label>
     ${effTag}
+  `;
+    list.appendChild(item);
+  }
+
+  // Helper: render a read-only part row (no checkbox, shows required quantity).
+  function renderPartItem(partName, qty) {
+    const item = document.createElement("div");
+    item.className = "bot-item";
+    item.id = "botItem_" + partName;
+    item.style.cssText = "margin-left:10px;padding:4px 8px;cursor:default;pointer-events:none;opacity:0.72";
+
+    const prefix    = prefixes.find(p => partName.startsWith(p));
+    const shortName = prefix ? partName.slice(prefix.length) : partName;
+
+    const qtyBadge = `<span style="font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;color:rgba(255,255,255,0.45);white-space:nowrap;flex-shrink:0;min-width:18px;text-align:right">${qty}×</span>`;
+
+    item.innerHTML = `
+    ${getIcon(partName, 22, true)}
+    <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:rgba(255,255,255,0.65)">${shortName}</span>
+    ${qtyBadge}
   `;
     list.appendChild(item);
   }
@@ -258,10 +276,8 @@ function buildRecipeCategoryList() {
     catSpan.textContent = sg;
     catDiv.appendChild(catSpan);
 
-    // For "Complete Robots", the "✓ All" button toggles robots + all their parts
-    const allNamesToToggle = sg === "Complete Robots"
-      ? [...names, ...names.flatMap(n => groups[ROBOT_TO_PARTS_SUBGROUP[n]] || [])]
-      : [...names];
+    // Parts have no checkboxes, so "✓ All" only toggles the complete robots themselves
+    const allNamesToToggle = [...names];
 
     const allBtn = document.createElement("button");
     allBtn.id = "robotAllBtn_sg_" + sg.replace(/ /g, "_");
@@ -288,11 +304,15 @@ function buildRecipeCategoryList() {
     names.sort().forEach((name) => {
       renderBotItem(name);
 
-      // For complete robots, render their parts inline below
+      // For complete robots, render their parts inline below (read-only, with qty)
       if (sg === "Complete Robots") {
         const partsSg = ROBOT_TO_PARTS_SUBGROUP[name];
         const partsNames = (partsSg && groups[partsSg]) ? groups[partsSg].slice().sort() : [];
         if (partsNames.length) {
+          // Build a qty map from the robot's own ingredient list
+          const qtyMap = {};
+          (RECIPES[name].ingredients || []).forEach(ing => { qtyMap[ing.item] = ing.amount; });
+
           // Subtle "Parts" divider
           const partsLabel = document.createElement("div");
           partsLabel.style.cssText =
@@ -301,7 +321,7 @@ function buildRecipeCategoryList() {
           partsLabel.textContent = "Parts";
           list.appendChild(partsLabel);
 
-          partsNames.forEach(partName => renderBotItem(partName, { iconSize: 22, fontSize: 12, indent: true }));
+          partsNames.forEach(partName => renderPartItem(partName, qtyMap[partName] || 1));
 
           // Small spacer between robot groups
           const spacer = document.createElement("div");
