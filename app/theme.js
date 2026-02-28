@@ -174,6 +174,40 @@ const THEMES = {
       .__theme-btn.__theme-icon-btn {
         border-radius: 50% !important; padding: 0 !important;
       }
+      /* ── Nav button hover – dark theme ── */
+      #toggleSettingsBtn:hover {
+        background: rgba(10,132,255,0.22) !important;
+        border-color: rgba(10,132,255,0.50) !important;
+        color: #409cff !important;
+      }
+      #toggleSettingsBtn:hover svg {
+        filter: drop-shadow(0 0 6px rgba(10,132,255,0.65)) !important;
+        color: #409cff !important;
+        stroke: #409cff !important;
+      }
+      #mainTabBtnRecipes:hover svg,
+      #mainTabBtnVisualize:hover svg {
+        filter: drop-shadow(0 0 5px rgba(10,132,255,0.60)) !important;
+        color: #409cff !important;
+        stroke: #409cff !important;
+      }
+      .btn-picker:hover {
+        background: rgba(10,132,255,0.14) !important;
+        border-color: rgba(10,132,255,0.45) !important;
+        color: #409cff !important;
+        box-shadow: 0 4px 14px rgba(10,132,255,0.22) !important;
+      }
+      .btn-picker:hover svg {
+        filter: drop-shadow(0 0 5px rgba(10,132,255,0.60)) !important;
+        color: #409cff !important;
+        stroke: #409cff !important;
+      }
+      #toggleRecipeBtn:hover svg,
+      #toggleBotBtn:hover svg {
+        filter: drop-shadow(0 0 5px rgba(10,132,255,0.60)) !important;
+        color: #409cff !important;
+        stroke: #409cff !important;
+      }
       /* ── SANKEY ──────────────────────────── */
       #sankeyWrap { background: #0a0a14 !important; }
       #sankeyTooltip {
@@ -519,6 +553,40 @@ const THEMES = {
         backdrop-filter: blur(20px) !important;
       }
       #sankeyTooltip * { color: #1d1d1f !important; }
+      /* ── Nav button hover – light theme ── */
+      #toggleSettingsBtn:hover {
+        background: rgba(0,0,0,0.10) !important;
+        border-color: rgba(0,122,255,0.40) !important;
+        color: #007aff !important;
+      }
+      #toggleSettingsBtn:hover svg {
+        filter: drop-shadow(0 0 6px rgba(37,99,235,0.55)) !important;
+        color: #2563eb !important;
+        stroke: #2563eb !important;
+      }
+      #mainTabBtnRecipes:hover svg,
+      #mainTabBtnVisualize:hover svg {
+        filter: drop-shadow(0 0 5px rgba(37,99,235,0.50)) !important;
+        color: #2563eb !important;
+        stroke: #2563eb !important;
+      }
+      .btn-picker:hover {
+        background: rgba(0,0,0,0.10) !important;
+        border-color: rgba(0,122,255,0.40) !important;
+        color: #007aff !important;
+        box-shadow: 0 4px 14px rgba(0,122,255,0.18) !important;
+      }
+      .btn-picker:hover svg {
+        filter: drop-shadow(0 0 5px rgba(37,99,235,0.50)) !important;
+        color: #2563eb !important;
+        stroke: #2563eb !important;
+      }
+      #toggleRecipeBtn:hover svg,
+      #toggleBotBtn:hover svg {
+        filter: drop-shadow(0 0 5px rgba(37,99,235,0.50)) !important;
+        color: #2563eb !important;
+        stroke: #2563eb !important;
+      }
       /* Nodes: attribute-selector overrides (D3 sets fill as SVG attr) */
       #sankeySvg rect[fill="#122a12"] { fill: rgba(52,199,89,0.18)  !important; stroke: #34c759 !important; }
       #sankeySvg rect[fill="#0a1628"] { fill: rgba(0,122,255,0.14)  !important; stroke: #007aff !important; }

@@ -1206,3 +1206,82 @@
       border-color: rgba(255,255,255,0.22);
       color: rgba(255,255,255,0.80);
     }
+
+    /* ── Navigation & toggle buttons: theme-picker-style hover ─── */
+
+    /* Settings gear button */
+    #toggleSettingsBtn svg {
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease, filter 0.2s ease;
+    }
+    #toggleSettingsBtn:hover {
+      background: rgba(140,50,220,0.30) !important;
+      border-color: rgba(160,60,255,0.50) !important;
+      color: #c088ff !important;
+    }
+    #toggleSettingsBtn:hover svg {
+      transform: scale(1.20) rotate(22deg);
+      filter: drop-shadow(0 0 6px rgba(168,85,247,0.70));
+    }
+
+    /* Main tab bar buttons (Results / Visualize) */
+    #mainTabBtnRecipes,
+    #mainTabBtnVisualize {
+      transition: color 0.2s ease, transform 0.2s var(--spring), border-bottom-color 0.2s ease !important;
+    }
+    #mainTabBtnRecipes svg,
+    #mainTabBtnVisualize svg {
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s ease;
+    }
+    #mainTabBtnRecipes:hover svg,
+    #mainTabBtnVisualize:hover svg {
+      transform: scale(1.25);
+      filter: drop-shadow(0 0 5px rgba(168,85,247,0.60));
+    }
+    #mainTabBtnRecipes:hover,
+    #mainTabBtnVisualize:hover {
+      transform: translateY(-1px);
+    }
+    #mainTabBtnRecipes:active,
+    #mainTabBtnVisualize:active {
+      transform: scale(0.94) translateY(0) !important;
+      transition: transform 0.08s ease !important;
+    }
+
+    /* Recipe browser button */
+    .btn-picker {
+      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease,
+                  transform 0.2s var(--spring), box-shadow 0.18s ease !important;
+    }
+    .btn-picker svg {
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s ease;
+    }
+    .btn-picker:hover {
+      background: rgba(140,50,220,0.20) !important;
+      border-color: rgba(160,60,255,0.50) !important;
+      color: #c088ff !important;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(120,40,200,0.30) !important;
+    }
+    .btn-picker:hover svg {
+      transform: scale(1.25);
+      filter: drop-shadow(0 0 5px rgba(168,85,247,0.60));
+    }
+    .btn-picker:active {
+      transform: scale(0.95) !important;
+      transition: transform 0.08s ease !important;
+    }
+
+    /* Sidebar view toggles (Recipes / Bots) */
+    #toggleRecipeBtn,
+    #toggleBotBtn {
+      transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease !important;
+    }
+    #toggleRecipeBtn svg,
+    #toggleBotBtn svg {
+      transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s ease;
+    }
+    #toggleRecipeBtn:hover svg,
+    #toggleBotBtn:hover svg {
+      transform: scale(1.25);
+      filter: drop-shadow(0 0 5px rgba(192,136,255,0.65));
+    }
