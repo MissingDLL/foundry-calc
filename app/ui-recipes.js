@@ -363,7 +363,23 @@ function updateRecipeVariant(idx, variantName) {
 }
 function updateRecipeGoal(idx, val) {
   const parsed = parseFloat(val);
-  selectedRecipeList[idx].goal = (!isNaN(parsed) && parsed > 0) ? Math.min(parsed, 999999) : 1;
+  if (isNaN(parsed) || parsed <= 0) {
+    // Flash the input red and restore the current valid value
+    const inp = document.querySelector('#selectedRecipes input[type="number"][data-idx="' + idx + '"]');
+    if (inp) {
+      inp.style.transition  = 'border-color 0.15s, background 0.15s';
+      inp.style.borderColor = 'rgba(255,69,58,0.8)';
+      inp.style.background  = 'rgba(255,69,58,0.12)';
+      inp.value = selectedRecipeList[idx].goal;
+      setTimeout(() => {
+        inp.style.borderColor = '';
+        inp.style.background  = '';
+        setTimeout(() => { inp.style.transition = ''; }, 200);
+      }, 600);
+    }
+    return;
+  }
+  selectedRecipeList[idx].goal = Math.min(parsed, 999999);
   renderSelectedRecipes();
   if (selectedRecipeList.length) calculateRecipes();
 }
