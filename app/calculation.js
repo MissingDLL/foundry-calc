@@ -248,15 +248,30 @@ function calculateRecipes() {
   //             null for items with no extraction recipe at all
   const groundTotals = {};
 
-  // Recursively resolves `itemName` at rate `amountPerMin` down to
-  // its raw inputs.  `depth` guards against infinite ingredient cycles
-  // (safety cap at 20 levels).
-  function resolveToGround(itemName, amountPerMin, depth) {
-    if (depth > 20) return; // cycle / excessive depth guard
+  // Collects items where a cycle in the ingredient graph was detected.
+  // Populated by resolveToGround(); rendered as a warning banner below.
+  const cycleWarnings = new Set();
 
+  // Recursively resolves `itemName` at rate `amountPerMin` down to its raw
+  // inputs.  `visitedPath` is the Set of resolved item names on the current
+  // call stack; it is used for cycle detection — if an item appears in its
+  // own ingredient tree the recursion stops and the item is recorded in
+  // cycleWarnings so the user can see a warning in the results panel.
+  // A secondary size cap (> 50) guards against pathological data.
+  function resolveToGround(itemName, amountPerMin, visitedPath) {
     // Apply variant substitution (e.g. "Xenoferrite Plates" →
     // whichever tier the user has selected in settings)
     const resolved = resolveRecipeName(itemName);
+
+    // Cycle detection: if this item is already on the resolution path we have
+    // a circular dependency — record it and stop expanding this branch.
+    if (visitedPath.has(resolved)) {
+      cycleWarnings.add(resolved);
+      console.warn('foundry-calc: ingredient cycle detected at:', resolved,
+                   '← path:', [...visitedPath]);
+      return;
+    }
+    if (visitedPath.size > 50) return; // secondary safety cap
 
     const recipe = RECIPES[resolved];
 
@@ -287,18 +302,21 @@ function calculateRecipes() {
     // How many recipe runs per minute are needed to supply `amountPerMin`?
     const runsPerMin = amountPerMin / opm;
 
+    const nextPath = new Set(visitedPath);
+    nextPath.add(resolved);
+
     recipe.ingredients.forEach((ing) => {
       // ingPerMin = ingredient amount per run × runs/min × (60/ct) corrects
       // for the fact that cycleTime is already encoded in opm/runsPerMin.
       // Simplified: runsPerMin × ing.amount × (60/ct) = ing.amount × amountPerMin / outputPerCycle
       const ingPerMin = runsPerMin * ing.amount * (60 / ct);
-      resolveToGround(ing.item, ingPerMin, depth + 1);
+      resolveToGround(ing.item, ingPerMin, nextPath);
     });
   }
 
   // Start recursion from each direct ingredient at its computed rate
   Object.entries(totals).forEach(([name, val]) => {
-    resolveToGround(name, val, 0);
+    resolveToGround(name, val, new Set());
   });
 
   // ── Raw material table rows ───────────────────────────────
@@ -373,6 +391,12 @@ function calculateRecipes() {
         </table>
       </div>
     </div>
+
+    ${cycleWarnings.size > 0 ? `
+    <div style="background:#2a0a0a;border:1px solid #8b2020;border-radius:6px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:13px;color:#e05050">
+      <span style="font-size:16px;flex-shrink:0">⚠</span>
+      <span><strong>Zirkelabhängigkeit erkannt:</strong> ${[...cycleWarnings].join(', ')} — diese Zutat(en) erscheinen in ihrem eigenen Zutatenbaum. Betroffene Zweige wurden nicht vollständig aufgelöst.</span>
+    </div>` : ''}
 
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleSection(this)">

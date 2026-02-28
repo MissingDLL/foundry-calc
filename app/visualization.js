@@ -75,7 +75,7 @@ window.__vizDefaultColors = VIZ_COLORS_DARK;
 //        machine count and output rate.
 //     2. For each ingredient, call expand() recursively.
 //
-//   expand(itemName, rateNeeded, depth):
+//   expand(itemName, rateNeeded, visitedPath):
 //     • Resolve variant name (e.g. "Xenoferrite Plates" → tier X)
 //     • If no recipe / no ingredients → mark as 'raw', stop.
 //     • Otherwise compute ingredient rates from cycleTime and recurse.
@@ -117,10 +117,13 @@ function buildSankeyGraph() {
   // Recursively expands an ingredient node.
   // Returns the resolved label (after variant substitution) so the
   // caller can connect an edge to it.
-  // depth > 20 is the cycle / infinite-recursion guard.
-  function expand(itemName, rateNeeded, depth) {
-    if (depth > 20) return null;
+  // `visitedPath` is the Set of resolved names already on the call stack;
+  // it detects cycles (A → B → A) and stops expansion at the repeated node.
+  function expand(itemName, rateNeeded, visitedPath) {
     const resolved = resolveRecipeName(itemName);
+    if (visitedPath.has(resolved)) return null; // cycle — stop expanding
+    if (visitedPath.size > 50)    return null; // secondary safety cap
+
     const raw  = isRaw(resolved);
     const node = getNode(resolved, raw ? 'raw' : 'mid');
     node.rate += rateNeeded; // accumulate total throughput
@@ -135,10 +138,13 @@ function buildSankeyGraph() {
     node.machineName   = machineName;
     node.machineCount += runs;
 
+    const nextPath = new Set(visitedPath);
+    nextPath.add(resolved);
+
     // Recurse into each ingredient at the computed rate
     r.ingredients.forEach(ing => {
       const ingRate  = runs * ing.amount * (60 / md.cycleTime);
-      const ingLabel = expand(ing.item, ingRate, depth + 1);
+      const ingLabel = expand(ing.item, ingRate, nextPath);
       if (ingLabel) addEdge(ingLabel, resolved, ingRate);
     });
 
@@ -168,10 +174,12 @@ function buildSankeyGraph() {
     node.machineName  = item.machineName;
     node.machineCount += machines;
 
-    // Add edges from each ingredient to this final product
+    // Add edges from each ingredient to this final product.
+    // Seed the visited path with the final product itself so that any
+    // ingredient cycle back to it is caught immediately.
     r.ingredients.forEach(ing => {
       const ingRate  = (60 / ct) * ing.amount * machines;
-      const ingLabel = expand(ing.item, ingRate, 0);
+      const ingLabel = expand(ing.item, ingRate, new Set([item.itemName]));
       if (ingLabel) addEdge(ingLabel, item.itemName, ingRate);
     });
   });
