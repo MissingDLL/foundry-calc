@@ -212,18 +212,15 @@
 
         <!-- Export / Import plan -->
         <div style="display:flex;gap:6px">
-          <button onclick="exportPlan()" title="Plan als JSON-Datei exportieren"
-            style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;transition:all 0.18s">
+          <button onclick="exportPlan()" title="Plan als JSON-Datei exportieren" class="plan-io-btn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Exportieren
           </button>
-          <button onclick="importPlan()" title="Plan aus JSON-Datei importieren"
-            style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;transition:all 0.18s">
+          <button onclick="importPlan()" title="Plan aus JSON-Datei importieren" class="plan-io-btn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 14 12 9 17 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
             Importieren
           </button>
-          <button id="sharePlanBtn" onclick="sharePlan()" title="Link zum Plan in die Zwischenablage kopieren"
-            style="flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:6px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:11px;transition:all 0.18s">
+          <button id="sharePlanBtn" onclick="sharePlan()" title="Link zum Plan in die Zwischenablage kopieren" class="plan-io-btn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
             Teilen
           </button>

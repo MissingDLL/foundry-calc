@@ -367,6 +367,16 @@ const THEMES = {
         letter-spacing: 0 !important; text-transform: none !important; font-size: 13px !important;
       }
       .reset-btn:hover { border-color: rgba(255,59,48,0.4) !important; color: #ff3b30 !important; }
+      .plan-io-btn {
+        background: rgba(0,0,0,0.04) !important;
+        border: 1px solid rgba(0,0,0,0.14) !important;
+        color: #6e6e73 !important;
+      }
+      .plan-io-btn:hover {
+        background: rgba(0,0,0,0.08) !important;
+        border-color: rgba(0,0,0,0.24) !important;
+        color: #3a3a3c !important;
+      }
       /* ── Tab bar ── */
       #mainTabBar {
         background: rgba(255,255,255,0.30) !important;
