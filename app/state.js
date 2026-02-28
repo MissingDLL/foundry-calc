@@ -157,7 +157,8 @@ function getBotSubgroup(name) {
 }
 
 // Defines the display order of bot subgroups in the sidebar.
-// Any subgroup not in this list is appended at the end.
+// Parts subgroups are no longer top-level — they are rendered inline
+// below their parent robot in the "Complete Robots" section.
 const BOT_SUBGROUP_ORDER = [
   "Complete Robots",
   "Bots", "Drones",
@@ -166,10 +167,29 @@ const BOT_SUBGROUP_ORDER = [
   "Robots (Other)",
 ];
 
+// Parts subgroups that are rendered inline below their parent robot.
+// They are excluded from the top-level subgroup rendering.
+const INLINE_PARTS_SUBGROUPS = new Set([
+  "Combat Robot Parts", "Farmer Robot Parts", "Miner Robot Parts",
+  "Operator Robot Parts", "Personal Assistant Robot Parts", "Science Robot Parts",
+]);
+
+// Maps each complete robot to the subgroup key holding its parts.
+const ROBOT_TO_PARTS_SUBGROUP = {
+  "Combat Robot":            "Combat Robot Parts",
+  "Farmer Robot":            "Farmer Robot Parts",
+  "Miner Robot":             "Miner Robot Parts",
+  "Operator Robot":          "Operator Robot Parts",
+  "Personal Assistant Robot":"Personal Assistant Robot Parts",
+  "Science Robot":           "Science Robot Parts",
+};
+
 // Builds (or rebuilds) the entire bot sidebar list.
 // Called once on startup and again whenever recipe selection changes.
 // Groups Robot-category recipes by subgroup, renders subgroup headers
-// with "✓ Alle" buttons, and individual bot rows with checkboxes.
+// with "✓ All" buttons, and individual bot rows with checkboxes.
+// Parts for each complete robot are rendered inline directly below
+// that robot rather than in a separate section at the bottom.
 function buildRecipeCategoryList() {
   const list = document.getElementById("botList");
   list.innerHTML = "";
@@ -184,11 +204,47 @@ function buildRecipeCategoryList() {
       groups[sg].push(name);
     });
 
-  // Render in the canonical order, with unknown subgroups appended
+  // Top-level rendering skips parts subgroups — they appear inline below each robot
   const orderedKeys = [
-    ...BOT_SUBGROUP_ORDER.filter(k => groups[k]),
-    ...Object.keys(groups).filter(k => !BOT_SUBGROUP_ORDER.includes(k)),
+    ...BOT_SUBGROUP_ORDER.filter(k => groups[k] && !INLINE_PARTS_SUBGROUPS.has(k)),
+    ...Object.keys(groups).filter(k => !BOT_SUBGROUP_ORDER.includes(k) && !INLINE_PARTS_SUBGROUPS.has(k)),
   ];
+
+  const prefixes = ["Combat Robot ", "Farmer Robot ", "Miner Robot ",
+    "Operator Robot ", "Personal Assistant Robot ", "Science Robot "];
+
+  // Helper: render a single bot-item row and append it to `list`
+  function renderBotItem(name, { iconSize = 28, fontSize = 13, indent = false } = {}) {
+    const r    = RECIPES[name];
+    const item = document.createElement("div");
+    item.className = "bot-item";
+    item.id = "botItem_" + name;
+    if (indent) {
+      item.style.marginLeft = "10px";
+      item.style.paddingTop = "4px";
+      item.style.paddingBottom = "4px";
+    }
+
+    const prefix    = prefixes.find(p => name.startsWith(p));
+    const shortName = prefix ? name.slice(prefix.length) : name;
+
+    const eff = botEfficiencyOverrides[name] != null ? botEfficiencyOverrides[name] : (r && r.efficiency);
+    const effTag = eff != null
+      ? `<span style="font-size:10px;font-family:-apple-system,sans-serif;color:var(--accent3);white-space:nowrap;flex-shrink:0">+${eff}%</span>`
+      : "";
+
+    item.innerHTML = `
+    <div class="bot-check">
+      <input type="checkbox" id="chk_${name}" onchange="toggleRecipeFromGrid('${name}', this.checked)">
+    </div>
+    ${getIcon(name, iconSize, true)}
+    <label for="chk_${name}" style="cursor:pointer;flex:1;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden">
+      <span class="bot-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:${fontSize}px">${shortName}</span>
+    </label>
+    ${effTag}
+  `;
+    list.appendChild(item);
+  }
 
   orderedKeys.forEach((sg) => {
     const names = groups[sg];
@@ -202,7 +258,11 @@ function buildRecipeCategoryList() {
     catSpan.textContent = sg;
     catDiv.appendChild(catSpan);
 
-    // "✓ Alle" button: toggles all items in this subgroup
+    // For "Complete Robots", the "✓ All" button toggles robots + all their parts
+    const allNamesToToggle = sg === "Complete Robots"
+      ? [...names, ...names.flatMap(n => groups[ROBOT_TO_PARTS_SUBGROUP[n]] || [])]
+      : [...names];
+
     const allBtn = document.createElement("button");
     allBtn.id = "robotAllBtn_sg_" + sg.replace(/ /g, "_");
     allBtn.textContent = "✓ All";
@@ -210,11 +270,11 @@ function buildRecipeCategoryList() {
     allBtn.style.cssText =
       "padding:1px 7px;font-size:10px;background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.25);color:var(--accent);border-radius:5px;cursor:pointer;font-family:-apple-system,sans-serif";
     allBtn.onclick = function () {
-      const allChecked = names.every(n => {
+      const allChecked = allNamesToToggle.every(n => {
         const c = document.getElementById("chk_" + n); return c && c.checked;
       });
       const newState = !allChecked;
-      names.forEach(n => {
+      allNamesToToggle.forEach(n => {
         const c = document.getElementById("chk_" + n);
         if (c) c.checked = newState;
         toggleRecipeFromGrid(n, newState);
@@ -226,35 +286,29 @@ function buildRecipeCategoryList() {
 
     // ── Bot item rows ────────────────────────────────────────
     names.sort().forEach((name) => {
-      const r    = RECIPES[name];
-      const item = document.createElement("div");
-      item.className = "bot-item";
-      item.id = "botItem_" + name;
+      renderBotItem(name);
 
-      // Strip known robot-type prefix for a shorter sidebar label
-      // e.g. "Personal Assistant Robot Mark II" → "Mark II"
-      const prefixes = ["Combat Robot ", "Farmer Robot ", "Miner Robot ",
-        "Operator Robot ", "Personal Assistant Robot ", "Science Robot "];
-      const prefix    = prefixes.find(p => name.startsWith(p));
-      const shortName = prefix ? name.slice(prefix.length) : name;
+      // For complete robots, render their parts inline below
+      if (sg === "Complete Robots") {
+        const partsSg = ROBOT_TO_PARTS_SUBGROUP[name];
+        const partsNames = (partsSg && groups[partsSg]) ? groups[partsSg].slice().sort() : [];
+        if (partsNames.length) {
+          // Subtle "Parts" divider
+          const partsLabel = document.createElement("div");
+          partsLabel.style.cssText =
+            "font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:0.06em;text-transform:uppercase;" +
+            "padding:2px 4px 1px 16px;margin-top:1px";
+          partsLabel.textContent = "Parts";
+          list.appendChild(partsLabel);
 
-      // Show efficiency bonus tag if set (base recipe or user override)
-      const eff = botEfficiencyOverrides[name] != null ? botEfficiencyOverrides[name] : r.efficiency;
-      const effTag = eff != null
-        ? `<span style="font-size:10px;font-family:-apple-system,sans-serif;color:var(--accent3);white-space:nowrap;flex-shrink:0">+${eff}%</span>`
-        : "";
+          partsNames.forEach(partName => renderBotItem(partName, { iconSize: 22, fontSize: 12, indent: true }));
 
-      item.innerHTML = `
-    <div class="bot-check">
-      <input type="checkbox" id="chk_${name}" onchange="toggleRecipeFromGrid('${name}', this.checked)">
-    </div>
-    ${getIcon(name, 28, true)}
-    <label for="chk_${name}" style="cursor:pointer;flex:1;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden">
-      <span class="bot-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px">${shortName}</span>
-    </label>
-    ${effTag}
-  `;
-      list.appendChild(item);
+          // Small spacer between robot groups
+          const spacer = document.createElement("div");
+          spacer.style.cssText = "height:4px";
+          list.appendChild(spacer);
+        }
+      }
     });
   });
 }
