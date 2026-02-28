@@ -440,7 +440,7 @@
                   font-family: -apple-system,sans-serif;
                   letter-spacing: -0.01em;
                 ">⚙ Standard-Einstellungen</span>
-          <button onclick="closeRecipeSettings()" style="
+          <button type="button" aria-label="Einstellungen schließen" onclick="closeRecipeSettings()" style="
                   width:28px;height:28px;
                   background: rgba(255,255,255,0.10);
                   border: 1px solid rgba(255,255,255,0.12);
@@ -532,7 +532,7 @@
                   font-size: 13px;
                   outline:none;
                 " oninput="renderRecipeBrowser()" autocomplete="off" />
-          <button onclick="closeRecipePicker()" style="
+          <button type="button" aria-label="Rezeptauswahl schließen" onclick="closeRecipePicker()" style="
                   width:28px;height:28px;
                   background: rgba(255,255,255,0.10);
                   border: 1px solid rgba(255,255,255,0.12);
