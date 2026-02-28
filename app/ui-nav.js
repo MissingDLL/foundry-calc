@@ -164,6 +164,10 @@ function switchMainTab(tab) {
 // Serialises the current recipe list + all settings into a JSON file
 // and triggers a browser download.
 function exportPlan() {
+  if (!selectedRecipeList.length) {
+    alert('Keine Rezepte ausgewählt – bitte zuerst Rezepte hinzufügen.');
+    return;
+  }
   const famDefaults = {};
   MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
 
