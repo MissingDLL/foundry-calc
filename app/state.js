@@ -416,4 +416,75 @@ const VARIANT_GROUPS = [
 ];
 
 
+// ── Settings persistence (localStorage) ──────────────────────
+// saveSettings()  – serialises all user-adjustable settings into one JSON
+//                   blob stored under the key 'fc_settings'.
+// loadSettings()  – restores them on startup; silently ignores missing or
+//                   malformed data so a fresh install works without errors.
+
+function saveSettings() {
+  const famDefaults = {};
+  MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
+  try {
+    localStorage.setItem('fc_settings', JSON.stringify({
+      variantSettings,
+      minerSettings,
+      botEfficiencyOverrides,
+      globalMiningProductivity,
+      globalFluidProductivity,
+      workstationConfigs,
+      machineFamilyDefaults: famDefaults,
+      // Save recipe list without UI-only state (wsExpanded)
+      selectedRecipeList: selectedRecipeList.map(item => ({
+        itemName:    item.itemName,
+        recipeName:  item.recipeName,
+        machineName: item.machineName,
+        goal:        item.goal,
+        wsOverride:  item.wsOverride,
+      })),
+    }));
+  } catch (e) {
+    console.warn('foundry-calc: could not save settings:', e);
+  }
+}
+
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem('fc_settings');
+    if (!raw) return;
+    const s = JSON.parse(raw);
+    if (s.variantSettings)        Object.assign(variantSettings, s.variantSettings);
+    if (s.minerSettings)          Object.assign(minerSettings, s.minerSettings);
+    if (s.botEfficiencyOverrides) Object.assign(botEfficiencyOverrides, s.botEfficiencyOverrides);
+    if (typeof s.globalMiningProductivity === 'number') globalMiningProductivity = s.globalMiningProductivity;
+    if (typeof s.globalFluidProductivity  === 'number') globalFluidProductivity  = s.globalFluidProductivity;
+    if (s.workstationConfigs)     Object.assign(workstationConfigs, s.workstationConfigs);
+    if (s.machineFamilyDefaults) {
+      MACHINE_FAMILIES.forEach(f => {
+        const saved = s.machineFamilyDefaults[f.label];
+        if (saved && f.machines.includes(saved)) f.defaultChoice = saved;
+      });
+    }
+    // Restore recipe list; skip any entry whose recipe no longer exists
+    if (Array.isArray(s.selectedRecipeList)) {
+      selectedRecipeList = s.selectedRecipeList
+        .filter(item => item.recipeName && RECIPES[item.recipeName])
+        .map(item => ({
+          itemName:    item.itemName    || item.recipeName,
+          recipeName:  item.recipeName,
+          machineName: item.machineName,
+          goal:        item.goal        || 60,
+          wsOverride:  item.wsOverride  || null,
+          wsExpanded:  false,
+        }));
+    }
+  } catch (e) {
+    console.warn('foundry-calc: could not load settings:', e);
+  }
+}
+
+// Restore settings immediately – runs synchronously before DOMContentLoaded,
+// so UI modules already see the correct values when they first render.
+loadSettings();
+
 // ── Modal animation helpers ─────────────────────────────────

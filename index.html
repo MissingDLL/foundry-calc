@@ -563,20 +563,22 @@
   </div>
 
 
-  <script src="app/theme.js?v=2"></script>
-  <script src="data/game-data.js?v=2"></script>
-  <script src="data/icons.js?v=2"></script>
-  <script src="data/recipes.js?v=2"></script>
-  <script src="app/state.js?v=2"></script>
-  <script src="app/ui-settings.js?v=2"></script>
-  <script src="app/ui-recipes.js?v=2"></script>
-  <script src="app/calculation.js?v=2"></script>
-  <script src="app/ui-nav.js?v=2"></script>
-  <script src="app/visualization.js?v=2"></script>
+  <script src="app/theme.js?v=3"></script>
+  <script src="data/game-data.js?v=3"></script>
+  <script src="data/icons.js?v=3"></script>
+  <script src="data/recipes.js?v=3"></script>
+  <script src="app/state.js?v=3"></script>
+  <script src="app/ui-settings.js?v=3"></script>
+  <script src="app/ui-recipes.js?v=3"></script>
+  <script src="app/calculation.js?v=3"></script>
+  <script src="app/ui-nav.js?v=3"></script>
+  <script src="app/visualization.js?v=3"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();
     renderSelectedRecipes();
+    // Auto-calculate on load if the saved recipe list is not empty
+    if (selectedRecipeList.length > 0) calculateRecipes();
   </script>
 </body>
 

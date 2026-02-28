@@ -77,6 +77,7 @@ function renderSettingsContent(targetId) {
       btn.dataset.machine = machine;
       btn.onclick = function () {
         fam.defaultChoice = machine;
+        saveSettings();
         // Update visuals
         row.querySelectorAll("button").forEach((b) => {
           const active = b.dataset.machine === machine;
@@ -140,6 +141,7 @@ function renderSettingsContent(targetId) {
       btn.dataset.variant = variant;
       btn.onclick = function () {
         variantSettings[group.label] = variant;
+        saveSettings();
         row.querySelectorAll("button").forEach((b) => {
           const active = b.dataset.variant === variant;
           b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
@@ -201,6 +203,7 @@ function renderSettingsContent(targetId) {
       btn.dataset.miner = miner;
       btn.onclick = function () {
         minerSettings[group.label] = miner;
+        saveSettings();
         row.querySelectorAll("button").forEach((b) => {
           const active = b.dataset.miner === miner;
           b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
@@ -274,6 +277,7 @@ function renderSettingsContent(targetId) {
     inp.oninput = function () {
       const val = parseFloat(this.value);
       setter(isNaN(val) || val < 0 ? 0 : val);
+      saveSettings();
     };
 
     const pct = document.createElement("span");
@@ -289,6 +293,7 @@ function renderSettingsContent(targetId) {
     resetBtn.onclick = function () {
       setter(0);
       inp.value = 0;
+      saveSettings();
     };
 
     inputWrap.appendChild(inp);
@@ -362,6 +367,7 @@ function renderSettingsContent(targetId) {
       }
       // Live-update the bot list tag if visible
       buildRecipeCategoryList();
+      saveSettings();
     };
 
     const pct = document.createElement("span");
@@ -378,6 +384,7 @@ function renderSettingsContent(targetId) {
       delete botEfficiencyOverrides[name];
       inp.value = recipe.efficiency;
       buildRecipeCategoryList();
+      saveSettings();
     };
 
     inputWrap.appendChild(inp);
@@ -481,6 +488,7 @@ function renderWorkstations() {
       }
       renderWorkstations();
       renderWorkstationBonusSummary();
+      saveSettings();
     };
 
     header.appendChild(enableChk);
@@ -510,6 +518,7 @@ function renderWorkstations() {
           if (t < 3) ws.chargedCore = false;
           renderWorkstations();
           renderWorkstationBonusSummary();
+          saveSettings();
         };
         tierRow.appendChild(btn);
       });
@@ -525,6 +534,7 @@ function renderWorkstations() {
         coreChk.onchange = function () {
           ws.chargedCore = this.checked;
           renderWorkstationBonusSummary();
+          saveSettings();
         };
         coreLabel.appendChild(coreChk);
         coreLabel.appendChild(document.createTextNode("Charged Reno Core (+33%)"));
@@ -575,6 +585,7 @@ function renderWorkstations() {
             : "<span style='color:rgba(255,255,255,0.20);font-size:16px'>○</span>";
           updateEffSpan(effSpan, ws.robots[slotIdx]);
           renderWorkstationBonusSummary();
+          saveSettings();
         };
 
         // Effect badge — shows current bot's bonus, styled prominently

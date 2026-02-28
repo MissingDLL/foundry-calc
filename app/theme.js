@@ -722,6 +722,9 @@ function __applyTheme(name) {
   const theme = THEMES[name];
   if (!theme) return;
 
+  // Persist the chosen theme so it survives page reloads
+  localStorage.setItem('theme', name);
+
   // Step 1: Enable transition rules while swapping colours
   document.body.classList.add('theme-switching');
 
@@ -842,8 +845,8 @@ function __applyTheme(name) {
   setTimeout(() => document.body.classList.remove('theme-switching'), 500);
 }
 
-// Apply the default (purple-dark) theme immediately when this script loads.
-// This runs before DOMContentLoaded, which is fine because all theme
-// operations target document.documentElement (available immediately)
+// Apply the saved theme (or the default purple-dark) immediately when this
+// script loads.  This runs before DOMContentLoaded, which is fine because all
+// theme operations target document.documentElement (available immediately)
 // or query elements by ID that exist in the static HTML.
-__applyTheme('default');
+__applyTheme(localStorage.getItem('theme') || 'default');

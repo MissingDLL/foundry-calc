@@ -259,6 +259,7 @@ function resetRecipes() {
 
   // Auswahl leeren
   selectedRecipeList = [];
+  saveSettings();
   renderSelectedRecipes();
 
   // Alle Checkboxen im Grid deaktivieren
@@ -354,7 +355,8 @@ function updateRecipeVariant(idx, variantName) {
   renderSelectedRecipes();
 }
 function updateRecipeGoal(idx, val) {
-  selectedRecipeList[idx].goal = parseFloat(val) || 1;
+  const parsed = parseFloat(val);
+  selectedRecipeList[idx].goal = (!isNaN(parsed) && parsed > 0) ? Math.min(parsed, 999999) : 1;
 }
 
 // ── Render selected list ──────────────────────────────────────
@@ -442,7 +444,7 @@ function renderSelectedRecipes() {
           </div>
           <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
             <span style="font-size:10px;color:var(--text-dim)">Ziel</span>
-            <input type="number" value="${item.goal}" min="1" data-idx="${idx}"
+            <input type="number" value="${item.goal}" min="0.01" max="999999" step="any" data-idx="${idx}"
               onchange="updateRecipeGoal(this.dataset.idx, this.value); renderSelectedRecipes()"
               style="width:64px;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;text-align:right;outline:none">
           </div>
@@ -506,6 +508,7 @@ function renderSelectedRecipes() {
       </div>`;
     })
     .join("");
+  saveSettings();
 }
 
 // ── Per-item workstation row ──────────────────────────────────
