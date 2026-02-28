@@ -338,7 +338,11 @@ function removeRecipeItem(idx) {
     "flex"
   )
     renderRecipeBrowser();
-  document.getElementById("recipeResults").innerHTML = "";
+  if (selectedRecipeList.length) {
+    calculateRecipes();
+  } else {
+    document.getElementById("recipeResults").innerHTML = "";
+  }
 }
 
 function updateRecipeMachine(idx, val) {
