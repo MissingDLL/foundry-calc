@@ -343,6 +343,8 @@ function removeRecipeItem(idx) {
 
 function updateRecipeMachine(idx, val) {
   selectedRecipeList[idx].machineName = val;
+  renderSelectedRecipes();
+  if (selectedRecipeList.length) calculateRecipes();
 }
 function updateRecipeVariant(idx, variantName) {
   const item = selectedRecipeList[idx];
@@ -353,10 +355,13 @@ function updateRecipeVariant(idx, variantName) {
     item.machineName =
       getPreferredMachine(variantName) || Object.keys(r.machines)[0];
   renderSelectedRecipes();
+  if (selectedRecipeList.length) calculateRecipes();
 }
 function updateRecipeGoal(idx, val) {
   const parsed = parseFloat(val);
   selectedRecipeList[idx].goal = (!isNaN(parsed) && parsed > 0) ? Math.min(parsed, 999999) : 1;
+  renderSelectedRecipes();
+  if (selectedRecipeList.length) calculateRecipes();
 }
 
 // ── Render selected list ──────────────────────────────────────
@@ -437,7 +442,7 @@ function renderSelectedRecipes() {
           </select>` : ''}
           <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:100px">
             ${getIcon(item.machineName, 18)}
-            <select data-idx="${idx}" onchange="updateRecipeMachine(this.dataset.idx, this.value); renderSelectedRecipes()"
+            <select data-idx="${idx}" onchange="updateRecipeMachine(this.dataset.idx, this.value)"
               style="flex:1;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
               ${machineOptions}
             </select>
@@ -445,7 +450,7 @@ function renderSelectedRecipes() {
           <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
             <span style="font-size:10px;color:var(--text-dim)">Ziel</span>
             <input type="number" value="${item.goal}" min="0.01" max="999999" step="any" data-idx="${idx}"
-              onchange="updateRecipeGoal(this.dataset.idx, this.value); renderSelectedRecipes()"
+              onchange="updateRecipeGoal(this.dataset.idx, this.value)"
               style="width:64px;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;text-align:right;outline:none">
           </div>
         </div>

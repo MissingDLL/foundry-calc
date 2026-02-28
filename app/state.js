@@ -265,7 +265,6 @@ function buildRecipeCategoryList() {
 // These objects are keyed by recipe/item name and store user
 // preferences that override the default behaviour.
 
-const recipeSettings       = {}; // { recipeName → preferred machineName }
 const variantSettings      = {}; // { canonicalLabel → preferred variant key }
 const minerSettings        = {}; // { oreRubbleName → preferred miner machine }
 const botEfficiencyOverrides = {}; // { botName → efficiencyValue (%) }
@@ -422,7 +421,17 @@ const VARIANT_GROUPS = [
 // loadSettings()  – restores them on startup; silently ignores missing or
 //                   malformed data so a fresh install works without errors.
 
+// Debounce handle — rapid UI interactions (typing in a number input)
+// collapse into a single write after 250 ms of inactivity.
+let _savePending = null;
+
 function saveSettings() {
+  clearTimeout(_savePending);
+  _savePending = setTimeout(_flushSaveSettings, 250);
+}
+
+function _flushSaveSettings() {
+  _savePending = null;
   const famDefaults = {};
   MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
   try {
@@ -453,30 +462,53 @@ function loadSettings() {
     const raw = localStorage.getItem('fc_settings');
     if (!raw) return;
     const s = JSON.parse(raw);
-    if (s.variantSettings)        Object.assign(variantSettings, s.variantSettings);
-    if (s.minerSettings)          Object.assign(minerSettings, s.minerSettings);
-    if (s.botEfficiencyOverrides) Object.assign(botEfficiencyOverrides, s.botEfficiencyOverrides);
-    if (typeof s.globalMiningProductivity === 'number') globalMiningProductivity = s.globalMiningProductivity;
-    if (typeof s.globalFluidProductivity  === 'number') globalFluidProductivity  = s.globalFluidProductivity;
-    if (s.workstationConfigs)     Object.assign(workstationConfigs, s.workstationConfigs);
+    if (s.variantSettings)    Object.assign(variantSettings,    s.variantSettings);
+    if (s.minerSettings)      Object.assign(minerSettings,      s.minerSettings);
+    if (s.workstationConfigs) Object.assign(workstationConfigs, s.workstationConfigs);
+
+    // Clamp productivity values to the valid UI range [0, 100]
+    if (typeof s.globalMiningProductivity === 'number')
+      globalMiningProductivity = Math.max(0, Math.min(100, s.globalMiningProductivity));
+    if (typeof s.globalFluidProductivity === 'number')
+      globalFluidProductivity  = Math.max(0, Math.min(100, s.globalFluidProductivity));
+
+    // Only keep bot efficiency overrides that are finite numbers in [0, 200]
+    if (s.botEfficiencyOverrides) {
+      Object.entries(s.botEfficiencyOverrides).forEach(([k, v]) => {
+        if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 200)
+          botEfficiencyOverrides[k] = v;
+      });
+    }
+
     if (s.machineFamilyDefaults) {
       MACHINE_FAMILIES.forEach(f => {
         const saved = s.machineFamilyDefaults[f.label];
         if (saved && f.machines.includes(saved)) f.defaultChoice = saved;
       });
     }
-    // Restore recipe list; skip any entry whose recipe no longer exists
+    // Restore recipe list; skip any entry whose recipe no longer exists.
+    // Also validate the machine name — fall back to the recipe's first machine
+    // if the saved name is no longer valid (e.g. after a game-data update).
     if (Array.isArray(s.selectedRecipeList)) {
       selectedRecipeList = s.selectedRecipeList
         .filter(item => item.recipeName && RECIPES[item.recipeName])
-        .map(item => ({
-          itemName:    item.itemName    || item.recipeName,
-          recipeName:  item.recipeName,
-          machineName: item.machineName,
-          goal:        item.goal        || 60,
-          wsOverride:  item.wsOverride  || null,
-          wsExpanded:  false,
-        }));
+        .map(item => {
+          const r = RECIPES[item.recipeName];
+          const machineName = (item.machineName && r.machines[item.machineName])
+            ? item.machineName
+            : Object.keys(r.machines)[0];
+          const goal = (typeof item.goal === 'number' && isFinite(item.goal) && item.goal > 0)
+            ? Math.min(item.goal, 999999)
+            : 60;
+          return {
+            itemName:   item.itemName || item.recipeName,
+            recipeName: item.recipeName,
+            machineName,
+            goal,
+            wsOverride: item.wsOverride || null,
+            wsExpanded: false,
+          };
+        });
     }
   } catch (e) {
     console.warn('foundry-calc: could not load settings:', e);
