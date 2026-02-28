@@ -154,5 +154,108 @@ function switchMainTab(tab) {
 }
 
 // ============================================================
+// PLAN EXPORT / IMPORT
+// ============================================================
+
+// Serialises the current recipe list + all settings into a JSON file
+// and triggers a browser download.
+function exportPlan() {
+  const famDefaults = {};
+  MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
+
+  const plan = {
+    version: 1,
+    selectedRecipeList: selectedRecipeList.map(item => ({
+      itemName:    item.itemName,
+      recipeName:  item.recipeName,
+      machineName: item.machineName,
+      goal:        item.goal,
+      wsOverride:  item.wsOverride,
+    })),
+    settings: {
+      variantSettings,
+      minerSettings,
+      botEfficiencyOverrides,
+      globalMiningProductivity,
+      globalFluidProductivity,
+      workstationConfigs,
+      machineFamilyDefaults: famDefaults,
+    },
+  };
+
+  const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'foundry-plan-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// Opens a file picker and loads a previously exported plan JSON.
+function importPlan() {
+  const input    = document.createElement('input');
+  input.type     = 'file';
+  input.accept   = '.json,application/json';
+  input.onchange = function () {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      try {
+        _applyImportedPlan(JSON.parse(e.target.result));
+      } catch (err) {
+        alert('Fehler beim Importieren: Ungültige JSON-Datei.\n' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+// Applies a parsed plan object to the application state and re-renders.
+function _applyImportedPlan(plan) {
+  if (!plan || plan.version !== 1) {
+    alert('Fehler: Unbekanntes Plan-Format (Version nicht unterstützt).');
+    return;
+  }
+
+  // Restore recipe list — skip recipes no longer in RECIPES
+  if (Array.isArray(plan.selectedRecipeList)) {
+    selectedRecipeList = plan.selectedRecipeList
+      .filter(item => item.recipeName && RECIPES[item.recipeName])
+      .map(item => ({
+        itemName:    item.itemName   || item.recipeName,
+        recipeName:  item.recipeName,
+        machineName: item.machineName,
+        goal:        item.goal       || 60,
+        wsOverride:  item.wsOverride || null,
+        wsExpanded:  false,
+      }));
+  }
+
+  // Restore settings
+  const s = plan.settings || {};
+  if (s.variantSettings)        Object.assign(variantSettings,        s.variantSettings);
+  if (s.minerSettings)          Object.assign(minerSettings,          s.minerSettings);
+  if (s.botEfficiencyOverrides) Object.assign(botEfficiencyOverrides, s.botEfficiencyOverrides);
+  if (typeof s.globalMiningProductivity === 'number') globalMiningProductivity = s.globalMiningProductivity;
+  if (typeof s.globalFluidProductivity  === 'number') globalFluidProductivity  = s.globalFluidProductivity;
+  if (s.workstationConfigs)     Object.assign(workstationConfigs,     s.workstationConfigs);
+  if (s.machineFamilyDefaults) {
+    MACHINE_FAMILIES.forEach(f => {
+      const saved = s.machineFamilyDefaults[f.label];
+      if (saved && f.machines.includes(saved)) f.defaultChoice = saved;
+    });
+  }
+
+  // Persist and re-render everything
+  saveSettings();
+  buildRecipeCategoryList();
+  renderSelectedRecipes();
+  if (selectedRecipeList.length > 0) calculateRecipes();
+}
+
+// ============================================================
 // SANKEY — Datenaufbau
 // ============================================================
