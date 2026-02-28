@@ -166,7 +166,7 @@ function switchMainTab(tab) {
 // and triggers a browser download.
 function exportPlan() {
   if (!selectedRecipeList.length) {
-    alert('Keine Rezepte ausgewählt – bitte zuerst Rezepte hinzufügen.');
+    alert('No recipes selected – please add recipes first.');
     return;
   }
   const famDefaults = {};
@@ -214,7 +214,7 @@ function importPlan() {
       try {
         _applyImportedPlan(JSON.parse(e.target.result));
       } catch (err) {
-        alert('Fehler beim Importieren: Ungültige JSON-Datei.\n' + err.message);
+        alert('Import error: Invalid JSON file.\n' + err.message);
       }
     };
     reader.readAsText(file);
@@ -225,7 +225,7 @@ function importPlan() {
 // Applies a parsed plan object to the application state and re-renders.
 function _applyImportedPlan(plan) {
   if (!plan || plan.version !== 1) {
-    alert('Fehler: Unbekanntes Plan-Format (Version nicht unterstützt).');
+    alert('Error: Unknown plan format (version not supported).');
     return;
   }
 
@@ -294,7 +294,7 @@ function _applyImportedPlan(plan) {
 
 function sharePlan() {
   if (!selectedRecipeList.length) {
-    alert('Keine Rezepte ausgewählt – bitte zuerst Rezepte hinzufügen.');
+    alert('No recipes selected – please add recipes first.');
     return;
   }
 
@@ -342,7 +342,7 @@ function sharePlan() {
   }
 
   navigator.clipboard.writeText(url)
-    .then(() => _flashBtn('✓ Kopiert!', 'var(--accent3)', 'rgba(48,209,88,0.4)'))
+    .then(() => _flashBtn('✓ Copied!', 'var(--accent3)', 'rgba(48,209,88,0.4)'))
     .catch(() => {
       // Fallback for environments without clipboard API (e.g. plain file://)
       prompt('Link kopieren:', url);

@@ -129,34 +129,34 @@ function calculateRecipes() {
   const summaryHtml = `
     <div class="summary-grid" style="margin-bottom:28px">
       <div class="summary-box">
-        <div class="summary-label">Rezepte</div>
+        <div class="summary-label">Recipes</div>
         <div class="summary-value">${lines.length}</div>
-        <div class="summary-unit">ausgewählt</div>
+        <div class="summary-unit">selected</div>
       </div>
       <div class="summary-box orange">
-        <div class="summary-label">Maschinen gesamt</div>
+        <div class="summary-label">Total machines</div>
         <div class="summary-value">${fmt(totalMachines)}</div>
-        <div class="summary-unit">${uniqueMachines} Maschinentypen</div>
+        <div class="summary-unit">${uniqueMachines} Machine types</div>
       </div>
       <div class="summary-box green">
-        <div class="summary-label">Gesamtproduktion</div>
+        <div class="summary-label">Total production</div>
         <div class="summary-value">${fmt(Math.round(totalOutput))}</div>
-        <div class="summary-unit">Units / Min (alle Rezepte)</div>
+        <div class="summary-unit">Units / Min (all recipes)</div>
       </div>
       <div class="summary-box">
-        <div class="summary-label">Produktionsziel</div>
+        <div class="summary-label">Production goal</div>
         <div class="summary-value">${fmt(Math.round(totalGoal))}</div>
-        <div class="summary-unit">Units / Min (Summe Ziele)</div>
+        <div class="summary-unit">Units / Min (sum of goals)</div>
       </div>
       <div class="summary-box orange">
-        <div class="summary-label">Ø Maschinen / Rezept</div>
+        <div class="summary-label">Avg machines / recipe</div>
         <div class="summary-value">${avgMachines}</div>
-        <div class="summary-unit">Durchschnitt</div>
+        <div class="summary-unit">Average</div>
       </div>
       <div class="summary-box green">
-        <div class="summary-label">Überproduktion gesamt</div>
+        <div class="summary-label">Total overproduction</div>
         <div class="summary-value">${fmt(Math.round(totalOver))}</div>
-        <div class="summary-unit">${ingredientCount} Zutatentypen</div>
+        <div class="summary-unit">${ingredientCount} Ingredient types</div>
       </div>
     </div>`;
 
@@ -187,7 +187,7 @@ function calculateRecipes() {
       // Show a badge when output is probabilistic (e.g. Crystal Refiner outputs)
       const hasChance = !Array.isArray(recipe.output) && recipe.output && recipe.output.chance != null && recipe.output.chance < 1;
       const chanceBadge = hasChance
-        ? `<span title="${recipe.output.amount} pro Zyklus mit ${Math.round(recipe.output.chance * 100)}% Wahrscheinlichkeit (Ø ${(recipe.output.amount * recipe.output.chance).toFixed(1)}/Zyklus)" style="display:inline-flex;align-items:center;gap:3px;background:#1a1000;border:1px solid #554400;border-radius:3px;padding:1px 5px;font-size:10px;color:#f5a623;cursor:help;flex-shrink:0">⚡ ${Math.round(recipe.output.chance * 100)}%</span>`
+        ? `<span title="${recipe.output.amount} per cycle at ${Math.round(recipe.output.chance * 100)}% chance (avg ${(recipe.output.amount * recipe.output.chance).toFixed(1)}/cycle)" style="display:inline-flex;align-items:center;gap:3px;background:#1a1000;border:1px solid #554400;border-radius:3px;padding:1px 5px;font-size:10px;color:#f5a623;cursor:help;flex-shrink:0">⚡ ${Math.round(recipe.output.chance * 100)}%</span>`
         : '';
 
       return `
@@ -355,9 +355,9 @@ function calculateRecipes() {
     `
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleSection(this)">
-        <span class="ch-title">Produktionsübersicht</span>
+        <span class="ch-title">Production Overview</span>
         <span style="display:flex;align-items:center;gap:12px">
-          <span class="ch-meta">${lines.length} Rezepte · ${fmt(totalMachines)} Maschinen · ${fmt(Math.round(totalOutput))} /min</span>
+          <span class="ch-meta">${lines.length} Recipes · ${fmt(totalMachines)} Machines · ${fmt(Math.round(totalOutput))} /min</span>
           <span class="ch-arrow">▼</span>
         </span>
       </div>
@@ -365,10 +365,10 @@ function calculateRecipes() {
         <table class="results-table">
           <thead>
             <tr>
-              <th>Rezept</th><th>Maschine</th>
-              <th style="text-align:right">Maschinen</th>
+              <th>Recipe</th><th>Machine</th>
+              <th style="text-align:right">Machines</th>
               <th style="text-align:right">Output/Min</th>
-              <th style="text-align:right">Überproduktion</th>
+              <th style="text-align:right">Overproduction</th>
             </tr>
           </thead>
           <tbody>${overviewRows}</tbody>
@@ -378,15 +378,15 @@ function calculateRecipes() {
 
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleSection(this)">
-        <span class="ch-title">Direkter Materialbedarf pro Minute</span>
+        <span class="ch-title">Direct material demand per minute</span>
         <span style="display:flex;align-items:center;gap:12px">
-          <span class="ch-meta">${ingredientCount} Zutatentypen</span>
+          <span class="ch-meta">${ingredientCount} Ingredient types</span>
           <span class="ch-arrow">▼</span>
         </span>
       </div>
       <div class="collapsible-body">
         <table class="results-table">
-          <thead><tr><th>Material</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Sekunde</th></tr></thead>
+          <thead><tr><th>Material</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Second</th></tr></thead>
           <tbody>${ingRows}</tbody>
         </table>
       </div>
@@ -395,20 +395,20 @@ function calculateRecipes() {
     ${cycleWarnings.size > 0 ? `
     <div style="background:#2a0a0a;border:1px solid #8b2020;border-radius:6px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:13px;color:#e05050">
       <span style="font-size:16px;flex-shrink:0">⚠</span>
-      <span><strong>Zirkelabhängigkeit erkannt:</strong> ${[...cycleWarnings].join(', ')} — diese Zutat(en) erscheinen in ihrem eigenen Zutatenbaum. Betroffene Zweige wurden nicht vollständig aufgelöst.</span>
+      <span><strong>Circular dependency detected:</strong> ${[...cycleWarnings].join(', ')} — these ingredient(s) appear in their own ingredient tree. Affected branches were not fully resolved.</span>
     </div>` : ''}
 
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleSection(this)">
-        <span class="ch-title">Grundmaterialien (Abbaubare Rohstoffe)</span>
+        <span class="ch-title">Raw Materials (Minable Resources)</span>
         <span style="display:flex;align-items:center;gap:12px">
-          <span class="ch-meta">${groundCount} Rohstofftypen · vollständig aufgelöst · Varianten via ⚙ einstellbar</span>
+          <span class="ch-meta">${groundCount} Resource types · fully resolved · variants configurable via ⚙</span>
           <span class="ch-arrow">▼</span>
         </span>
       </div>
       <div class="collapsible-body">
         <table class="results-table">
-          <thead><tr><th>Rohstoff</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Sekunde</th><th>Maschine</th><th style="text-align:right">Anzahl</th></tr></thead>
+          <thead><tr><th>Resource</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Second</th><th>Machine</th><th style="text-align:right">Count</th></tr></thead>
           <tbody>${groundRows}</tbody>
         </table>
       </div>

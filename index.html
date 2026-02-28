@@ -135,7 +135,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
           </svg>
-          Rezepte
+          Recipes
         </button>
         <button id="toggleBotBtn" onclick="switchSidebarView('bots')"
           style="flex:1;padding:9px 4px;background:transparent;border:none;border-left:1px solid rgba(140,50,220,0.20);color:rgba(255,255,255,0.45);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
@@ -149,32 +149,32 @@
       <!-- Bot Sidebar -->
       <div id="sidebar-bots" style="display:none;flex-direction:column;gap:16px;overflow-y:auto;flex:1;min-height:0">
         <div>
-          <div class="section-title">Konfiguration</div>
+          <div class="section-title">Configuration</div>
           <div class="panel">
             <div class="config-grid">
               <div class="input-group" style="grid-column: 1/-1">
-                <label>Vollständige Roboter / Min</label>
+                <label>Complete Robots / Min</label>
                 <input type="number" id="goalProd" value="32" min="1" />
                 <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;line-height:1.5">
-                  Wähle z.B. „Combat Robot" für das komplette Rezept inkl. aller Teile &amp; Paint
+                  e.g. "Combat Robot" for the full recipe incl. all parts &amp; paint
                 </div>
               </div>
             </div>
             <button class="calc-btn" onclick="calculateBots()" style="display:flex;align-items:center;justify-content:center;gap:7px">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
-              Berechnen
+              Calculate
             </button>
             <button class="reset-btn" onclick="resetRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-              Zurücksetzen
+              Reset
             </button>
           </div>
         </div>
         <div>
-          <div class="section-title">Bots & Drohnen auswählen</div>
+          <div class="section-title">Select Bots & Drones</div>
           <div style="display: flex; gap: 6px; margin-bottom: 8px">
             <button class="reset-btn" id="robotAllBtn_General" style="margin:0;padding:5px 10px;font-size:11px"
-              onclick="toggleRecipeCategoryAll()">✓ Alle</button>
+              onclick="toggleRecipeCategoryAll()">✓ All</button>
           </div>
           <div class="bot-list" id="botList"></div>
         </div>
@@ -183,7 +183,7 @@
       <!-- Recipe Sidebar -->
       <div id="sidebar-recipes" style="display:flex;flex-direction:column;gap:12px;min-height:0;flex:1">
         <div>
-          <div class="section-title">Rezept suchen</div>
+          <div class="section-title">Search recipes</div>
           <div style="position:relative">
             <input type="text" id="recipeSearch" placeholder="Z.B. Building Block, Wire Coil…"
               style="width:100%;box-sizing:border-box;padding:9px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(140,50,220,0.25);color:var(--text);border-radius:10px;font-family:-apple-system,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s,box-shadow 0.2s"
@@ -194,7 +194,7 @@
           </div>
         </div>
         <div style="display:flex;gap:6px">
-          <button class='btn-picker' onclick="openRecipePicker()" title="Rezept-Browser öffnen"
+          <button class='btn-picker' onclick="openRecipePicker()" title="Open recipe browser"
             style="flex:1;padding:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(140,50,220,0.22);color:rgba(255,255,255,0.65);border-radius:10px;cursor:pointer;font-size:13px;font-family:-apple-system,sans-serif;font-weight:500;line-height:1;transition:all 0.18s ease;display:flex;align-items:center;justify-content:center;gap:7px">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Browser
@@ -203,26 +203,26 @@
 
         <button class="calc-btn" onclick="calculateRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
-          Berechnen
+          Calculate
         </button>
         <button class="reset-btn" onclick="resetRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          Zurücksetzen
+          Reset
         </button>
 
         <!-- Export / Import plan -->
         <div style="display:flex;gap:6px">
-          <button onclick="exportPlan()" title="Plan als JSON-Datei exportieren" class="plan-io-btn">
+          <button onclick="exportPlan()" title="Export plan as JSON file" class="plan-io-btn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Exportieren
+            Export
           </button>
-          <button onclick="importPlan()" title="Plan aus JSON-Datei importieren" class="plan-io-btn">
+          <button onclick="importPlan()" title="Import plan from JSON file" class="plan-io-btn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 14 12 9 17 14"/><line x1="12" y1="9" x2="12" y2="21"/></svg>
-            Importieren
+            Import
           </button>
-          <button id="sharePlanBtn" onclick="sharePlan()" title="Link zum Plan in die Zwischenablage kopieren" class="plan-io-btn">
+          <button id="sharePlanBtn" onclick="sharePlan()" title="Copy plan link to clipboard" class="plan-io-btn">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            Teilen
+            Share
           </button>
         </div>
 
@@ -231,7 +231,7 @@
           style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;min-height:0">
           <div
             style="color:rgba(255,255,255,0.30);font-size:13px;padding:20px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;text-align:center">
-            Noch kein Rezept ausgewählt. Über Suche oder ⊞ hinzufügen.
+            No recipe selected yet. Add via search or ⊞.
           </div>
         </div>
 
@@ -253,7 +253,7 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
           </svg>
-          Ergebnisse
+          Results
         </button>
         <button id="mainTabBtnVisualize" onclick="switchMainTab('visualize')" style="
           padding:11px 22px; background:transparent; border:none;
@@ -264,7 +264,7 @@
             <circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><circle cx="12" cy="18" r="3"/>
             <line x1="9" y1="6" x2="15" y2="6"/><line x1="7.5" y1="9" x2="10.5" y2="15"/><line x1="16.5" y1="9" x2="13.5" y2="15"/>
           </svg>
-          Visualisieren
+          Visualize
         </button>
       </div>
 
@@ -290,7 +290,7 @@
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px)">
 
             <!-- Sankey icon button -->
-            <button id="vizBtnSankey" onclick="switchVizMode('sankey')" title="Sankey-Diagramm" style="
+            <button id="vizBtnSankey" onclick="switchVizMode('sankey')" title="Sankey Diagram" style="
               width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
               background:rgba(255,255,255,0.18);
               box-shadow: 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
@@ -314,7 +314,7 @@
             </button>
 
             <!-- Boxes & Lines icon button -->
-            <button id="vizBtnBoxes" onclick="switchVizMode('boxes')" title="Boxen & Linien" style="
+            <button id="vizBtnBoxes" onclick="switchVizMode('boxes')" title="Boxes & Lines" style="
               width:44px; height:44px; border-radius:50%; border:none; cursor:pointer;
               background:transparent; box-shadow:none;
               color:rgba(255,255,255,0.40); display:flex; align-items:center; justify-content:center;
@@ -343,7 +343,7 @@
             display:flex; flex-direction:column; align-items:center; justify-content:center;
             height:100%; color:rgba(255,255,255,0.30); font-size:14px; gap:10px">
             <span style="font-size:32px;opacity:0.4">〰</span>
-            <span>Erst Rezepte auswählen und <strong style="color:#0a84ff;font-weight:500">Berechnen</strong> klicken.</span>
+            <span>Select recipes and click <strong style="color:#0a84ff;font-weight:500">Calculate</strong> first.</span>
           </div>
           <svg id="sankeySvg" style="width:100%; height:100%; display:none; cursor:grab"></svg>
           <div id="sankeyTooltip" style="
@@ -358,13 +358,13 @@
             position:absolute; bottom:14px; left:16px; display:none;
             gap:16px; flex-wrap:wrap">
             <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6aaa6a;font-family:monospace">
-              <span style="display:inline-block;width:12px;height:12px;background:#1a4a1a;border:1px solid #2a6a2a;border-radius:2px"></span>Rohstoff
+              <span style="display:inline-block;width:12px;height:12px;background:#1a4a1a;border:1px solid #2a6a2a;border-radius:2px"></span>Raw material
             </span>
             <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6a9adf;font-family:monospace">
-              <span style="display:inline-block;width:12px;height:12px;background:#1a2a4a;border:1px solid #2a4a8a;border-radius:2px"></span>Zwischenprodukt
+              <span style="display:inline-block;width:12px;height:12px;background:#1a2a4a;border:1px solid #2a4a8a;border-radius:2px"></span>Intermediate product
             </span>
             <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#e08050;font-family:monospace">
-              <span style="display:inline-block;width:12px;height:12px;background:#3a1a08;border:1px solid #7a3a10;border-radius:2px"></span>Endprodukt
+              <span style="display:inline-block;width:12px;height:12px;background:#3a1a08;border:1px solid #7a3a10;border-radius:2px"></span>End product
             </span>
           </div>
         </div>
@@ -377,20 +377,20 @@
             display:flex; flex-direction:column; align-items:center; justify-content:center;
             height:100%; color:rgba(255,255,255,0.30); font-size:14px; gap:10px">
             <span style="font-size:32px;opacity:0.4">⬛</span>
-            <span>Erst Rezepte auswählen und <strong style="color:#0a84ff;font-weight:500">Berechnen</strong> klicken.</span>
+            <span>Select recipes and click <strong style="color:#0a84ff;font-weight:500">Calculate</strong> first.</span>
           </div>
           <svg id="boxesSvg" style="width:100%; height:100%; display:none; cursor:grab"></svg>
           <div id="boxesLegend" style="
             position:absolute; bottom:14px; left:16px; display:none;
             gap:16px; flex-wrap:wrap">
             <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6aaa6a;font-family:monospace">
-              <span style="display:inline-block;width:12px;height:12px;background:#1a4a1a;border:1px solid #2a6a2a;border-radius:2px"></span>Rohstoff
+              <span style="display:inline-block;width:12px;height:12px;background:#1a4a1a;border:1px solid #2a6a2a;border-radius:2px"></span>Raw material
             </span>
             <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#6a9adf;font-family:monospace">
-              <span style="display:inline-block;width:12px;height:12px;background:#1a2a4a;border:1px solid #2a4a8a;border-radius:2px"></span>Zwischenprodukt
+              <span style="display:inline-block;width:12px;height:12px;background:#1a2a4a;border:1px solid #2a4a8a;border-radius:2px"></span>Intermediate product
             </span>
             <span style="display:flex;align-items:center;gap:6px;font-size:11px;color:#e08050;font-family:monospace">
-              <span style="display:inline-block;width:12px;height:12px;background:#3a1a08;border:1px solid #7a3a10;border-radius:2px"></span>Endprodukt
+              <span style="display:inline-block;width:12px;height:12px;background:#3a1a08;border:1px solid #7a3a10;border-radius:2px"></span>End product
             </span>
           </div>
         </div>
@@ -439,8 +439,8 @@
                   color: var(--text);
                   font-family: -apple-system,sans-serif;
                   letter-spacing: -0.01em;
-                ">⚙ Standard-Einstellungen</span>
-          <button type="button" aria-label="Einstellungen schließen" onclick="closeRecipeSettings()" style="
+                ">⚙ Default Settings</span>
+          <button type="button" aria-label="Close settings" onclick="closeRecipeSettings()" style="
                   width:28px;height:28px;
                   background: rgba(255,255,255,0.10);
                   border: 1px solid rgba(255,255,255,0.12);
@@ -471,10 +471,10 @@
                 justify-content: flex-end;
               ">
           <button onclick="applySettingsToSelected()" class="calc-btn" style="font-size: 13px; padding: 8px 18px; width:auto">
-            Auf bestehende Rezepte anwenden
+            Apply to existing recipes
           </button>
           <button onclick="closeRecipeSettings()" class="reset-btn" style="font-size: 13px; padding: 8px 18px; width:auto; margin-top:0">
-            Schließen
+            Close
           </button>
         </div>
       </div>
@@ -520,8 +520,8 @@
                   font-family: -apple-system,sans-serif;
                   letter-spacing: -0.01em;
                   white-space:nowrap;
-                ">Rezept-Browser</span>
-          <input type="text" id="recipePickerSearch" placeholder="Suchen…" style="
+                ">Recipe Browser</span>
+          <input type="text" id="recipePickerSearch" placeholder="Search…" style="
                   flex: 1;
                   padding: 7px 12px;
                   background: rgba(255,255,255,0.08);
@@ -532,7 +532,7 @@
                   font-size: 13px;
                   outline:none;
                 " oninput="renderRecipeBrowser()" autocomplete="off" />
-          <button type="button" aria-label="Rezeptauswahl schließen" onclick="closeRecipePicker()" style="
+          <button type="button" aria-label="Close recipe picker" onclick="closeRecipePicker()" style="
                   width:28px;height:28px;
                   background: rgba(255,255,255,0.10);
                   border: 1px solid rgba(255,255,255,0.12);
@@ -573,7 +573,7 @@
                 font-size: 12px;
                 color: rgba(255,255,255,0.30);
               ">
-          Klicken zum Auswählen · ausgegraut = kein Rezept hinterlegt
+          Click to select · greyed out = no recipe available
         </div>
       </div>
     </div>

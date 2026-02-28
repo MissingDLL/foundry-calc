@@ -56,9 +56,9 @@
   }
 
   if (errors.length === 0) {
-    console.log('%c✓ RECIPES validation passed — alle Konstanten bekannt', 'color:#4caf50;font-weight:bold');
+    console.log('%c✓ RECIPES validation passed — all constants known', 'color:#4caf50;font-weight:bold');
   } else {
-    console.warn(`%c✗ RECIPES validation: ${errors.length} Problem(e) gefunden`, 'color:#ff9800;font-weight:bold');
+    console.warn(`%c✗ RECIPES validation: ${errors.length} problem(s) found`, 'color:#ff9800;font-weight:bold');
     errors.forEach(e => console.warn('  ', e));
   }
 })();
@@ -120,13 +120,13 @@ function toggleRecipeCategoryAll() {
     toggleRecipeFromGrid(name, newState);
   });
   const btn = document.getElementById("robotAllBtn_General");
-  if (btn) btn.textContent = newState ? "✗ Keine" : "✓ Alle";
+  if (btn) btn.textContent = newState ? "✗ None" : "✓ All";
   // Also update subgroup buttons so they stay in sync
   Object.keys(
     entries.reduce((acc, [name]) => { const sg = getBotSubgroup(name); acc[sg] = 1; return acc; }, {})
   ).forEach(sg => {
     const b = document.getElementById("robotAllBtn_sg_" + sg.replace(/ /g, "_"));
-    if (b) b.textContent = newState ? "✗ Keine" : "✓ Alle";
+    if (b) b.textContent = newState ? "✗ None" : "✓ All";
   });
 }
 
@@ -143,27 +143,27 @@ const COMPLETE_ROBOT_NAMES = new Set([
 ]);
 
 function getBotSubgroup(name) {
-  if (COMPLETE_ROBOT_NAMES.has(name)) return "Vollständige Roboter";
+  if (COMPLETE_ROBOT_NAMES.has(name)) return "Complete Robots";
   const n = name.toLowerCase();
   if (n.includes("drone")) return "Drones";
   if (n.includes(" bot")) return "Bots";
-  if (n.startsWith("combat robot")) return "Combat Robot Teile";
-  if (n.startsWith("farmer robot")) return "Farmer Robot Teile";
-  if (n.startsWith("miner robot")) return "Miner Robot Teile";
-  if (n.startsWith("operator robot")) return "Operator Robot Teile";
-  if (n.startsWith("personal assistant robot")) return "Personal Assistant Robot Teile";
-  if (n.startsWith("science robot")) return "Science Robot Teile";
-  return "Robots (Sonstige)";
+  if (n.startsWith("combat robot")) return "Combat Robot Parts";
+  if (n.startsWith("farmer robot")) return "Farmer Robot Parts";
+  if (n.startsWith("miner robot")) return "Miner Robot Parts";
+  if (n.startsWith("operator robot")) return "Operator Robot Parts";
+  if (n.startsWith("personal assistant robot")) return "Personal Assistant Robot Parts";
+  if (n.startsWith("science robot")) return "Science Robot Parts";
+  return "Robots (Other)";
 }
 
 // Defines the display order of bot subgroups in the sidebar.
 // Any subgroup not in this list is appended at the end.
 const BOT_SUBGROUP_ORDER = [
-  "Vollständige Roboter",
+  "Complete Robots",
   "Bots", "Drones",
-  "Personal Assistant Robot Teile", "Operator Robot Teile",
-  "Miner Robot Teile", "Farmer Robot Teile", "Combat Robot Teile", "Science Robot Teile",
-  "Robots (Sonstige)",
+  "Personal Assistant Robot Parts", "Operator Robot Parts",
+  "Miner Robot Parts", "Farmer Robot Parts", "Combat Robot Parts", "Science Robot Parts",
+  "Robots (Other)",
 ];
 
 // Builds (or rebuilds) the entire bot sidebar list.
@@ -205,8 +205,8 @@ function buildRecipeCategoryList() {
     // "✓ Alle" button: toggles all items in this subgroup
     const allBtn = document.createElement("button");
     allBtn.id = "robotAllBtn_sg_" + sg.replace(/ /g, "_");
-    allBtn.textContent = "✓ Alle";
-    allBtn.title = "Alle auswählen / abwählen";
+    allBtn.textContent = "✓ All";
+    allBtn.title = "Select all / deselect all";
     allBtn.style.cssText =
       "padding:1px 7px;font-size:10px;background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.25);color:var(--accent);border-radius:5px;cursor:pointer;font-family:-apple-system,sans-serif";
     allBtn.onclick = function () {
@@ -219,7 +219,7 @@ function buildRecipeCategoryList() {
         if (c) c.checked = newState;
         toggleRecipeFromGrid(n, newState);
       });
-      allBtn.textContent = newState ? "✗ Keine" : "✓ Alle";
+      allBtn.textContent = newState ? "✗ None" : "✓ All";
     };
     catDiv.appendChild(allBtn);
     list.appendChild(catDiv);
@@ -357,7 +357,7 @@ const MACHINE_FAMILIES = [
   { label: "Lava-Smelter",machines: ["Lava-Smelter I", "Lava-Smelter II"] },
   { label: "Assembler",   machines: ["Assembler I", "Assembler II", "Assembler III"] },
   {
-    label: "Förderband",
+    label: "Conveyor Belt",
     machines: [
       "Conveyor I",
       "Conveyor II",

@@ -98,7 +98,7 @@ function renderRecipeBrowser() {
       "transition:all 0.12s",
       "overflow:visible",
     ].join(";");
-    cell.title = canonicalName + (hasMachines ? "" : " (kein Rezept)");
+    cell.title = canonicalName + (hasMachines ? "" : " (no recipe)");
     cell.innerHTML =
       getIcon(canonicalName, 40) +
       (isSelected
@@ -218,7 +218,7 @@ function filterRecipesInline(query) {
       category +
       (opm
         ? " · " + defaultMachine + variantLabel + ": " + opm + "/min"
-        : " · kein Rezept") +
+        : " · no recipe") +
       "</div>";
     row.appendChild(iconEl);
     row.appendChild(info);
@@ -272,7 +272,7 @@ function resetRecipes() {
   const cats = [...new Set(Object.values(RECIPES).map(r => r.category))];
   cats.forEach(cat => {
     const btn = document.getElementById("robotAllBtn_" + cat.replace(/ /g, "_"));
-    if (btn) btn.textContent = "Alle ✓";
+    if (btn) btn.textContent = "All ✓";
   });
 
   // Globalen Button zurücksetzen (falls du einen hast)
@@ -389,7 +389,7 @@ function renderSelectedRecipes() {
   const el = document.getElementById("selectedRecipes");
   if (!selectedRecipeList.length) {
     el.innerHTML = `<div style="color:rgba(255,255,255,0.30);font-size:13px;padding:20px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;text-align:center">
-      Noch kein Item ausgewählt. Über Suche oder ⊞ hinzufügen.
+      No item selected yet. Add via search or ⊞.
     </div>`;
     return;
   }
@@ -468,7 +468,7 @@ function renderSelectedRecipes() {
             </select>
           </div>
           <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
-            <span style="font-size:10px;color:var(--text-dim)">Ziel</span>
+            <span style="font-size:10px;color:var(--text-dim)">Goal</span>
             <input type="number" value="${item.goal}" min="0.01" max="999999" step="any" data-idx="${idx}"
               onchange="updateRecipeGoal(this.dataset.idx, this.value)"
               style="width:64px;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;text-align:right;outline:none">
@@ -476,7 +476,7 @@ function renderSelectedRecipes() {
         </div>
         ${Array.isArray(r.output) && r.output.length > 1
           ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-wrap:wrap;gap:5px">
-          <span style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">Nebenprodukte:</span>
+          <span style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">By-products:</span>
           ${r.output.slice(1).map(op => {
             const byOpm = (60 / r.machines[item.machineName].cycleTime) * op.amount * machinesNeeded;
             return `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(op.item, 14)}${op.item}: <span style="color:var(--warn)">${fmt(byOpm)}</span></span>`;
@@ -486,17 +486,17 @@ function renderSelectedRecipes() {
         }
         ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
           ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:5px">
-          <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance-Output:</span>
-          <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} pro Zyklus</span>
-          <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(ø ${(r.output.amount * r.output.chance).toFixed(1)}/Zyklus)</span>
+          <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance output:</span>
+          <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} per cycle</span>
+          <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(avg ${(r.output.amount * r.output.chance).toFixed(1)}/cycle)</span>
         </div>`
           : ""
         }
         ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
           ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:5px">
-          <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance-Output:</span>
-          <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} pro Zyklus</span>
-          <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(ø ${(r.output.amount * r.output.chance).toFixed(1)}/Zyklus)</span>
+          <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance output:</span>
+          <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} per cycle</span>
+          <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(avg ${(r.output.amount * r.output.chance).toFixed(1)}/cycle)</span>
         </div>`
           : ""
         }
@@ -509,16 +509,16 @@ function renderSelectedRecipes() {
           ? (() => {
             const ws = r.workstation_effect;
             const bonuses = [];
-            if (ws.machine_efficiency) bonuses.push(`<span style="color:var(--accent3)">+${ws.machine_efficiency}% Effizienz</span>`);
-            if (ws.machine_speed) bonuses.push(`<span style="color:var(--accent)">+${ws.machine_speed}% Geschwindigkeit</span>`);
-            if (ws.power_consumption_kw) bonuses.push(`<span style="color:var(--warn)">+${ws.power_consumption_kw}% Energie</span>`);
+            if (ws.machine_efficiency) bonuses.push(`<span style="color:var(--accent3)">+${ws.machine_efficiency}% efficiency</span>`);
+            if (ws.machine_speed) bonuses.push(`<span style="color:var(--accent)">+${ws.machine_speed}% speed</span>`);
+            if (ws.power_consumption_kw) bonuses.push(`<span style="color:var(--warn)">+${ws.power_consumption_kw}% energy</span>`);
             const targets = (ws.applies_to || []).join(", ");
-            const exempt = ws.exempt ? ` <span style="color:var(--text-dim)">(nicht: ${ws.exempt.join(", ")})</span>` : "";
+            const exempt = ws.exempt ? ` <span style="color:var(--text-dim)">(except: ${ws.exempt.join(", ")})</span>` : "";
             const metaParts = [];
             if (r.weight) metaParts.push(`⚖ ${r.weight} kg`);
             if (r.sales_price) metaParts.push(`💰 ${r.sales_price} F`);
             return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-wrap:wrap;align-items:center;gap:14px">
-                  <span style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Workstation-Effekt: </span>
+                  <span style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Workstation effect: </span>
                   <span style="display:flex;gap:10px;flex-wrap:wrap">${bonuses.join(" · ")}</span>
                   <span style="font-size:12px;color:var(--text-dim)">→ ${targets}${exempt}</span>
                   ${metaParts.length ? `<span style="font-size:12px;color:var(--text-dim);margin-left:auto">${metaParts.join("  ")}</span>` : ""}
@@ -547,8 +547,8 @@ function buildItemWsRow(item, idx) {
   const bonus = calcWsBonusForMachine(item.machineName, activeConfig);
   const bonusLabel = bonus > 0
     ? `<span style="color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:11px">+${Math.round(bonus * 1000) / 10}%</span>`
-    : `<span style="color:var(--text-dim);font-size:11px">kein Bonus</span>`;
-  const modeLabel = useOverride ? "Eigene WS" : (isDisabled ? "Keine WS" : (globalConfig ? "Globale WS" : "Keine WS"));
+    : `<span style="color:var(--text-dim);font-size:11px">no bonus</span>`;
+  const modeLabel = useOverride ? "Custom WS" : (isDisabled ? "No WS" : (globalConfig ? "Global WS" : "No WS"));
 
   // Only bots compatible with this item's machine category
   const compatBots = Object.entries(RECIPES)
@@ -572,7 +572,7 @@ function buildItemWsRow(item, idx) {
         const label = n + (parts.length ? "  [" + parts.join(" · ") + "]" : "");
         return `<option value="${n}" ${n === botName ? "selected" : ""}>${label}</option>`;
       }).join("");
-      const opts = `<option value="">— kein Bot —</option>` + botOpts;
+      const opts = `<option value="">— no bot —</option>` + botOpts;
       return `<div style="display:flex;align-items:center;gap:6px;margin-top:5px">
           <span style="font-size:10px;color:var(--text-dim);width:38px;flex-shrink:0">Slot ${si + 1}</span>
           <select data-idx="${idx}" data-slot="${si}" onchange="updateItemWsBot(this)"
@@ -600,7 +600,7 @@ function buildItemWsRow(item, idx) {
       const isActive = mode === "custom" ? useOverride
         : mode === "none" ? (isDisabled || (!hasOverride && !globalConfig))
           : (!hasOverride && !isDisabled && !!globalConfig);
-      const label = mode === "none" ? "Keine WS" : mode === "global" ? "Globale WS" : "Eigene WS";
+      const label = mode === "none" ? "No WS" : mode === "global" ? "Global WS" : "Custom WS";
       return `<button data-action="wsmode" data-idx="${idx}" data-mode="${mode}"
               style="padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;transition:all 0.15s;${isActive
           ? 'background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;font-weight:600;'
@@ -619,8 +619,8 @@ function buildItemWsRow(item, idx) {
         ${useOverride
         ? slotsHtml
         : globalConfig && !useOverride
-          ? `<div style="font-size:11px;color:var(--text-dim);margin-top:5px">Verwendet globale WS für: <span style="color:var(--accent)">${cat || "—"}</span></div>`
-          : `<div style="font-size:11px;color:#444;margin-top:5px">Kein WS-Bonus aktiv.</div>`
+          ? `<div style="font-size:11px;color:var(--text-dim);margin-top:5px">Using global WS for: <span style="color:var(--accent)">${cat || "—"}</span></div>`
+          : `<div style="font-size:11px;color:#444;margin-top:5px">No WS bonus active.</div>`
       }
       </div>`;
   })();

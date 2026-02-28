@@ -45,7 +45,7 @@ function renderSettingsContent(targetId) {
   const machTitle = document.createElement("div");
   machTitle.style.cssText =
     "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
-  machTitle.textContent = "Standard-Maschinen";
+  machTitle.textContent = "Default Machines";
   el.appendChild(machTitle);
 
   const machGrid = document.createElement("div");
@@ -103,7 +103,7 @@ function renderSettingsContent(targetId) {
   const varTitle = document.createElement("div");
   varTitle.style.cssText =
     "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
-  varTitle.textContent = "Rezept-Varianten (Standard)";
+  varTitle.textContent = "Recipe Variants (Default)";
   el.appendChild(varTitle);
 
   const varGrid = document.createElement("div");
@@ -166,13 +166,13 @@ function renderSettingsContent(targetId) {
   const minerTitle = document.createElement("div");
   minerTitle.style.cssText =
     "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
-  minerTitle.textContent = "Abbau-Maschinen (Grundmaterialien)";
+  minerTitle.textContent = "Mining Machines (Raw Materials)";
   el.appendChild(minerTitle);
 
   const minerDesc = document.createElement("div");
   minerDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
   minerDesc.textContent =
-    "Welche Maschine soll für jeden Rohstoff in der Grundmaterial-Auflösung verwendet werden?";
+    "Which machine should be used for each raw material in the ingredient resolution?";
   el.appendChild(minerDesc);
 
   const minerGrid = document.createElement("div");
@@ -227,13 +227,13 @@ function renderSettingsContent(targetId) {
   const resTitle = document.createElement("div");
   resTitle.style.cssText =
     "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
-  resTitle.textContent = "Globale Forschungsproduktivität";
+  resTitle.textContent = "Global Research Productivity";
   el.appendChild(resTitle);
 
   const resDesc = document.createElement("div");
   resDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
   resDesc.textContent =
-    "Mining: gilt für Crusher I/II · Fluid: gilt für Fluid-Assembler, Chemical Processor, Barrel Filler, Greenhouse";
+    "Mining: applies to Crusher I/II · Fluid: applies to Fluid Assembler, Chemical Processor, Barrel Filler, Greenhouse";
   el.appendChild(resDesc);
 
   const resGrid = document.createElement("div");
@@ -285,7 +285,7 @@ function renderSettingsContent(targetId) {
     pct.textContent = "%";
 
     const resetBtn = document.createElement("button");
-    resetBtn.title = "Zurücksetzen";
+    resetBtn.title = "Reset";
     resetBtn.style.cssText =
       "padding:2px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.40);" +
       "border-radius:3px;cursor:pointer;font-size:11px;line-height:1;flex-shrink:0";
@@ -314,12 +314,12 @@ function renderSettingsContent(targetId) {
   const effTitle = document.createElement("div");
   effTitle.style.cssText =
     "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
-  effTitle.textContent = "Bot Effizienz-Boni";
+  effTitle.textContent = "Bot Efficiency Bonuses";
   el.appendChild(effTitle);
 
   const effDesc = document.createElement("div");
   effDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
-  effDesc.textContent = "Passe die angezeigten Effizienz-Prozentwerte pro Bot an (z.B. durch Upgrades im Spiel).";
+  effDesc.textContent = "Adjust the displayed efficiency percentages per bot (e.g. via in-game upgrades).";
   el.appendChild(effDesc);
 
   const effGrid = document.createElement("div");
@@ -375,7 +375,7 @@ function renderSettingsContent(targetId) {
     pct.textContent = "%";
 
     const resetBtn = document.createElement("button");
-    resetBtn.title = "Auf Standardwert zurücksetzen";
+    resetBtn.title = "Reset to default";
     resetBtn.style.cssText =
       "padding:2px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.40);" +
       "border-radius:3px;cursor:pointer;font-size:11px;line-height:1;flex-shrink:0";
@@ -410,7 +410,7 @@ function renderSettingsContent(targetId) {
 
   const wsDesc = document.createElement("div");
   wsDesc.style.cssText = "font-size:11px;color:var(--text-dim);margin-bottom:10px";
-  wsDesc.textContent = "Eine Workstation pro Maschinenkategorie. WS1: 1 Slot · WS2: 2 Slots · WS3: 3 Slots + Charged Reno Core (+33 %). Pro Item überschreibbar.";
+  wsDesc.textContent = "One workstation per machine category. WS1: 1 slot · WS2: 2 slots · WS3: 3 slots + Charged Reno Core (+33%). Overridable per item.";
   el.appendChild(wsDesc);
 
   const wsSummary = document.createElement("div");
@@ -453,7 +453,7 @@ function renderWorkstations() {
     const compatibleBots = botsForCategory(cat);
     const machineNames = APPLIES_TO_MACHINES[cat].length
       ? APPLIES_TO_MACHINES[cat].join(", ")
-      : "(kein Effekt im Rezept-Rechner — z.B. Miner, Pumpjack)";
+      : "(no effect in recipe calculator — e.g. Miner, Pumpjack)";
 
     // Grau ausblenden wenn keine kompatiblen Bots existieren
     const hasNoBots = compatibleBots.length === 0;
@@ -561,7 +561,7 @@ function renderWorkstations() {
         sel.style.cssText = "flex:1;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none";
         const emptyOpt = document.createElement("option");
         emptyOpt.value = "";
-        emptyOpt.textContent = "— kein Bot —";
+        emptyOpt.textContent = "— no bot —";
         if (!botName) emptyOpt.selected = true;
         sel.appendChild(emptyOpt);
 
@@ -616,7 +616,7 @@ function renderWorkstations() {
       card.appendChild(header);
       const noWs = document.createElement("div");
       noWs.style.cssText = "font-size:11px;color:var(--text-dim);padding:4px 0";
-      noWs.textContent = "Keine Workstation konfiguriert. Checkbox aktivieren zum Einrichten.";
+      noWs.textContent = "No workstation configured. Enable the checkbox to set one up.";
       card.appendChild(noWs);
     }
 
@@ -638,11 +638,11 @@ function renderWorkstationBonusSummary() {
     });
   });
   if (!lines.length) {
-    summaryEl.innerHTML = '<div style="font-size:11px;color:var(--text-dim)">Keine aktiven globalen Boni.</div>';
+    summaryEl.innerHTML = '<div style="font-size:11px;color:var(--text-dim)">No active global bonuses.</div>';
     return;
   }
   summaryEl.innerHTML =
-    '<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Aktive globale Boni</div>' +
+    '<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Active global bonuses</div>' +
     '<div style="display:flex;flex-wrap:wrap;gap:5px">' +
     lines.map(({ machine, bonus }) =>
       `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(48,209,88,0.10);border:1px solid rgba(48,209,88,0.20);border-radius:6px;padding:3px 8px;font-size:11px;font-family:-apple-system,sans-serif">` +
