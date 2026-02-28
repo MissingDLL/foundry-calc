@@ -548,7 +548,7 @@ function buildItemWsRow(item, idx) {
   const bonusLabel = bonus > 0
     ? `<span style="color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:11px">+${Math.round(bonus * 1000) / 10}%</span>`
     : `<span style="color:var(--text-dim);font-size:11px">no bonus</span>`;
-  const modeLabel = useOverride ? "Custom WS" : (isDisabled ? "No WS" : (globalConfig ? "Global WS" : "No WS"));
+  const modeLabel = useOverride ? "Custom WS" : (isDisabled ? "No WS" : "Global WS");
 
   // Only bots compatible with this item's machine category
   const compatBots = Object.entries(RECIPES)
@@ -595,11 +595,11 @@ function buildItemWsRow(item, idx) {
 
     return `<div style="margin-top:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-          <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Modus:</span>
+          <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Mode:</span>
           ${["none", "global", "custom"].map(mode => {
       const isActive = mode === "custom" ? useOverride
-        : mode === "none" ? (isDisabled || (!hasOverride && !globalConfig))
-          : (!hasOverride && !isDisabled && !!globalConfig);
+        : mode === "none" ? isDisabled
+          : (!hasOverride && !isDisabled);
       const label = mode === "none" ? "No WS" : mode === "global" ? "Global WS" : "Custom WS";
       return `<button data-action="wsmode" data-idx="${idx}" data-mode="${mode}"
               style="padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;transition:all 0.15s;${isActive
