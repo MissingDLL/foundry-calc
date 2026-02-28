@@ -367,5 +367,18 @@ function _loadPlanFromUrl() {
 }
 
 // ============================================================
+// KEYBOARD SHORTCUTS
+// ============================================================
+
+// Close any open modal overlay when Escape is pressed.
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') return;
+  const picker   = document.getElementById('recipePickerOverlay');
+  const settings = document.getElementById('recipeSettingsOverlay');
+  if (picker   && picker.style.display   === 'flex') { closeRecipePicker();   return; }
+  if (settings && settings.style.display === 'flex') { closeRecipeSettings(); return; }
+});
+
+// ============================================================
 // SANKEY — Datenaufbau
 // ============================================================
