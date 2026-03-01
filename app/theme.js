@@ -343,9 +343,10 @@ const THEMES = {
 .summary-unit {
   color: #6e6e73 !important;
 }
-  .summary-value {
-  color: var(--accent); !important;
-}
+      .summary-value {
+        font-size: 28px !important;
+        font-weight: 600 !important;
+      }
   .collapsible-header { background: rgba(255,255,255,0.04) !important; border-bottom: 1px solid rgba(255,255,255,0.07) !important; }
       .collapsible-header:hover { background: rgba(255,255,255,0.07) !important; }
       .collapsible-header .ch-title { color: var(--text-dim) !important; letter-spacing: 0.05em !important; text-transform: uppercase !important; font-size: 10px !important; }
@@ -359,7 +360,6 @@ const THEMES = {
         border-bottom: 1px solid rgba(0,0,0,0.07) !important;
         text-shadow: none !important;
       }
-      .summary-value { font-size: 20px !important; font-weight: 600 !important; }
       .tabs { border-bottom: 1px solid rgba(0,0,0,0.08) !important; margin-bottom: 16px !important; }
       .tab { font-size: 12px !important; letter-spacing: 0 !important; text-transform: none !important; font-weight: 500 !important; }
       .tab.active { text-shadow: none !important; color: #007aff !important; border-bottom-color: #007aff !important; }

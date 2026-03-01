@@ -167,6 +167,10 @@ function calculateRecipes() {
       </div>
     </div>`;
 
+  // ── Icon box helper (full-bleed image with rounded container) ─
+  const iconBox = (name, size) =>
+    `<div style="width:${size}px;height:${size}px;border-radius:${Math.round(size / 5)}px;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;">${getIcon(name, size)}</div>`;
+
   // ── Production overview table rows ───────────────────────
   let rowIdx = 0;
   const overviewRows = lines
@@ -183,7 +187,7 @@ function calculateRecipes() {
             background:${warn ? '#1a1100' : '#0d1a0d'};
             border:1px solid ${warn ? '#554400' : '#1a3a1a'};
             border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
-            ${getIcon(ing.item, 18)}
+            ${iconBox(ing.item, 64)}
             <span style="color:var(--text-dim)">${ing.item}</span>
             <span style="font-family:'Share Tech Mono',monospace;color:${warn ? 'var(--warn)' : 'var(--accent3)'}">
               ${fmt(ipm)}<span style="color:var(--text-dim);font-size:10px">/min</span>
@@ -201,11 +205,11 @@ function calculateRecipes() {
     <tr class="recipe-main-row" onclick="toggleRecipeRow('${rid}')">
       <td style="padding:7px 12px"><div style="display:flex;align-items:center;gap:6px">
         <span class="row-expand-arrow" id="arr_${rid}">▶</span>
-        ${getIcon(r.displayName, 28)}<span class="label">${r.displayName}</span>
+        ${iconBox(r.displayName, 64)}<span class="label">${r.displayName}</span>
         ${r.recipeName !== r.itemName && r.itemName ? '<span style="font-size:10px;color:var(--text-dim);margin-left:4px">' + (r.recipeName || "") + "</span>" : ""}
       </div></td>
       <td style="padding:7px 12px">
-        <div style="display:flex;align-items:center;gap:8px">${getIcon(r.machineName, 24)}<span style="color:var(--text-dim);font-size:13px">${r.machineName}</span></div>
+        <div style="display:flex;align-items:center;gap:8px">${iconBox(r.machineName, 64)}<span style="color:var(--text-dim);font-size:13px">${r.machineName}</span></div>
         ${r.machineName === M.ASSEMBLY_LINE ? `<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;padding-left:2px;line-height:1.7">
           └&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.start.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.start.name}
           &nbsp;·&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.producer.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.producer.name}
@@ -235,7 +239,7 @@ function calculateRecipes() {
       const cls = val > 100 ? "num-warn" : "num";
       return `
     <tr>
-      <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${getIcon(name, 28)}<span class="label">${name}</span></div></td>
+      <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${iconBox(name, 64)}<span class="label">${name}</span></div></td>
       <td class="${cls}">${fmt(val)}</td>
       <td class="num">${fmt(val / 60)}/s</td>
     </tr>`;
@@ -343,12 +347,12 @@ function calculateRecipes() {
         if (md) {
           const opm   = (60 / md.cycleTime) * getOutputAmount(rec);
           const count = Math.ceil(val / opm);
-          machineTd = `<td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${getIcon(machine, 22)}<span class="label">${machine}</span></div></td><td class="num">${count}</td>`;
+          machineTd = `<td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span></div></td><td class="num">${count}</td>`;
         }
       }
       return `
     <tr>
-      <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${getIcon(name, 28)}<span class="label">${name}</span></div></td>
+      <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${iconBox(name, 64)}<span class="label">${name}</span></div></td>
       <td class="${cls}">${fmt(val)}</td>
       <td class="num">${fmt(val / 60)}/s</td>
       ${machineTd}
