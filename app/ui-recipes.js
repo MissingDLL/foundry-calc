@@ -88,7 +88,7 @@ function renderRecipeBrowser() {
       "flex-shrink:0",
       "background:" + (isSelected ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)"),
       "border:" +
-      (isSelected ? "1px solid rgba(10,132,255,0.5)" : "1px solid rgba(255,255,255,0.09)"),
+      (isSelected ? "2px solid rgba(10,132,255,0.85)" : "1px solid rgba(255,255,255,0.09)"),
       "border-radius:7px",
       "cursor:" + (hasMachines ? "pointer" : "default"),
       "display:flex",
@@ -102,9 +102,11 @@ function renderRecipeBrowser() {
     ].join(";");
     cell.title = canonicalName + (hasMachines ? "" : " (no recipe)");
     cell.innerHTML =
-      getIcon(canonicalName, 40) +
+      '<div style="position:absolute;inset:0;border-radius:6px;overflow:hidden;display:flex;align-items:center;justify-content:center;">' +
+        getIcon(canonicalName, 64) +
+      '</div>' +
       (isSelected
-        ? '<div style="position:absolute;top:2px;right:4px;font-size:10px;color:var(--accent);font-weight:700">✓</div>'
+        ? '<div style="position:absolute;top:4px;right:4px;width:16px;height:16px;background:var(--accent);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;font-weight:800;z-index:1;line-height:1">✓</div>'
         : "");
 
     const label = document.createElement("div");
@@ -115,15 +117,11 @@ function renderRecipeBrowser() {
 
     if (hasMachines) {
       cell.onmouseenter = function () {
-        this.style.background = isSelected ? "rgba(10,132,255,0.25)" : "rgba(255,255,255,0.10)";
-        this.style.transform = "scale(1.1)";
-        this.style.zIndex = "5";
+        this.style.border = "2px solid rgba(10,132,255,1)";
         label.style.opacity = "1";
       };
       cell.onmouseleave = function () {
-        this.style.background = isSelected ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
-        this.style.transform = "scale(1)";
-        this.style.zIndex = "1";
+        this.style.border = isSelected ? "2px solid rgba(10,132,255,0.85)" : "1px solid rgba(255,255,255,0.09)";
         label.style.opacity = "0";
       };
       cell.onclick = function () {
@@ -169,14 +167,11 @@ function renderRecipeBrowser() {
       itemGrid.className = "recipe-subgroup-grid";
       if (isCollapsed) itemGrid.style.display = "none";
 
-      rows.forEach((row, ri) => {
-        // Flex row-break before every row except the first
-        if (ri > 0) {
-          const br = document.createElement("div");
-          br.className = "recipe-subgroup-rowbreak";
-          itemGrid.appendChild(br);
-        }
-        row.forEach(item => itemGrid.appendChild(buildCell(item)));
+      rows.forEach((row) => {
+        const rowEl = document.createElement("div");
+        rowEl.className = "recipe-subgroup-row";
+        row.forEach(item => rowEl.appendChild(buildCell(item)));
+        itemGrid.appendChild(rowEl);
       });
 
       header.onclick = function () {
