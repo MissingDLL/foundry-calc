@@ -17,7 +17,15 @@ A browser-based production planner for the game **[Foundry](https://store.steamp
 - Sankey diagram (material flow visualization)
 - Box diagram (topological production chain)
 - 3 themes: Default (Purple), Dark (Apple Black), Light
-- Sidebar with bot/recipe browser and inline search
+- Sidebar with bot/recipe browser and inline search — robot parts shown nested below their bot
+- **Auto-recalculate** on any change (machine, goal, variant, workstation)
+- **Plan export/import** as a dated JSON file
+- **Shareable URL links** — plan encoded as Base64 in the URL hash
+- **Mobile-responsive** layout: sidebar as an overlay drawer on small screens
+- **Cycle detection** in the ingredient graph with a visible warning banner
+- **LocalStorage persistence**: selected recipes, all settings, and theme survive page reloads
+- Escape key closes all modals
+- Input validation: goal fields flash red on invalid input
 
 ---
 
@@ -30,7 +38,7 @@ Vanilla JavaScript (ES2015+) · D3.js v7 · HTML5/CSS3
 No build tools · No framework · No backend
 ```
 
-This is a **client-side Single-Page Application**. All data is static and bundled with the code. State lives in browser RAM — nothing is persisted except theme and sidebar preferences (via `localStorage`).
+This is a **client-side Single-Page Application**. All data is static and bundled with the code. State lives in browser RAM and is persisted to `localStorage` on every change.
 
 ### Data Flow
 
@@ -38,13 +46,13 @@ This is a **client-side Single-Page Application**. All data is static and bundle
 User selects a recipe
   └─ toggleRecipeFromGrid()        [ui-recipes.js]
        └─ addRecipeItem()           → selectedRecipeList[]
-            └─ renderSelectedRecipes()    [ui-recipes.js]
+            └─ renderSelectedRecipes() + calculateRecipes()   [auto-recalculate]
 
-User clicks "Calculate"
-  └─ calculateRecipes()            [calculation.js]
+User changes goal / machine / variant / workstation
+  └─ calculateRecipes()            [triggered automatically on any state change]
        ├─ Compute machine counts per recipe
        ├─ Accumulate direct ingredient totals
-       ├─ resolveToGround() (recursive)
+       ├─ resolveToGround() (recursive, cycle-safe)
        │    └─ → Raw material requirements
        ├─ Render 3 result tables (HTML)
        └─ buildSankeyGraph() → renderSankey() / renderBoxes()
@@ -52,7 +60,7 @@ User clicks "Calculate"
 
 ### State Management
 
-There is **no central state container**. State consists of global variables in `state.js`, read and mutated directly by all modules:
+There is **no central state container**. State consists of global variables in `state.js`, read and mutated directly by all modules. All state is persisted to `localStorage` via `saveSettings()` on every change.
 
 | Variable | Type | Contents |
 |---|---|---|
@@ -64,6 +72,14 @@ There is **no central state container**. State consists of global variables in `
 | `globalMiningProductivity` | Number | % bonus for Crusher recipes |
 | `globalFluidProductivity` | Number | % bonus for fluid machines |
 | `workstationConfigs` | Object | Workstation config per machine category |
+
+**LocalStorage keys:**
+
+| Key | Contents |
+|---|---|
+| `fc_settings` | Full state snapshot (all variables above) serialised as JSON |
+| `theme` | Active theme name (`"default"`, `"dark"`, `"light"`) |
+| `sidebarCollapsed` | Sidebar collapsed state |
 
 ### Script Load Order (critical)
 
@@ -78,7 +94,7 @@ Scripts must be loaded in this exact order — each module depends on globals de
 <script src="app/ui-settings.js"></script>   <!-- 6. Settings UI (needs state) -->
 <script src="app/ui-recipes.js"></script>    <!-- 7. Recipe UI (needs state, RECIPES) -->
 <script src="app/calculation.js"></script>   <!-- 8. Calculation engine (needs state, RECIPES) -->
-<script src="app/ui-nav.js"></script>        <!-- 9. Navigation (needs UI modules) -->
+<script src="app/ui-nav.js"></script>        <!-- 9. Navigation, export/import/share (needs UI modules) -->
 <script src="app/visualization.js"></script> <!-- 10. D3 rendering (needs state, calculation) -->
 ```
 
@@ -122,17 +138,21 @@ foundry-calc/
 │
 ├── app/                    # Application logic
 │   ├── theme.js            # Theme system (3 themes, CSS variables, blob animation)
-│   ├── state.js            # Global state, configuration constants, helper functions
-│   ├── calculation.js      # Calculation engine (machines, ingredients, raw materials)
+│   ├── state.js            # Global state, localStorage persistence, helper functions
+│   ├── calculation.js      # Calculation engine (machines, ingredients, raw materials, cycle detection)
 │   ├── ui-recipes.js       # Recipe browser, selection list, inline search
 │   ├── ui-settings.js      # Settings modal (machines, variants, productivity)
-│   ├── ui-nav.js           # Tab navigation, sidebar toggle, number formatting
+│   ├── ui-nav.js           # Tab navigation, sidebar, export/import/share, number formatting
 │   └── visualization.js    # D3 Sankey + box-flow diagram
 │
 ├── data/                   # Game data (static, never modified at runtime)
 │   ├── game-data.js        # Constants: M (machines), I (items), CAT (categories)
 │   ├── icons.js            # Icon path maps + getIcon() function
 │   └── recipes.js          # RECIPES object (~200 recipes, ~5400 lines)
+│
+├── tests/                  # Browser-based unit test suite (no build tools required)
+│   ├── runner.html         # Open in browser to run all tests
+│   └── unit.test.js        # 37 assertions across 5 suites
 │
 └── icons/                  # PNG icons (48×48) for all items and machines
 ```
@@ -154,7 +174,8 @@ The theme system in `app/theme.js` is built entirely on **CSS Custom Properties*
 5. **Update D3**: Set `window.__sankeyColors` with theme-appropriate palette
 6. **Re-render**: Call `window.__renderSankey()` if Sankey tab is currently visible
 7. **Update legend**: Update color swatches in the visualization legend
-8. **Cleanup**: Remove `theme-switching` class from body after 500ms
+8. **Persist**: Save theme name to `localStorage['theme']`
+9. **Cleanup**: Remove `theme-switching` class from body after 500ms
 
 ### Theme Object Structure
 
@@ -188,20 +209,6 @@ const THEMES = {
 | `--text` / `--text-dim` | Primary and secondary text |
 | `--warn` | Warning color (yellow) |
 | `--highlight` | Hover highlight |
-
-### Where Theme State Lives
-
-**Nowhere persistent.** On page reload the default theme is always applied. The active theme is only encoded in:
-- Which button has the `active-theme` class
-- Which CSS variables are currently set on `:root`
-
-To add persistence, add `localStorage.setItem('theme', name)` in `__applyTheme()` and restore on load.
-
-### Known Issues
-
-- **No persistence**: Theme resets to default on reload
-- **Color palette duplication**: Sankey colors are defined in three places (`THEMES`, `_drawBoxes`, `_drawSankey`) — a single source of truth is missing
-- **`!important` inflation**: Theme CSS overrides require `!important` throughout, making debugging harder
 
 ---
 
@@ -249,7 +256,7 @@ Both D3 libraries are **embedded inline** in `index.html` — no CDN, works offl
 | `mid` | Intermediate products | Blue |
 | `final` | Target products being produced | Orange |
 
-Colors are defined in `app/visualization.js` → `const COLOR` and can be overridden per theme via `window.__sankeyColors`.
+Colors are defined in `app/visualization.js` → `const VIZ_COLORS_DARK` (single source of truth) and overridden per theme via `window.__sankeyColors`.
 
 ### Graph Construction Algorithm (`buildSankeyGraph()`)
 
@@ -260,6 +267,7 @@ The graph is built by recursive expansion (`expand(itemName, rateNeeded, depth)`
 3. Leaf nodes with no recipe in the database → mark as `raw`
 4. Nodes with recipes but not in `selectedRecipeList` → mark as `mid`
 5. Add a directed edge (link) from each ingredient to its consumer
+6. If a cycle is detected (`expand()` returns `null`), the edge is skipped — no phantom nodes
 
 Duplicate nodes are merged: if the same item appears in multiple production chains, its rates are summed.
 
@@ -315,11 +323,12 @@ When `calculateRecipes()` runs while the visualization tab is hidden, the dirty 
 2. Reset / base styles
 3. Layout: `.container` (2-column grid), `header`, `main`
 4. Sidebar and collapsible panels
-5. Result tables and summary boxes
-6. Forms, inputs, buttons, selects
-7. Modals and overlays
-8. Visualization containers (SVG, tooltips, legend)
-9. `@keyframes` animation definitions
+5. Mobile overlay drawer + backdrop
+6. Result tables and summary boxes
+7. Forms, inputs, buttons, selects
+8. Modals and overlays
+9. Visualization containers (SVG, tooltips, legend)
+10. `@keyframes` animation definitions
 
 ### Where to Make Changes
 
@@ -329,7 +338,7 @@ When `calculateRecipes()` runs while the visualization tab is hidden, the dirty 
 | Color in a specific theme | `app/theme.js` → `THEMES.dark.vars` |
 | Layout / grid | `styles.css` → `.container` |
 | New animation | `styles.css` → new `@keyframes` + class |
-| Sankey / box colors | `app/visualization.js` → `const COLOR` |
+| Sankey / box colors | `app/visualization.js` → `VIZ_COLORS_DARK` |
 
 ### Best Practices — Followed
 
@@ -337,12 +346,12 @@ When `calculateRecipes()` runs while the visualization tab is hidden, the dirty 
 - Consistent border-radius scale (`--radius-lg/md/sm`) ✓
 - Transitions on all interactive elements ✓
 - `backdrop-filter` for glass morphism effects ✓
+- Mobile-responsive sidebar with overlay drawer ✓
 
 ### Best Practices — Violated
 
 - **Excessive `!important`**: Unavoidable due to theme override system, but makes debugging harder
 - **No scoping**: All class names are global — collision risk when extending
-- **No mobile breakpoints**: Fixed 360px sidebar, not responsive
 - **Specificity conflicts**: Inline styles in JS-generated templates override CSS rules
 
 ---
@@ -356,7 +365,7 @@ Contains:
 - D3 v7 (inline, minified)
 - d3-sankey plugin (inline, minified)
 - Complete HTML markup
-- Initialization script: `buildRecipeCategoryList()`, `initRecipeCalc()`, `renderSelectedRecipes()`
+- Initialization script: `buildRecipeCategoryList()`, `initRecipeCalc()`, `renderSelectedRecipes()`, `_loadPlanFromUrl()`
 
 Key element IDs: `#sidebar`, `#tab-recipes`, `#tab-sankey`, `#tab-boxes`, `#selectedRecipes`, `#calcResults`, `#recipeSettingsOverlay`, `#recipePickerOverlay`
 
@@ -383,9 +392,9 @@ ingredientsPerMin = (60 / cycleTime) × ingredientAmount × machinesNeeded
 ```
 
 **Recursive raw material resolution** (`resolveToGround`):
-- Maximum depth: 20 levels (hardcoded safety cap)
-- No cycle detection — recipe graph is assumed to be acyclic
-- Terminates when an item has no recipe (raw material) or no ingredients
+- Uses a `visitedPath` Set for **cycle detection** — if a resolved item appears in its own call stack, it is recorded in `cycleWarnings` and skipped
+- A warning banner is rendered above the ground-materials table when cycles are present
+- Secondary cap of 50 nodes as a safety net for pathological data
 
 ---
 
@@ -401,6 +410,24 @@ Key functions:
 | `getItemWsBonus(item)` | Returns workstation bonus for a recipe item (uses per-item override or global config) |
 | `buildRecipeCategoryList()` | Generates the bot selection grid in the sidebar |
 | `getPreferredMachine(recipeName)` | Returns the user's preferred machine for a recipe |
+| `saveSettings()` | Serialises all state to `localStorage['fc_settings']` |
+| `loadSettings()` | Restores state on startup; silently ignores missing/corrupt data |
+
+---
+
+### `app/ui-nav.js`
+
+Key functions:
+
+| Function | Description |
+|---|---|
+| `fmt(n)` | Formats numbers for display: `0` → `"-"`, integer → `1,234`, decimal → `1,234.56` |
+| `exportPlan()` | Serialises full state to a dated `.json` file download |
+| `importPlan()` | Restores state from a `.json` file; validates format before applying |
+| `sharePlan()` | Encodes state as Base64 URL hash, copies link to clipboard |
+| `_loadPlanFromUrl()` | Called on startup; restores plan from URL hash if present, then removes hash |
+
+Sidebar collapse state is persisted: `localStorage['sidebarCollapsed']`.
 
 ---
 
@@ -470,16 +497,23 @@ Exports (global): `buildSankeyGraph()`, `renderSankey()`, `renderBoxes()`
 
 Sets: `window.__renderSankey` — called by `theme.js` on theme change to re-render with new colors.
 
+Color palettes are defined in a single `VIZ_COLORS_DARK` constant — no duplication across `_drawSankey`, `_drawBoxes`, and `theme.js`.
+
 ---
 
-### `app/ui-nav.js`
+### `tests/runner.html` + `tests/unit.test.js`
 
-Key utility: `fmt(n)` — formats numbers for German locale:
-- `0` → `"-"`
-- Integer → `1.234`
-- Decimal → `1.234,56`
+Browser-based unit test suite — open `tests/runner.html` in any browser. No build tools, no npm, no server required (tests load the real game data and app modules directly).
 
-Sidebar state is persisted: `localStorage['sidebarCollapsed']`.
+**Covered (37 assertions, 5 suites):**
+
+| Suite | What is tested |
+|---|---|
+| `fmt()` | Zero, integers, decimals, locale formatting |
+| `getOutputAmount()` | Single/array output, chance weighting, missing output |
+| `getOutputLabel()` | Plain and probabilistic labels |
+| `saveSettings / loadSettings` | Full round-trip, productivity clamping, invalid machine fallback, bot-override range filtering, goal clamping, corrupt-JSON resilience, stale-recipe filtering |
+| `_applyImportedPlan()` | Version guard, null handling, state clear-before-apply, settings restore, invalid recipe filtering |
 
 ---
 
@@ -527,27 +561,12 @@ THEMES.dark.css = `
 
 ## Known Issues & Improvement Potential
 
-### Short-term (low effort)
-
-| Issue | Fix |
-|---|---|
-| Theme not persisted on reload | Add `localStorage.setItem('theme', name)` in `__applyTheme()` |
-| No input validation on goal fields | Add `min="0"` and bounds checking |
-| No export functionality | JSON export of production plans via `JSON.stringify(selectedRecipeList)` |
-| Sankey color triple-definition | Reference colors from `THEMES` object in `_drawBoxes` / `_drawSankey` |
-| No cycle detection in recursion | Implement visited-set check in `resolveToGround()` |
-
-### Medium-term
-
-- **Mobile responsive**: Sidebar as a drawer overlay instead of fixed column
-- **URL state**: Serialize selected recipes + settings as URL params (shareable links)
-- **Save/load plans**: Persist production plans in `localStorage`
-
 ### Architectural
 
 - **Event system**: Replace direct cross-module function calls with a minimal EventEmitter
 - **Component pattern**: One template function per UI unit instead of inline HTML strings
 - **Dependency injection**: Explicitly pass dependencies instead of relying on global scope
+- **Excessive `!important`**: Theme CSS overrides require `!important` throughout, making debugging harder
 
 ---
 
@@ -558,7 +577,7 @@ THEMES.dark.css = `
 | Images not loading | `file://` protocol blocks subdirectory access | Start a local server: `python3 -m http.server 8080` |
 | `ReferenceError: X is not defined` | Wrong script load order or missing script tag | Check order in `index.html` |
 | Sankey shows no data | Lazy rendering — tab was inactive during calculation | Switch to the Visualization tab to trigger render |
-| Calculation stops at deep chains | Recursion depth cap (20 levels) reached | Increase `maxDepth` in `resolveToGround()` in `calculation.js` |
+| Cycle warning banner appears | Circular dependency detected in ingredient graph | Check recipe definitions for circular ingredient references |
 | Theme colors wrong after changes | Inline styles in JS templates override CSS variables | Add `!important` or use more specific selector in theme CSS |
 
 ---
@@ -572,4 +591,4 @@ THEMES.dark.css = `
 | Global variables instead of ES modules | `type="module"` does not work with `file://` protocol; classic scripts are simpler |
 | D3 embedded inline | No CDN dependency, works fully offline |
 | CSS Custom Properties for theming | Native browser support, no preprocessor needed |
-| German UI language | Target audience is German-speaking |
+| English UI language | Broadest possible audience |
