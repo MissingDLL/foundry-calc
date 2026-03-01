@@ -75,7 +75,9 @@ function renderRecipeBrowser() {
   });
 
   grid.innerHTML = "";
-  items.forEach(({ canonicalName, hasMachines }) => {
+
+  // Build a cell element for a single item
+  function buildCell({ canonicalName, hasMachines }) {
     const isSelected = selectedRecipeList.some(
       (r) => r.itemName === canonicalName,
     );
@@ -128,8 +130,75 @@ function renderRecipeBrowser() {
         toggleRecipeFromGrid(canonicalName);
       };
     }
-    grid.appendChild(cell);
-  });
+    return cell;
+  }
+
+  // Use subgroups when viewing a specific category that has subgroup definitions
+  const subgroupDefs = activeBrowserCat !== "Alle" &&
+    RECIPE_SUBGROUPS[activeBrowserCat] &&
+    RECIPE_SUBGROUPS[activeBrowserCat].length > 0
+    ? RECIPE_SUBGROUPS[activeBrowserCat]
+    : null;
+
+  if (subgroupDefs) {
+    // Partition items into subgroups
+    const itemMap = new Map(items.map(item => [item.canonicalName, item]));
+    const groups = subgroupDefs.map(sg => ({
+      label: sg.label,
+      // sg.rows: string[][] — resolve names to item objects, drop unknowns/filtered-out
+      rows: sg.rows.map(row => row.map(name => itemMap.get(name)).filter(Boolean)),
+    }));
+    // Remaining items not in any named subgroup → "Other" (single row, wraps naturally)
+    const assignedNames = new Set(subgroupDefs.flatMap(sg => sg.rows.flat()));
+    const otherItems = items.filter(item => !assignedNames.has(item.canonicalName));
+    if (otherItems.length) groups.push({ label: "Other", rows: [otherItems] });
+
+    groups.forEach(({ label, rows }) => {
+      const totalItems = rows.reduce((n, r) => n + r.length, 0);
+      if (!totalItems) return;
+
+      const isCollapsed = _collapsedSubgroups.has(activeBrowserCat + "|" + label);
+
+      const header = document.createElement("div");
+      header.className = "recipe-subgroup-header";
+      header.innerHTML =
+        '<span class="recipe-subgroup-toggle">' + (isCollapsed ? "+" : "—") + "</span>" +
+        "<span>" + label + "</span>";
+
+      const itemGrid = document.createElement("div");
+      itemGrid.className = "recipe-subgroup-grid";
+      if (isCollapsed) itemGrid.style.display = "none";
+
+      rows.forEach((row, ri) => {
+        // Flex row-break before every row except the first
+        if (ri > 0) {
+          const br = document.createElement("div");
+          br.className = "recipe-subgroup-rowbreak";
+          itemGrid.appendChild(br);
+        }
+        row.forEach(item => itemGrid.appendChild(buildCell(item)));
+      });
+
+      header.onclick = function () {
+        const key = activeBrowserCat + "|" + label;
+        if (_collapsedSubgroups.has(key)) {
+          _collapsedSubgroups.delete(key);
+          itemGrid.style.display = "";
+          header.querySelector(".recipe-subgroup-toggle").textContent = "—";
+        } else {
+          _collapsedSubgroups.add(key);
+          itemGrid.style.display = "none";
+          header.querySelector(".recipe-subgroup-toggle").textContent = "+";
+        }
+      };
+
+      grid.appendChild(header);
+      grid.appendChild(itemGrid);
+    });
+  } else {
+    // Flat rendering (Alle or no subgroups defined)
+    items.forEach(item => grid.appendChild(buildCell(item)));
+  }
 }
 
 function filterRecipesInline(query) {

@@ -1568,7 +1568,6 @@ const RECIPES = {
   },
   "Conveyor IV": {
     category: CAT.STRUCTURES,
-    category: CAT.COMPONENTS,
     ingredients: [
       { item: I.CONVEYOR_III, amount: 2 },
       { item: I.FIRMARLITE_SHEET, amount: 2 },

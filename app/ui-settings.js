@@ -708,3 +708,4 @@ const RECIPE_CATEGORIES = [
   "Decor",
 ];
 let activeBrowserCat = "Alle";
+const _collapsedSubgroups = new Set(); // keys: "Category|Subgroup label"

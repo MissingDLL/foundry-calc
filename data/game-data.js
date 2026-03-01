@@ -220,3 +220,161 @@ const CAT = Object.freeze({
   BUILDINGS: "Buildings",
   DECOR: "Decor",
 });
+
+// ── Recipe browser subcategory groupings ──────────────────────
+// Maps category name → ordered array of subgroups.
+// Each subgroup: { label: string, rows: string[][] }
+//   rows[0] = first visual row of items, rows[1] = second row, etc.
+//   Items are referenced by canonical name (same as shown in browser).
+//   Items not listed in any subgroup appear in an implicit "Other" group.
+// Populate this (from subgroups-template.csv) to enable subgroup headers.
+const RECIPE_SUBGROUPS = {
+  "Metallurgy": [
+    { label: "Xenoferrite", rows: [
+      ["Xenoferrite Ore", "Xenoferrite Ore (Alternative)", "Xenoferrite Plates (Tier 1)", "Xenoferrite Plates (Tier 2)", "Xenoferrite Plates (Tier 3)"],
+    ]},
+    { label: "Technum", rows: [
+      ["Technum Ore", "Technum Ore (Alternative)", "Technum Rods (Tier 1)", "Technum Rods (Tier 2)", "Technum Rods (Tier 3)"],
+    ]},
+    { label: "Steel", rows: [
+      ["Ignium Ore", "Xenoferrite-Ignium Ore Blend", "Steel Beams (Tier 1)", "Steel Beams (Tier 2)"],
+    ]},
+    { label: "Telluxite", rows: [
+      ["Telluxite Ore", "Telluxite Ingot", "Liquid Telluxite"],
+    ]},
+    { label: "Firmarlite", rows: [
+      ["Firmarlite Sheet"],
+    ]},
+    { label: "Superalloy", rows: [
+      ["Molten Superalloy", "Superalloy"],
+    ]},
+  ],
+  "Components": [
+    { label: "Mechanical Components", rows: [
+      ["Machinery Parts", "Advanced Machinery Parts", "High-Tech Machinery Parts", "Hydraulic Piston", "Robot Parts", "Construction Materials", "Hover Engine", "Nautical Chassis", "Weapon Components"],
+    ]},
+    { label: "Electronic Components", rows: [
+      ["Wire Coil", "Electronic Components", "Circuit Boards", "Telluxite Wafer", "CPU", "Energy Cell", "Charged Xeno-Crystal", "Xeno Power Core"],
+    ]},
+    { label: "Chemical", rows: [
+      ["Explosives (Primitive)", "Explosives", "Glass", "Low Density Olumite", "Olumite Gas", "Liquid Polymer", "Polymer Board", "Olumic Acid", "Impure High Density Olumite", "High Density Olumite", "Rubber", "Ignium-Enriched Water"],
+      ["Paint", "Fracking Liquid"],
+    ]},
+    { label: "Concrete", rows: [
+      ["Gravel", "Cement", "Cement (Slag Reprocessing)", "Concrete", "Hazard Concrete"],
+    ]},
+    { label: "Fuel", rows: [
+      ["Ignium Powder", "Fuel Rod Casing", "Ignium Fuel Rod", "Liquid Fuel", "Space Ship Fuel Canister", "Portable Fuel", "Jetpack Fuel"],
+    ]},
+    { label: "Barrels", rows: [
+      ["Barrel (Empty)", "Barrel (Olumite)", "Empty Barreled Olumite", "Xenoferrite Plates (Barrel Recycle)"],
+    ]},
+    { label: "Science", rows: [
+      ["Science Pack I", "Science Pack II", "Science Pack III", "Science Pack IV", "Science Pack V"],
+    ]},
+    { label: "Miscellaneous", rows: [
+      ["Biomass", "Coked Ignium"],
+    ]},
+  ],
+  "Structures": [
+    { label: "Infrastructure", rows: [
+      ["Building Block", "Emergency Beacon", "Space Station Terminal", "Research Server", "Omni-Analyzer", "Robot Workstation I", "Robot Workstation II", "Robot Workstation III"],
+    ]},
+    { label: "Solid Item Logistics", rows: [
+      ["Conveyor Belt", "Conveyor Slope I", "Conveyor Slope II", "Conveyor Slope III", "Conveyor Slope IV", "Conveyor Balancer I", "Conveyor Balancer II", "Conveyor Balancer III", "Conveyor Balancer IV"],
+      ["Freight Elevator I", "Freight Elevator II", "Freight Elevator III", "Freight Elevator IV", "Shipping Pad (Small)", "Shipping Pad (Medium, Assembly Line)", "Shipping Pad (Medium)", "Cargo Shuttle Start Pad", "Cargo Shuttle Target Pad"],
+    ]},
+    { label: "Liquid Handling", rows: [
+      ["Pipe", "Pipeline", "Pipe Intake", "Pump (Pipes)", "Pump (Pipelines)", "Pipe-to-Pipeline Pump", "Pipeline-to-Pipe Pump", "Cargo Shuttle Start Pad (Liquids)", "Cargo Shuttle Target Pad (Liquids)"],
+    ]},
+    { label: "Loaders", rows: [
+      ["Loader", "Filter Loader", "Loader Second Lane", "Loader Third Lane"],
+    ]},
+    { label: "Energy", rows: [
+      ["Biomass Burner", "Burner Generator", "Boiler", "Geothermal Boiler", "Steam Turbine", "Solar Panel (Small)", "Solar Panel (Large)", "Battery (Small)", "Battery (Large)", "Power Pole (Small)", "Power Pole (Large)", "Power Pole (Wall-Mounted)"],
+      ["Transformer (Small)", "Transformer (Large)"],
+    ]},
+    { label: "Resource Gathering", rows: [
+      ["Drone Miner I", "Drone Miner II", "Pumpjack I", "Ore Vein Miner", "Xeno-Scrap-Extraktor", "Xeno-Crystal-Extraktor"],
+    ]},
+    { label: "Processing", rows: [
+      ["Assembler I", "Assembler II", "Assembler III", "Fluid-Assembler I", "Barrel Filler I", "Smelter (Small)", "Advanced Smelter", "Electric Arc Furnace", "Lava-Smelter I", "Lava-Smelter II", "Crusher I", "Crusher II"],
+      ["Distillation Column", "Chemical Processor", "Casting Machine", "Crystal Refiner", "Incinerator", "Flare Stack", "Greenhouse", "Resource Separator", "Scrap Recycler"],
+    ]},
+    { label: "Assembly Lines", rows: [
+      ["Assembly Line Rail", "Assembly Line Splitter", "Assembly Line Merger", "Assembly Line Start", "Assembly Line Producer", "Assembly Line Painter", "Assembly Line Logistics Container"],
+    ]},
+    { label: "Storage", rows: [
+      ["Crate", "Container", "Logistic Container I", "Logistic Container II", "Logistic Container III", "Tank", "Xeno-Logistics Container", "Xeno-Logistics Tower"],
+    ]},
+    { label: "Mobility", rows: [
+      ["Elevator", "Walkway", "Escalator I", "Escalator II", "Escalator III", "Ladder", "Stairs"],
+    ]},
+    { label: "Construction Industry", rows: [
+      ["Transport Ship Port", "Construction Ship Port", "Construction Warehouse", "Quarry", "Drill Ship"],
+    ]},
+    { label: "Data Cable System", rows: [
+      ["Data Cable", "Data Evaluator", "Data Memory Cell", "Data Processor", "Data Source", "Data Source (Button)", "Data Source (Lever)"],
+    ]},
+  ],
+  "Buildings": [
+    { label: "Modular Buildings", rows: [
+      ["Long Range Scanner Base", "Radio Tower Base", "Modular Storage Tank Base", "Fracking Tower Base", "Air Intake Base", "Hot Air Stove Base", "Blast Furnace Base", "Monument Base"],
+    ]},
+  ],
+  "Handhelds": [
+    { label: "General", rows: [
+      ["Mining Drill", "Mining Laser", "Excavation Drone Controller", "Ore Scanner (Handheld)", "Power Line", "Orbital Uplink", "Plumber Tool", "Modular Building Planner", "Paint Roller", "Irrigation Tool"],
+    ]},
+    { label: "Explosives", rows: [
+      ["Explosives Detonator", "Explosive Charge", "Heavy Explosive Charge", "Shaped Charge", "Shaped Charge (Heavy)"],
+    ]},
+  ],
+  "Robots": [
+    { label: "Bots", rows: [
+      ["Transport Bot", "Heavy Duty Transport Bot", "Transport Drone", "Vacuum Bot", "Cleaning Bot", "Snack Bot", "Light Bot", "Screen Bot", "Science Assistant Drone", "Operator Bot", "Planter Drone", "Mining Drone"],
+      ["Maintenance Drone", "Combat Drone", "Aquatic Hauling Bot", "Marine Exploration Bot", "Hydro Mining Bot", "Hydro Farming Bot"],
+    ]},
+    { label: "Personal Assistant Robot", rows: [
+      ["Personal Assistant Robot Torso", "Personal Assistant Robot Head", "Personal Assistant Robot Arm", "Personal Assistant Robot Leg"],
+    ]},
+    { label: "Operator Robot", rows: [
+      ["Operator Robot Torso", "Operator Robot Head", "Operator Robot Arm", "Operator Robot Leg"],
+    ]},
+    { label: "Farmer Robot", rows: [
+      ["Farmer Robot Torso", "Farmer Robot Head", "Farmer Robot Arm", "Farmer Robot Leg"],
+    ]},
+    { label: "Combat Robot", rows: [
+      ["Combat Robot Torso", "Combat Robot Head", "Combat Robot Arm", "Combat Robot Leg"],
+    ]},
+    { label: "Mining Robot", rows: [
+      ["Miner Robot Torso", "Miner Robot Head", "Miner Robot Arm", "Miner Robot Leg"],
+    ]},
+    { label: "Science Robot", rows: [
+      ["Science Robot Torso", "Science Robot Head", "Science Robot Arm", "Science Robot Leg"],
+    ]},
+  ],
+  "Decor": [
+    { label: "Miscellaneous", rows: [
+      ["Sign", "Railings", "Construction Site Decor"],
+    ]},
+    { label: "Lights", rows: [
+      ["Ceiling Light", "Ceiling Light (Large)", "Wall Light", "Portable Light", "Light Pole I", "Light Pole II"],
+    ]},
+    { label: "Doors", rows: [
+      ["Door (Single)", "Door (Double)", "Hangar Gate"],
+    ]},
+    { label: "Blocks", rows: [
+      ["Decor (Basic Shapes)", "Wooden Blocks"],
+    ]},
+    { label: "Structures", rows: [
+      ["Decor (Misc)", "Decor (Struts)", "Decor (Support Truss)", "Decor (Support)", "Decor (Walls)", "Decor (Modular Windows Slope Edge)", "Decor (Modular Windows Slope)", "Decor (Modular Window Wedge)", "Decor (Modular Windows)", "Decor (Windows)"],
+    ]},
+    { label: "Office", rows: [
+      ["Office Chair", "Office Couch", "Office Desk", "Office File Cabinet", "Office Plant", "Office Table"],
+    ]},
+    { label: "Seeds", rows: [
+      ["Forest Seed (Plants)", "Forest Seed (Trees)", "Rocky Desert Seed (Plants)", "Rocky Desert Seed (Trees)", "Sandy Desert Seed (Plants)", "Sandy Desert Seed (Trees)", "Tropical Rainforest Seed (Plants)", "Tropical Rainforest Seed (Trees)", "Tundra Seed (Plants)", "Tundra Seed (Trees)"],
+    ]},
+  ],
+};
