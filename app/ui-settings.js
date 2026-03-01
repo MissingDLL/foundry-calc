@@ -325,15 +325,20 @@ function renderSettingsContent(targetId) {
   const effGrid = document.createElement("div");
   effGrid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:8px";
 
-  // Collect all bots that have a base efficiency value
+  // Show all Robots-category recipes that are not individual robot parts.
+  // Parts are identified by their name ending in Arm / Head / Leg / Torso.
+  // Complete assembly-line robots (Combat Robot etc.) have no efficiency field
+  // in the data, so we fall back to 0 for display/default purposes.
+  const _robotPartSuffix = /\s+(Arm|Head|Leg|Torso)$/;
   const botsWithEff = Object.entries(RECIPES)
-    .filter(([, recipe]) => recipe.efficiency != null)
+    .filter(([name, recipe]) => recipe.category === CAT.ROBOTS && !_robotPartSuffix.test(name))
     .sort(([a], [b]) => a.localeCompare(b));
 
   botsWithEff.forEach(([name, recipe]) => {
+    const baseEff = recipe.efficiency ?? 0;
     const current = botEfficiencyOverrides[name] != null
       ? botEfficiencyOverrides[name]
-      : recipe.efficiency;
+      : baseEff;
 
     const cell = document.createElement("div");
     cell.style.cssText =
@@ -382,7 +387,7 @@ function renderSettingsContent(targetId) {
     resetBtn.textContent = "↺";
     resetBtn.onclick = function () {
       delete botEfficiencyOverrides[name];
-      inp.value = recipe.efficiency;
+      inp.value = baseEff;
       buildRecipeCategoryList();
       saveSettings();
     };
