@@ -74,11 +74,18 @@ function calculateRecipes() {
 
       const ct = r.machines[item.machineName].cycleTime; // seconds per cycle
 
-      // Bot efficiency: user override takes priority over the recipe's base value
+      // Bot efficiency: user override takes priority over the recipe's base value.
+      // For robot parts (e.g. "Combat Robot Arm"), the override is stored under
+      // the parent robot name ("Combat Robot"), so fall back to that if no
+      // direct override exists for the part.
       const baseEff = r.efficiency != null ? r.efficiency : 0;
+      const _partParent = item.itemName && item.itemName.match(/^(.+)\s+(?:Arm|Head|Leg|Torso)$/);
+      const parentName  = _partParent ? _partParent[1] : null;
       const eff = botEfficiencyOverrides[item.itemName] != null
         ? botEfficiencyOverrides[item.itemName]
-        : baseEff;
+        : (parentName != null && botEfficiencyOverrides[parentName] != null
+          ? botEfficiencyOverrides[parentName]
+          : baseEff);
       const effMultiplier = 1 + eff / 100; // e.g. 50% eff → ×1.5
 
       // Global productivity bonuses (set in settings panel)
