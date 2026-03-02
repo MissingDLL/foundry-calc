@@ -547,11 +547,11 @@ function _drawSankey(svgEl, data) {
   const W = (wrap ? wrap.getBoundingClientRect().width  : 0) || 1100;
   const H = (wrap ? wrap.getBoundingClientRect().height : 0) || 650;
 
-  const NODE_W = 18;          // width of each Sankey bar
-  const CARD_W = 150;         // info card width (rendered as HTML div)
-  const CARD_H = 62;          // minimum info card height
-  // Horizontal padding reserves space for the info cards on both sides
-  const PAD    = { top: 20, right: CARD_W + 20, bottom: 40, left: CARD_W + 20 };
+  const NODE_W  = 18;          // width of each Sankey bar
+  const LABEL_W = 165;         // inline label width
+  const LABEL_H = 38;          // inline label height
+  // Horizontal padding reserves space for the labels on both sides
+  const PAD    = { top: 20, right: LABEL_W + 20, bottom: 40, left: LABEL_W + 20 };
   const IW     = W - PAD.left - PAD.right;   // inner drawable width
   const IH     = H - PAD.top  - PAD.bottom;  // inner drawable height
 
@@ -575,7 +575,7 @@ function _drawSankey(svgEl, data) {
   const sankeyLayout = d3.sankey()
     .nodeId(d => d.label)      // unique node identifier
     .nodeWidth(NODE_W)
-    .nodePadding(CARD_H + 8)   // ensure each node has room for its info card
+    .nodePadding(50)
     .extent([[0, 0], [IW, IH]]);
 
   // Run the layout — mutates copies of nodes/links with x0,x1,y0,y1,width
@@ -586,23 +586,29 @@ function _drawSankey(svgEl, data) {
 
   // ── Draw flow links ───────────────────────────────────────
   // Link width is proportional to flow value (items/min).
-  // Opacity increases on hover for readability; tooltip shows exact rate.
-  g.append('g').attr('fill', 'none')
+  // Opacity increases on hover; click highlights the full upstream path.
+  const linkPaths = g.append('g').attr('fill', 'none')
     .selectAll('path').data(graph.links).join('path')
       .attr('d', d3.sankeyLinkHorizontal()) // d3-sankey cubic Bezier path generator
       .attr('stroke', COLOR.link)
       .attr('stroke-width', d => Math.max(1, d.width))
       .attr('stroke-opacity', 0.18)
+      .style('cursor', 'pointer')
       .on('mouseenter', function(event, d) {
-        d3.select(this).attr('stroke-opacity', 0.55);
+        if (!_activeHighlight) d3.select(this).attr('stroke-opacity', 0.55);
         _showTooltip(event,
           `<div style="color:var(--accent);font-weight:700;margin-bottom:3px">${d.source.label} → ${d.target.label}</div>
-           <div style="color:var(--accent3)">${fmt(Math.round(d.value))} / min</div>`);
+           <div style="color:var(--accent3)">${fmt(Math.round(d.value))} / min</div>
+           <div style="color:#666;font-size:10px;margin-top:3px">Klicken zum Hervorheben</div>`);
       })
       .on('mousemove', _moveTooltip)
-      .on('mouseleave', function() {
-        d3.select(this).attr('stroke-opacity', 0.18);
+      .on('mouseleave', function(event, d) {
+        if (!_activeHighlight) d3.select(this).attr('stroke-opacity', 0.18);
         _hideTooltip();
+      })
+      .on('click', function(event, d) {
+        event.stopPropagation();
+        highlightUpstream(d.target);
       });
 
   // ── Draw node bars ────────────────────────────────────────
@@ -615,146 +621,101 @@ function _drawSankey(svgEl, data) {
     .attr('rx', 3)
     .attr('fill',   d => COLOR[d.kind].fill)
     .attr('stroke', d => COLOR[d.kind].stroke)
-    .attr('stroke-width', 1.5);
-
-  // ── Resolve info-card Y overlaps per column ───────────────
-  // Cards have a minimum height of CARD_H (62px) which is often taller
-  // than the vertical gap between tightly-packed Sankey nodes.
-  // Group nodes by their column (rounded x0) and push card positions
-  // apart so no two cards in the same column overlap.
-  const CARD_GAP = 6;
-  const colGroups = {};
-  graph.nodes.forEach(d => {
-    const key = Math.round(d.x0);
-    if (!colGroups[key]) colGroups[key] = [];
-    colGroups[key].push(d);
-  });
-  Object.values(colGroups).forEach(col => {
-    // Sort top-to-bottom by node centre
-    col.sort((a, b) => (a.y0 + a.y1) / 2 - (b.y0 + b.y1) / 2);
-    // Desired y: centre the card on the node
-    const ys = col.map(d => {
-      const h = Math.max(CARD_H, d.y1 - d.y0);
-      return (d.y0 + d.y1) / 2 - h / 2;
+    .attr('stroke-width', 1.5)
+    .style('cursor', 'pointer')
+    .on('click', function(event, d) {
+      event.stopPropagation();
+      highlightUpstream(d);
     });
-    const hs = col.map(d => Math.max(CARD_H, d.y1 - d.y0));
-    // Bidirectional collision resolution: alternate down/up passes so
-    // cards spread both ways around their desired centre instead of
-    // all drifting downward.
-    const desired = ys.slice(); // keep original desired positions
-    for (let pass = 0; pass < 40; pass++) {
-      let moved = false;
-      // Downward pass: each card must start below the previous one
-      for (let i = 1; i < col.length; i++) {
-        const minY = ys[i - 1] + hs[i - 1] + CARD_GAP;
-        if (ys[i] < minY) { ys[i] = minY; moved = true; }
-      }
-      // Upward pass: each card must end above the next one
-      for (let i = col.length - 2; i >= 0; i--) {
-        const maxY = ys[i + 1] - hs[i] - CARD_GAP;
-        if (ys[i] > maxY) { ys[i] = maxY; moved = true; }
-      }
-      // Gentle pull back toward desired position (spring, won't re-introduce overlaps)
-      for (let i = 0; i < col.length; i++) {
-        const lo = i === 0                ? -Infinity : ys[i - 1] + hs[i - 1] + CARD_GAP;
-        const hi = i === col.length - 1   ?  Infinity : ys[i + 1] - hs[i]     - CARD_GAP;
-        const pulled = ys[i] + (desired[i] - ys[i]) * 0.3;
-        if (pulled > lo && pulled < hi) { ys[i] = pulled; moved = true; }
-      }
-      if (!moved) break;
-    }
-    col.forEach((d, i) => { d._cardY = ys[i]; });
-  });
 
-  // ── Connector lines: node bar → displaced card ───────────
-  // When the collision resolver has moved a card away from its node,
-  // draw a dashed L-shaped line so it is clear which card belongs
-  // to which Sankey bar.
-  const connG = g.append('g');
-  graph.nodes.forEach(d => {
-    const onLeft = d.x0 < IW / 2;
-    const nodeY  = (d.y0 + d.y1) / 2;
-    const cardH  = Math.max(CARD_H, d.y1 - d.y0);
-    const cardCY = (d._cardY != null ? d._cardY : nodeY - cardH / 2) + cardH / 2;
-    if (Math.abs(cardCY - nodeY) < 4) return; // no connector needed when on-axis
-    const nodeX = onLeft ? d.x1      : d.x0;
-    const cardX = onLeft ? d.x1 + 8  : d.x0 - 8;
-    const c     = COLOR[d.kind];
-    connG.append('path')
-      .attr('d', `M${nodeX},${nodeY} L${cardX},${nodeY} L${cardX},${cardCY}`)
-      .attr('fill', 'none')
-      .attr('stroke', c.stroke)
-      .attr('stroke-width', 0.8)
-      .attr('stroke-opacity', 0.5)
-      .attr('stroke-dasharray', '3,2');
-  });
+  // ── Inline labels: icon + name + rate directly at each bar ─
+  // Positioned at the node bar edge, centred vertically on the bar.
+  // Left-half nodes: label to the right. Right-half nodes: label to the left.
+  // labelFOs is kept as a D3 selection so highlight can update opacity.
+  const labelG  = g.append('g');
+  const labelFOs = labelG.selectAll('foreignObject')
+    .data(graph.nodes)
+    .join('foreignObject')
+    .attr('x', d => (d.x0 < IW / 2) ? d.x1 + 6 : d.x0 - LABEL_W - 6)
+    .attr('y', d => (d.y0 + d.y1) / 2 - LABEL_H / 2)
+    .attr('width',  LABEL_W)
+    .attr('height', LABEL_H);
 
-  // ── Info cards (HTML inside foreignObject) ────────────────
-  // Cards are placed to the right of nodes in the left half of the
-  // diagram, and to the left of nodes in the right half, so they
-  // never overlap the main layout area.
-  nodeG.append('foreignObject')
-    .attr('x', d => {
-      const onLeft = d.x0 < IW / 2;
-      return onLeft ? d.x1 + 8 : d.x0 - CARD_W - 8;
-    })
-    .attr('y', d => d._cardY != null ? d._cardY : (() => {
-      const h = Math.max(CARD_H, d.y1 - d.y0);
-      return (d.y0 + d.y1) / 2 - h / 2;
-    })())
-    .attr('width',  CARD_W)
-    .attr('height', d => Math.max(CARD_H, d.y1 - d.y0))
-    .append('xhtml:div')
-    .style('width',       CARD_W + 'px')
-    .style('height',      '100%')
-    .style('display',     'flex')
-    .style('align-items', 'center')
-    .style('box-sizing',  'border-box')
+  labelFOs.append('xhtml:div')
+    .style('width',          LABEL_W + 'px')
+    .style('height',         LABEL_H + 'px')
+    .style('display',        'flex')
+    .style('align-items',    'center')
+    .style('gap',            '5px')
+    .style('flex-direction', d => (d.x0 < IW / 2) ? 'row' : 'row-reverse')
+    .style('overflow',       'hidden')
     .html(d => {
-      const c      = COLOR[d.kind];
-      const nodeH  = Math.max(CARD_H, d.y1 - d.y0);
-
-      const itemIconHtml    = getIcon(d.label, 24);
-      const machineIconHtml = d.machineName ? getIcon(d.machineName, 20) : '';
-
-      // Machine count display:
-      //   raw nodes (ores/miners) → ceil to integer
-      //   small intermediate counts → one decimal
-      //   large intermediate counts → ceil
-      const cntRaw = d.machineCount || 0;
-      const cntFmt = d.kind === 'raw'
+      const c        = COLOR[d.kind];
+      const onLeft   = d.x0 < IW / 2;
+      const textAlign = onLeft ? 'left' : 'right';
+      const maxTxtW   = LABEL_W - 30;
+      const cntRaw    = d.machineCount || 0;
+      const cntFmt    = d.kind === 'raw'
         ? Math.ceil(cntRaw)
         : cntRaw < 10 ? (Math.round(cntRaw * 10) / 10) : Math.ceil(cntRaw);
-
-      const machineLabel = d.machineName
-        ? `<div style="display:flex;align-items:center;gap:4px;margin-top:3px">
-            ${machineIconHtml}
-            <span style="color:#aaa;font-size:10px">×${cntFmt}</span>
+      const machineText = d.machineName && d.machineCount > 0
+        ? `<div style="color:#777;font-size:8.5px;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+             ${d.machineName.length > 15 ? d.machineName.slice(0, 14) + '…' : d.machineName} ×${cntFmt}
            </div>`
         : '';
-
-      return `<div style="
-        background:${c.card};
-        border:1px solid ${c.cborder};
-        border-radius:5px;
-        padding:5px 7px;
-        width:100%;
-        min-height:${Math.min(nodeH, CARD_H)}px;
-        display:flex;flex-direction:column;justify-content:center;
-        box-sizing:border-box;overflow:hidden">
-        <div style="display:flex;align-items:center;gap:5px">
-          ${itemIconHtml}
-          <span style="color:${c.text};font-size:10px;font-family:monospace;
-            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:${CARD_W - 46}px">
+      return `
+        <div style="flex-shrink:0;line-height:0">${getIcon(d.label, 20)}</div>
+        <div style="text-align:${textAlign};overflow:hidden;line-height:1.25;min-width:0">
+          <div style="color:${c.text};font-size:10.5px;font-weight:600;
+            font-family:-apple-system,sans-serif;white-space:nowrap;
+            overflow:hidden;text-overflow:ellipsis;max-width:${maxTxtW}px">
             ${d.label}
-          </span>
-        </div>
-        <div style="color:var(--accent3);font-family:monospace;font-size:11px;margin-top:2px">
-          ${fmt(Math.round(d.rate))}<span style="color:#666;font-size:9px">/min</span>
-        </div>
-        ${machineLabel}
-      </div>`;
+          </div>
+          <div style="color:var(--accent3);font-family:monospace;font-size:10px;white-space:nowrap">
+            ${fmt(Math.round(d.rate))}<span style="color:#555;font-size:8px">/min</span>
+          </div>
+          ${machineText}
+        </div>`;
     });
+
+  // ── Upstream highlight logic ──────────────────────────────
+  let _activeHighlight = null;
+
+  function highlightUpstream(targetNode) {
+    if (_activeHighlight === targetNode.label) { resetHighlight(); return; }
+    _activeHighlight = targetNode.label;
+
+    // BFS backwards: collect all nodes and links that feed into targetNode
+    const hlNodes = new Set([targetNode.label]);
+    const hlLinks = new Set();
+    const queue   = [targetNode];
+    while (queue.length) {
+      const cur = queue.shift();
+      graph.links.forEach(lnk => {
+        if (lnk.target.label === cur.label && !hlLinks.has(lnk)) {
+          hlLinks.add(lnk);
+          if (!hlNodes.has(lnk.source.label)) {
+            hlNodes.add(lnk.source.label);
+            queue.push(lnk.source);
+          }
+        }
+      });
+    }
+
+    linkPaths.attr('stroke-opacity', lnk => hlLinks.has(lnk) ? 0.7  : 0.04);
+    nodeG    .style('opacity',       n   => hlNodes.has(n.label) ? 1 : 0.15);
+    labelFOs .style('opacity',       n   => hlNodes.has(n.label) ? 1 : 0.15);
+  }
+
+  function resetHighlight() {
+    _activeHighlight = null;
+    linkPaths.attr('stroke-opacity', 0.18);
+    nodeG    .style('opacity', 1);
+    labelFOs .style('opacity', 1);
+  }
+
+  // Click on SVG background resets highlight
+  svg.on('click', resetHighlight);
 }
 
 // ============================================================
