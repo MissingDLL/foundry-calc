@@ -360,6 +360,31 @@ function calculateRecipes() {
     })
     .join("");
 
+  // ── Machine totals (aggregated by machine type) ──────────
+  const machineTotals = {};
+  lines.forEach((r) => {
+    machineTotals[r.machineName] = (machineTotals[r.machineName] || 0) + r.machines;
+  });
+  const machineRows = Object.entries(machineTotals)
+    .sort((a, b) => b[1] - a[1])
+    .map(([name, count]) => {
+      const alBreakdown = name === M.ASSEMBLY_LINE
+        ? `<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;padding-left:2px;line-height:1.7">
+            └&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.start.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.start.name}
+            &nbsp;·&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.producer.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.producer.name}
+            &nbsp;·&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.painter.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.painter.name}
+          </div>`
+        : '';
+      return `
+    <tr>
+      <td style="padding:6px 12px">
+        <div style="display:flex;align-items:center;gap:10px">${iconBox(name, 64)}<div><span class="label">${name}</span>${alBreakdown}</div></div>
+      </td>
+      <td class="num">${fmt(count)}</td>
+    </tr>`;
+    })
+    .join("");
+
   // ── Inject HTML into results panel ───────────────────────
   document.getElementById("recipeResults").innerHTML =
     summaryHtml +
@@ -383,6 +408,22 @@ function calculateRecipes() {
             </tr>
           </thead>
           <tbody>${overviewRows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="collapsible-section">
+      <div class="collapsible-header" onclick="toggleSection(this)">
+        <span class="ch-title">Total Machines Required</span>
+        <span style="display:flex;align-items:center;gap:12px">
+          <span class="ch-meta">${uniqueMachines} Machine types · ${fmt(totalMachines)} total</span>
+          <span class="ch-arrow">▼</span>
+        </span>
+      </div>
+      <div class="collapsible-body">
+        <table class="results-table">
+          <thead><tr><th>Machine</th><th style="text-align:right">Count</th></tr></thead>
+          <tbody>${machineRows}</tbody>
         </table>
       </div>
     </div>
