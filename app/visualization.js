@@ -127,7 +127,19 @@ function buildSankeyGraph() {
     const raw  = isRaw(resolved);
     const node = getNode(resolved, raw ? 'raw' : 'mid');
     node.rate += rateNeeded; // accumulate total throughput
-    if (raw) return resolved; // leaf — do not recurse further
+    if (raw) {
+      // For mineable ores / resources: still attach the preferred extraction machine
+      const rr = RECIPES[resolved];
+      if (rr && rr.machines && Object.keys(rr.machines).length > 0) {
+        const machineNames = Object.keys(rr.machines);
+        const preferred = minerSettings[resolved];
+        const machineName = (preferred && machineNames.includes(preferred)) ? preferred : machineNames[0];
+        if (!node.machineName) node.machineName = machineName;
+        const md = rr.machines[machineName];
+        if (md) node.machineCount += rateNeeded / ((60 / md.cycleTime) * getOutputAmount(rr));
+      }
+      return resolved;
+    }
 
     const r  = RECIPES[resolved];
     const [machineName, md] = Object.entries(r.machines)[0]; // use first machine (default)
@@ -669,7 +681,7 @@ function _drawSankey(svgEl, data) {
 
   const NODE_W  = 18;          // width of each Sankey bar
   const LABEL_W = 165;         // inline label width
-  const LABEL_H = 38;          // inline label height
+  const LABEL_H = 54;          // inline label height (3 lines: name + rate + machine)
   // Horizontal padding reserves space for the labels on both sides
   const PAD    = { top: 20, right: LABEL_W + 20, bottom: 40, left: LABEL_W + 20 };
   const IW     = W - PAD.left - PAD.right;   // inner drawable width
@@ -797,7 +809,7 @@ function _drawSankey(svgEl, data) {
     .style('align-items',    'center')
     .style('gap',            '5px')
     .style('flex-direction', d => (d.x0 < IW / 2) ? 'row' : 'row-reverse')
-    .style('overflow',       'hidden')
+    .style('overflow',       'visible')
     .html(d => {
       const c        = COLOR[d.kind];
       const onLeft   = d.x0 < IW / 2;

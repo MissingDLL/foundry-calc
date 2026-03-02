@@ -89,7 +89,8 @@ let selectedRecipeList = [];
 // If the name belongs to a variant group, returns the user's
 // preferred variant (or the first variant as default).
 function resolveRecipeName(canonicalName) {
-  const group = VARIANT_GROUPS.find((g) => g.label === canonicalName);
+  const group = VARIANT_GROUPS.find((g) => g.label === canonicalName)
+             || BURNABLE_GROUPS.find((g) => g.label === canonicalName);
   if (group) {
     return variantSettings[canonicalName] || group.variants[0];
   }
@@ -99,7 +100,8 @@ function resolveRecipeName(canonicalName) {
 // Returns all variant recipe keys for a canonical name, or a
 // single-element array if the name is not in any group.
 function getVariantsFor(canonicalName) {
-  const group = VARIANT_GROUPS.find((g) => g.label === canonicalName);
+  const group = VARIANT_GROUPS.find((g) => g.label === canonicalName)
+             || BURNABLE_GROUPS.find((g) => g.label === canonicalName);
   return group ? group.variants : [canonicalName];
 }
 
@@ -450,6 +452,7 @@ const MINER_GROUPS = [
   { label: "Xenoferrite Ore Rubble", miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
   { label: "Ignium Ore Rubble",      miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
   { label: "Technum Ore Rubble",     miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
+  { label: "Mineral Rock",           miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
   { label: "Telluxite Ore Rubble",   miners: ["Ore Vein Miner"] },
 ];
 
@@ -457,6 +460,22 @@ const MINER_GROUPS = [
 // Items that have multiple recipe tiers are grouped here.
 // The `label` is the canonical display name shown everywhere in the UI;
 // `variants` are the actual RECIPES keys the user can choose between.
+// ── Burnable item / fuel variant groups ───────────────────────
+// Items that can be produced with different fuel choices.
+// Uses the same variantSettings dict as VARIANT_GROUPS.
+const BURNABLE_GROUPS = [
+  {
+    label: "Steam",
+    variants: [
+      "Steam",
+      "Steam (Portable Fuel)",
+      "Steam (Jetpack Fuel)",
+      "Steam (Coked Ignium)",
+      "Steam (Ignium Fuel Rod)",
+    ],
+  },
+];
+
 const VARIANT_GROUPS = [
   {
     label: "Xenoferrite Plates",

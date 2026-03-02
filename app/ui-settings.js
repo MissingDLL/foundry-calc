@@ -199,6 +199,65 @@ function renderSettingsContent(targetId) {
   });
   el.appendChild(varGrid);
 
+  // ── Section: Burnable Items (Fuel choices) ────────────────
+  const burnSep = document.createElement("div");
+  burnSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  el.appendChild(burnSep);
+
+  const burnTitle = document.createElement("div");
+  burnTitle.style.cssText =
+    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
+  burnTitle.textContent = "Burnable Items (Fuel)";
+  el.appendChild(burnTitle);
+
+  const burnDesc = document.createElement("div");
+  burnDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
+  burnDesc.textContent = "Which fuel should be used for each burnable recipe (e.g. Boiler → Steam)?";
+  el.appendChild(burnDesc);
+
+  const burnGrid = document.createElement("div");
+  burnGrid.style.cssText = "display:flex;flex-direction:column;gap:10px";
+
+  BURNABLE_GROUPS.forEach((group) => {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;gap:12px;flex-wrap:wrap";
+
+    const lbl = document.createElement("div");
+    lbl.style.cssText = "width:110px;font-size:13px;color:var(--text)";
+    lbl.textContent = group.label;
+    row.appendChild(lbl);
+
+    const currentChoice = variantSettings[group.label] || group.variants[0];
+
+    group.variants.forEach((variant) => {
+      const isActive = currentChoice === variant;
+      const shortName = variant.replace(group.label, "").replace(/^\s*\(|\)\s*$/g, "").trim() || "No fuel";
+      const btn = document.createElement("button");
+      btn.style.cssText =
+        "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
+        (isActive
+          ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
+          : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
+      btn.innerHTML = getIcon(variant, 20) + "<span>" + shortName + "</span>";
+      btn.dataset.group = group.label;
+      btn.dataset.variant = variant;
+      btn.onclick = function () {
+        variantSettings[group.label] = variant;
+        saveSettings();
+        row.querySelectorAll("button").forEach((b) => {
+          const active = b.dataset.variant === variant;
+          b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
+          b.style.border = active ? "1px solid rgba(10,132,255,0.5)" : "1px solid rgba(255,255,255,0.10)";
+          b.style.color = active ? "#f5f5f7" : "rgba(255,255,255,0.45)";
+        });
+      };
+      row.appendChild(btn);
+    });
+
+    burnGrid.appendChild(row);
+  });
+  el.appendChild(burnGrid);
+
   // ── Section: Miner preferences ───────────────────────────────
   const minerSep = document.createElement("div");
   minerSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
