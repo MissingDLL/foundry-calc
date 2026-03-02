@@ -611,6 +611,35 @@ function _drawSankey(svgEl, data) {
         highlightUpstream(d.target);
       });
 
+  // ── Link rate labels ─────────────────────────────────────
+  // Show items/min on each individual branch at the midpoint of the link.
+  const linkLabelG = g.append('g').attr('pointer-events', 'none');
+  graph.links.forEach(lnk => {
+    const mx = (lnk.source.x1 + lnk.target.x0) / 2;
+    const my = (lnk.y0 + lnk.y1) / 2;
+    const val = lnk.value >= 1000
+      ? (lnk.value / 1000).toFixed(1) + 'k'
+      : Math.round(lnk.value * 10) / 10;
+    const txt = val + '/min';
+    const pw  = txt.length * 5.5 + 10; // pill width estimate
+
+    linkLabelG.append('rect')
+      .attr('x', mx - pw / 2).attr('y', my - 8)
+      .attr('width', pw).attr('height', 14)
+      .attr('rx', 3)
+      .attr('fill', 'rgba(8,8,24,0.72)')
+      .attr('stroke', COLOR.link).attr('stroke-opacity', 0.25).attr('stroke-width', 0.7);
+
+    linkLabelG.append('text')
+      .attr('x', mx).attr('y', my)
+      .attr('text-anchor', 'middle').attr('dominant-baseline', 'middle')
+      .attr('fill', COLOR.link)
+      .attr('font-size', 8.5)
+      .attr('font-family', 'monospace')
+      .attr('opacity', 0.8)
+      .text(txt);
+  });
+
   // ── Draw node bars ────────────────────────────────────────
   const nodeG = g.append('g').selectAll('g').data(graph.nodes).join('g');
 
