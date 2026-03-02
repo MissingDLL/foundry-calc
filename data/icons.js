@@ -84,7 +84,8 @@ const BUILDING_ICONS = {
   "Fracking Tower Base": "icons/buildings/Fracking_Tower_Base.png",
   "Air Intake Base": "icons/buildings/Air_Intake_Base.png",
   "Hot Air Stove Base": "icons/buildings/Hot_Air_Stove_Base.png",
-  "Blast Furnace Base": "icons/buildings/Blast_Furnace_Base.png",
+  "Blast Furnace Base": "icons/buildings/Blast_Furnace.png",
+  "Blast Furnace": "icons/buildings/Blast_Furnace.png",
   "Monument Base": "icons/buildings/Monument_Base.png",
 };
 const METALLURGY_ICONS = {
