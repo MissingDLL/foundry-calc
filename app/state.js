@@ -510,6 +510,7 @@ function _flushSaveSettings() {
   MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
   try {
     localStorage.setItem('fc_settings', JSON.stringify({
+      gameVersion: GAME_VERSION_ID,
       variantSettings,
       minerSettings,
       botEfficiencyOverrides,
@@ -563,6 +564,11 @@ function loadSettings() {
     // Restore recipe list; skip any entry whose recipe no longer exists.
     // Also validate the machine name — fall back to the recipe's first machine
     // if the saved name is no longer valid (e.g. after a game-data update).
+    // Wenn die gespeicherte Version nicht zur geladenen passt, Rezeptauswahl leeren
+    if (s.gameVersion !== GAME_VERSION_ID) {
+      s.selectedRecipeList = [];
+    }
+
     if (Array.isArray(s.selectedRecipeList)) {
       selectedRecipeList = s.selectedRecipeList
         .filter(item => item.recipeName && RECIPES[item.recipeName])

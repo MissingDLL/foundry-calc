@@ -37,9 +37,50 @@ function closeRecipeSettings(e) {
   }
 }
 
+function switchGameVersion(id) {
+  if (id === GAME_VERSION_ID) return;
+  localStorage.setItem('fc_game_version', id);
+  try {
+    const s = JSON.parse(localStorage.getItem('fc_settings') || '{}');
+    s.selectedRecipeList = [];
+    s.variantSettings = {};
+    s.minerSettings = {};
+    localStorage.setItem('fc_settings', JSON.stringify(s));
+  } catch (e) {}
+  location.reload();
+}
+
 function renderSettingsContent(targetId) {
   const el = document.getElementById(targetId || "settingsContent");
   el.innerHTML = "";
+
+  // ── Section: Spielversion ─────────────────────────────────
+  const verTitle = document.createElement("div");
+  verTitle.style.cssText =
+    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
+  verTitle.textContent = "Spielversion";
+  el.appendChild(verTitle);
+
+  const verRow = document.createElement("div");
+  verRow.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap";
+
+  GAME_VERSIONS.forEach(function (v) {
+    const isActive = v.id === GAME_VERSION_ID;
+    const btn = document.createElement("button");
+    btn.style.cssText =
+      "padding:6px 16px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;transition:all 0.18s;" +
+      (isActive
+        ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
+        : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);cursor:pointer;");
+    btn.textContent = v.label;
+    btn.onclick = function () { switchGameVersion(v.id); };
+    verRow.appendChild(btn);
+  });
+  el.appendChild(verRow);
+
+  const verSep = document.createElement("div");
+  verSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  el.appendChild(verSep);
 
   // ── Section: Machine family defaults ─────────────────────
   const machTitle = document.createElement("div");

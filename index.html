@@ -602,16 +602,25 @@
   </div>
 
 
-  <script src="app/theme.js?v=14"></script>
-  <script src="data/game-data.js?v=14"></script>
-  <script src="data/icons.js?v=14"></script>
-  <script src="data/recipes.js?v=14"></script>
-  <script src="app/state.js?v=14"></script>
-  <script src="app/ui-settings.js?v=14"></script>
-  <script src="app/ui-recipes.js?v=14"></script>
-  <script src="app/calculation.js?v=14"></script>
-  <script src="app/ui-nav.js?v=14"></script>
-  <script src="app/visualization.js?v=14"></script>
+  <script src="app/theme.js?v=15"></script>
+  <script src="data/version-registry.js?v=15"></script>
+  <script>
+    (function () {
+      var sel = localStorage.getItem('fc_game_version') || GAME_VERSION_DEFAULT;
+      if (!GAME_VERSIONS.some(function (v) { return v.id === sel; }))
+        sel = GAME_VERSION_DEFAULT;
+      var cb = '?vcb=' + sel;
+      document.write('<scr' + 'ipt src="data/versions/' + sel + '/game-data.js' + cb + '"></scr' + 'ipt>');
+      document.write('<scr' + 'ipt src="data/versions/' + sel + '/recipes.js' + cb + '"></scr' + 'ipt>');
+    })();
+  </script>
+  <script src="data/icons.js?v=15"></script>
+  <script src="app/state.js?v=15"></script>
+  <script src="app/ui-settings.js?v=15"></script>
+  <script src="app/ui-recipes.js?v=15"></script>
+  <script src="app/calculation.js?v=15"></script>
+  <script src="app/ui-nav.js?v=15"></script>
+  <script src="app/visualization.js?v=15"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();

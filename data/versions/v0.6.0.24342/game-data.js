@@ -1,3 +1,4 @@
+const GAME_VERSION_ID = 'v0.6.0.24342'; // muss mit dem Verzeichnisnamen übereinstimmen
 // ============================================================
 // data/game-data.js
 // ============================================================
