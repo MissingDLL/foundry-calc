@@ -1,0 +1,331 @@
+﻿Category,Item,Subgroup,SgPos,Row,Col
+# Regeln:,,,,,
+# - Category und Item nicht aendern,,,,,
+# - Subgroup: Name der Gruppe (gleicher Name = gleiche Gruppe),,,,,
+# - SgPos: Reihenfolge der Subgroup — nur EINMAL pro Subgroup-Name eintragen (z.B. erste Zeile), Rest leer lassen,,,,
+# - Row: Zeilennummer innerhalb der Subgroup (1,2, 3...) — erzwingt Zeilenumbruch,,,
+# - Col: Spaltenposition innerhalb der Zeile (1,2, 3...),,,
+"# - Alles leer lassen = Item landet in ""Other"" ganz unten",,,,,
+# --- METALLURGY ---,,,,,
+Metallurgy,Telluxite Ore Rubble,,,,
+Metallurgy,Xenoferrite Ore Rubble,,,,
+Metallurgy,Ignium Ore Rubble,,,,
+Metallurgy,Technum Ore Rubble,,,,
+Metallurgy,Advanced Xenoferrite-Ignium Ore Blend,,,1,4
+Metallurgy,Firmarlite Sheet,Firmarlite,5,1,1
+Metallurgy,Ignium Ore,Steel,3,1,1
+Metallurgy,Liquid Telluxite,Telluxite,4,1,3
+Metallurgy,Steel Beams (Tier 1),Steel,,1,3
+Metallurgy,Steel Beams (Tier 2),Steel,,1,5
+Metallurgy,Technum Ore,Technum,2,1,1
+Metallurgy,Technum Ore (Alternative),Technum,,1,2
+Metallurgy,Technum Rods (Tier 1),Technum,,1,3
+Metallurgy,Technum Rods (Tier 2),Technum,,1,4
+Metallurgy,Technum Rods (Tier 3),Technum,,1,5
+Metallurgy,Molten Technum,,,,
+Metallurgy,Molten Xenoferrite,,,,
+Metallurgy,Telluxite Ingot,Telluxite,,1,2
+Metallurgy,Telluxite Ore,Telluxite,,1,1
+Metallurgy,Molten Superalloy,Superalloy,6,1,1
+Metallurgy,Xenoferrite Ore,Xenoferrite,1,1,1
+Metallurgy,Xenoferrite Ore (Alternative),Xenoferrite,,1,2
+Metallurgy,Xenoferrite Plates (Tier 1),Xenoferrite,,1,3
+Metallurgy,Xenoferrite Plates (Tier 2),Xenoferrite,,1,4
+Metallurgy,Xenoferrite Plates (Tier 3),Xenoferrite,,1,5
+Metallurgy,Superalloy,Superalloy,,1,2
+Metallurgy,Xenoferrite-Ignium Ore Blend,Steel,,1,2
+# --- COMPONENTS ---,,,,,
+Components,CPU,Electronic Components,,1,5
+Components,Steam,,,,
+Components,Steam (Portable Fuel),,,,
+Components,Steam (Jetpack Fuel),,,,
+Components,Steam (Coked Ignium),,,,
+Components,Steam (Ignium Fuel Rod),,,,
+Components,Advanced Machinery Parts,Mechanical Components,1,1,2
+Components,Barrel (Empty),Barrels,,1,1
+Components,Barrel (Olumite),Barrels,,1,2
+Components,Concrete,Concrete,,1,4
+Components,Cement,Concrete,,1,2
+Components,Cement (Slag Reprocessing),Concrete,,1,3
+Components,Charged Xeno-Crystal,Electronic Components,,1,7
+Components,Circuit Boards,Electronic Components,,1,3
+Components,Coked Ignium,Miscellaneous,8,1,2
+Components,Construction Materials,Mechanical Components,,1,6
+Components,Crude Olumite,,,,
+Components,Electronic Components,Electronic Components,,1,2
+Components,Empty Barreled Olumite,Barrels,,1,3
+Components,Energy Cell,Electronic Components,,1,6
+Components,Explosives (Primitive),Chemical,3,1,1
+Components,Explosives,Chemical,,1,2
+Components,Gravel,Concrete,4,1,1
+Components,Glass,Chemical,,1,3
+Components,Paint,Chemical,,2,1
+Components,Fracking Liquid,Chemical,,2,2
+Components,Fuel Rod Casing,Fuel,5,1,2
+Components,Hazard Concrete,Concrete,,1,5
+Components,High Density Olumite,Chemical,,1,10
+Components,High-Tech Machinery Parts,Mechanical Components,,1,3
+Components,Hover Engine,Mechanical Components,,1,7
+Components,Hydraulic Piston,Mechanical Components,,1,4
+Components,Ignium Fuel Rod,Fuel,,1,3
+Components,Ignium Powder,Fuel,,1,1
+Components,Ignium-Enriched Water,Chemical,,1,12
+Components,Impure High Density Olumite,Chemical,,1,9
+Components,Jetpack Fuel,Fuel,,1,7
+Components,Liquid Fuel,Fuel,,1,4
+Components,Machinery Parts,Mechanical Components,,1,1
+Components,Mineral Rock,,,,
+Components,Nautical Chassis,Mechanical Components,,1,8
+Components,Olumic Acid,Chemical,,1,8
+Components,Liquid Polymer,Chemical,,1,6
+Components,Low Density Olumite,Chemical,,1,4
+Components,Olumite Gas,Chemical,,1,5
+Components,Polymer Board,Chemical,,1,7
+Components,Portable Fuel,Fuel,,1,6
+Components,Rubber,Chemical,,1,11
+Components,Robot Parts,Mechanical Components,,1,5
+Components,Science Pack I,Science,7,1,1
+Components,Science Pack II,Science,,1,2
+Components,Science Pack III,Science,,1,3
+Components,Science Pack IV,Science,,1,4
+Components,Science Pack V,Science,,1,5
+Components,Space Ship Fuel Canister,Fuel,,1,5
+Components,Telluxite Wafer,Electronic Components,,1,4
+Components,Weapon Components,Mechanical Components,,1,9
+Components,Wire Coil,Electronic Components,2,1,1
+Components,Xeno Power Core,Electronic Components,,1,8
+Components,Xenoferrite Plates (Barrel Recycle),Barrels,6,1,4
+Components,Biomass,Miscellaneous,,1,1
+# --- STRUCTURES ---,,,,,
+Structures,Assembly Line Logistics Container,Assembly Lines,8,1,7
+Structures,Assembly Line Merger,Assembly Lines,,1,3
+Structures,Assembly Line Painter,Assembly Lines,,1,6
+Structures,Assembly Line Producer,Assembly Lines,,1,5
+Structures,Assembly Line Rail,Assembly Lines,,1,1
+Structures,Assembly Line Splitter,Assembly Lines,,1,2
+Structures,Assembly Line Start,Assembly Lines,,1,4
+Structures,Battery (Large),Energy,,1,8
+Structures,Battery (Small),Energy,,1,9
+Structures,Boiler,Energy,,1,3
+Structures,Biomass Burner,Energy,5,1,1
+Structures,Building Block,Infrastructure,1,1,1
+Structures,Burner Generator,Energy,,1,2
+Structures,Cargo Shuttle Start Pad,Solid Item Logistics,,2,8
+Structures,Cargo Shuttle Start Pad (Liquids),Liquid Handling,,1,8
+Structures,Cargo Shuttle Target Pad,Solid Item Logistics,,2,9
+Structures,Cargo Shuttle Target Pad (Liquids),Liquid Handling,,1,9
+Structures,Quarry,Construction Industry,,1,4
+Structures,Construction Ship Port,Construction Industry,,1,2
+Structures,Construction Warehouse,Construction Industry,,1,3
+Structures,Conveyor Balancer I,Solid Item Logistics,2,1,8
+Structures,Conveyor Balancer II,Solid Item Logistics,,1,9
+Structures,Conveyor Balancer III,Solid Item Logistics,,1,10
+Structures,Conveyor Balancer IV,Solid Item Logistics,,1,11
+Structures,Conveyor I,Solid Item Logistics,,1,1
+Structures,Conveyor II,Solid Item Logistics,,1,2
+Structures,Conveyor III,Solid Item Logistics,,1,3
+Structures,Conveyor IV,Solid Item Logistics,,1,4
+Structures,Conveyor Slope I,Solid Item Logistics,,1,5
+Structures,Conveyor Slope II,Solid Item Logistics,,1,6
+Structures,Conveyor Slope III,Solid Item Logistics,,1,7
+Structures,Conveyor Slope IV,Solid Item Logistics,,1,8
+Structures,Crystal Refiner,Processing,,2,4
+Structures,Data Cable,Data Cable System,12,1,1
+Structures,Data Evaluator,Data Cable System,,1,2
+Structures,Data Memory Cell,Data Cable System,,1,3
+Structures,Data Processor,Data Cable System,,1,4
+Structures,Data Source,Data Cable System,,1,5
+Structures,Data Source (Button),Data Cable System,,1,6
+Structures,Data Source (Lever),Data Cable System,,1,7
+Structures,Drill Ship,Construction Industry,,1,5
+Structures,Drone Miner I,Resource Gathering,6,1,1
+Structures,Drone Miner II,Resource Gathering,,1,2
+Structures,Emergency Beacon,Infrastructure,,1,2
+Structures,Elevator,Mobility,10,1,1
+Structures,Escalator I,Mobility,,1,3
+Structures,Escalator II,Mobility,,1,4
+Structures,Escalator III,Mobility,,1,5
+Structures,Filter Loader,Loaders,4,1,2
+Structures,Flare Stack,Processing,,2,6
+Structures,Freight Elevator I,Solid Item Logistics,,2,1
+Structures,Freight Elevator II,Solid Item Logistics,,2,2
+Structures,Freight Elevator III,Solid Item Logistics,,2,3
+Structures,Freight Elevator IV,Solid Item Logistics,,2,4
+Structures,Geothermal Boiler,Energy,,1,4
+Structures,Ladder,Mobility,,1,7
+Structures,Loader,Loaders,,1,1
+Structures,Loader Second Lane,Loaders,,1,3
+Structures,Loader Third Lane,Loaders,,1,4
+Structures,Container,Storage,9,1,2
+Structures,Crate,Storage,,1,1
+Structures,Tank,Storage,,1,6
+Structures,Logistic Container I,Storage,,1,3
+Structures,Logistic Container II,Storage,,1,4
+Structures,Logistic Container III,Storage,,1,5
+Structures,Omni-Analyzer,Infrastructure,,1,5
+Structures,Ore Vein Miner,Resource Gathering,,1,4
+Structures,Pipe,Liquid Handling,,1,1
+Structures,Pipeline,Liquid Handling,,1,2
+Structures,Pipe Intake,Liquid Handling,3,1,3
+Structures,Pipe-to-Pipeline Pump,Liquid Handling,,1,6
+Structures,Pipeline-to-Pipe Pump,Liquid Handling,,1,7
+Structures,Power Pole (Large),Energy,,1,10
+Structures,Power Pole (Small),Energy,,1,11
+Structures,Power Pole (Wall-Mounted),Energy,,1,12
+Structures,Pump (Pipelines),Liquid Handling,,1,5
+Structures,Pump (Pipes),Liquid Handling,,1,4
+Structures,Pumpjack I,Resource Gathering,,1,3
+Structures,Research Server,Infrastructure,,1,4
+Structures,Resource Separator,Processing,,2,8
+Structures,Robot Workstation I,Infrastructure,,1,6
+Structures,Robot Workstation II,Infrastructure,,1,7
+Structures,Robot Workstation III,Infrastructure,,1,8
+Structures,Scrap Recycler,Processing,,2,9
+Structures,Shipping Pad (Medium),Solid Item Logistics,,2,7
+Structures,"Shipping Pad (Medium, Assembly Line)",Solid Item Logistics,,2,6
+Structures,Shipping Pad (Small),Solid Item Logistics,,2,5
+Structures,Solar Panel (Large),Energy,,1,6
+Structures,Solar Panel (Small),Energy,,1,7
+Structures,Space Station Terminal,Infrastructure,,1,3
+Structures,Steam Turbine,Energy,,1,5
+Structures,Transformer (Large),Energy,,2,1
+Structures,Transformer (Small),Energy,,2,2
+Structures,Transport Ship Port,Construction Industry,11,1,1
+Structures,Xeno-Crystal-Extraktor,Resource Gathering,,1,6
+Structures,Xeno-Logistics Container,Storage,,1,7
+Structures,Xeno-Logistics Tower,Storage,,1,8
+Structures,Assembler I,Processing,,1,1
+Structures,Assembler III,Processing,,1,3
+Structures,Electric Arc Furnace,Processing,,1,8
+Structures,Assembler II,Processing,7,1,2
+Structures,Fluid-Assembler I,Processing,,1,4
+Structures,Barrel Filler I,Processing,,1,5
+Structures,Smelter,Processing,,1,6
+Structures,Advanced Smelter,Processing,,1,7
+Structures,Lava-Smelter I,Processing,,1,9
+Structures,Lava-Smelter II,Processing,,1,10
+Structures,Crusher I,Processing,,1,11
+Structures,Crusher II,Processing,,1,12
+Structures,Distillation Column,Processing,,2,1
+Structures,Chemical Processor,Processing,,2,2
+Structures,Casting Machine,Processing,,2,3
+Structures,Incinerator,Processing,,2,5
+Structures,Greenhouse,Processing,,2,7
+Structures,Stairs,Mobility,,1,7
+Structures,Walkway,Mobility,,1,2
+Structures,Xeno-Scrap-Extraktor,Resource Gathering,,1,5
+# --- BUILDINGS ---,,,,,
+Buildings,Air Intake Base,Modular Buildings,1,1,5
+Buildings,Blast Furnace Base,Modular Buildings,,1,7
+Buildings,Fracking Tower Base,Modular Buildings,,1,4
+Buildings,Hot Air Stove Base,Modular Buildings,,1,6
+Buildings,Long Range Scanner Base,Modular Buildings,,1,1
+Buildings,Modular Storage Tank Base,Modular Buildings,,1,3
+Buildings,Monument Base,Modular Buildings,,1,8
+Buildings,Radio Tower Base,Modular Buildings,,1,2
+# --- HANDHELDS ---,,,,,
+Handhelds,Excavation Drone Controller,General,1,1,3
+Handhelds,Explosive Charge,Explosives,1,1,2
+Handhelds,Explosives Detonator,Explosives,,1,1
+Handhelds,Heavy Explosive Charge,Explosives,,1,3
+Handhelds,Irrigation Tool,General,,1,9
+Handhelds,Mining Drill,General,,1,1
+Handhelds,Mining Laser,General,,1,2
+Handhelds,Modular Building Planner,General,,1,7
+Handhelds,Orbital Uplink,General,,1,5
+Handhelds,Ore Scanner (Handheld),General,,1,4
+Handhelds,Paint Roller,General,,1,8
+Handhelds,Plumber Tool,General,,1,6
+Handhelds,Power Line,General,,1,5
+Handhelds,Shaped Charge,Explosives,,1,4
+Handhelds,Shaped Charge (Heavy),Explosives,,1,5
+# --- ROBOTS ---,,,,,
+Robots,Aquatic Hauling Bot,Bots,1,2,3
+Robots,Cleaning Bot,Bots,,1,5
+Robots,Combat Robot,,,,
+Robots,Farmer Robot,,,,
+Robots,Miner Robot,,,,
+Robots,Operator Robot,,,,
+Robots,Personal Assistant Robot,,,,
+Robots,Science Robot,,,,
+Robots,Combat Drone,Bots,,2,2
+Robots,Combat Robot Arm,Combat Robot,5,1,3
+Robots,Combat Robot Head,,,1,2
+Robots,Combat Robot Leg,,,1,4
+Robots,Combat Robot Torso,,,1,1
+Robots,Farmer Robot Arm,Farmer Robot,4,1,3
+Robots,Farmer Robot Head,Farmer Robot,,1,2
+Robots,Farmer Robot Leg,Farmer Robot,,1,4
+Robots,Farmer Robot Torso,Farmer Robot,,1,1
+Robots,Heavy Duty Transport Bot,Bots,,1,2
+Robots,Hydro Farming Bot,Bots,,2,6
+Robots,Hydro Mining Bot,Bots,,2,5
+Robots,Light Bot,Bots,,1,7
+Robots,Maintenance Drone,Bots,,2,1
+Robots,Marine Exploration Bot,Bots,,2,4
+Robots,Mining Drone,Bots,,2,12
+Robots,Miner Robot Arm,Mining Robot,6,1,3
+Robots,Miner Robot Head,Mining Robot,,1,2
+Robots,Miner Robot Leg,Mining Robot,,1,4
+Robots,Miner Robot Torso,Mining Robot,,1,1
+Robots,Operator Bot,Bots,,1,10
+Robots,Operator Robot Arm,Operator Robot,3,1,3
+Robots,Operator Robot Head,Operator Robot,,1,2
+Robots,Operator Robot Leg,Operator Robot,,1,4
+Robots,Operator Robot Torso,Operator Robot,,1,1
+Robots,Personal Assistant Robot Arm,Personal Assistant Robot,2,1,3
+Robots,Personal Assistant Robot Head,Personal Assistant Robot,,1,2
+Robots,Personal Assistant Robot Leg,Personal Assistant Robot,,1,4
+Robots,Personal Assistant Robot Torso,Personal Assistant Robot,,1,1
+Robots,Planter Drone,Bots,,1,11
+Robots,Science Assistant Drone,Bots,,1,9
+Robots,Science Robot Arm,Science Robot,7,1,3
+Robots,Science Robot Head,Science Robot,,1,2
+Robots,Science Robot Leg,Science Robot,,1,4
+Robots,Science Robot Torso,Science Robot,,1,1
+Robots,Screen Bot,Bots,,1,8
+Robots,Snack Bot,Bots,,1,6
+Robots,Transport Bot,Bots,,1,1
+Robots,Transport Drone,Bots,,1,3
+Robots,Vacuum Bot,Bots,,1,4
+# --- DECOR ---,,,,,
+Decor,Ceiling Light,Lights,2,1,1
+Decor,Ceiling Light (Large),Lights,,1,2
+Decor,Construction Site Decor,Miscellaneous,,1,3
+Decor,Decor (Basic Shapes),Blocks,4,1,1
+Decor,Decor (Misc),Structures,5,1,1
+Decor,Decor (Modular Window Wedge),,,1,8
+Decor,Decor (Modular Windows Slope Edge),,,1,7
+Decor,Decor (Modular Windows Slope),,,1,6
+Decor,Decor (Modular Windows),,,1,9
+Decor,Decor (Struts),,,1,2
+Decor,Decor (Support Truss),,,1,3
+Decor,Decor (Support),,,1,4
+Decor,Decor (Walls),,,1,5
+Decor,Decor (Windows),,,1,10
+Decor,Door (Double),Doors,3,1,2
+Decor,Door (Single),Doors,,1,1
+Decor,Forest Seed (Plants),Seeds,7,1,1
+Decor,Forest Seed (Trees),Seeds,,1,2
+Decor,Hangar Gate,Doors,,1,3
+Decor,Light Pole I,Lights,,1,5
+Decor,Light Pole II,Lights,,1,6
+Decor,Office Chair,Office,6,1,1
+Decor,Office Couch,Office,,1,2
+Decor,Office Desk,Office,,1,3
+Decor,Office File Cabinet,Office,,1,4
+Decor,Office Plant,Office,,1,5
+Decor,Office Table,Office,,1,6
+Decor,Portable Light,Lights,,1,4
+Decor,Rocky Desert Seed (Plants),Seeds,,1,3
+Decor,Rocky Desert Seed (Trees),Seeds,,1,4
+Decor,Sandy Desert Seed (Plants),Seeds,,1,5
+Decor,Sandy Desert Seed (Trees),Seeds,,1,6
+Decor,Tropical Rainforest Seed (Plants),Seeds,,1,7
+Decor,Tropical Rainforest Seed (Trees),Seeds,,1,8
+Decor,Tundra Seed (Plants),Seeds,,1,9
+Decor,Tundra Seed (Trees),Seeds,,1,10
+Decor,Wall Light,Lights,,1,3
+Decor,Wooden Blocks,Blocks,,1,2
+Decor,Sign,Miscellaneous,1,1,1
+Decor,Railings,Miscellaneous,,1,2

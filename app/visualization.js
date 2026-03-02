@@ -575,7 +575,7 @@ function _drawSankey(svgEl, data) {
   const sankeyLayout = d3.sankey()
     .nodeId(d => d.label)      // unique node identifier
     .nodeWidth(NODE_W)
-    .nodePadding(16)            // vertical gap between stacked nodes
+    .nodePadding(CARD_H + 8)   // ensure each node has room for its info card
     .extent([[0, 0], [IW, IH]]);
 
   // Run the layout — mutates copies of nodes/links with x0,x1,y0,y1,width
@@ -638,16 +638,55 @@ function _drawSankey(svgEl, data) {
       return (d.y0 + d.y1) / 2 - h / 2;
     });
     const hs = col.map(d => Math.max(CARD_H, d.y1 - d.y0));
-    // Iterative downward push to eliminate overlaps
-    for (let pass = 0; pass < 30; pass++) {
+    // Bidirectional collision resolution: alternate down/up passes so
+    // cards spread both ways around their desired centre instead of
+    // all drifting downward.
+    const desired = ys.slice(); // keep original desired positions
+    for (let pass = 0; pass < 40; pass++) {
       let moved = false;
+      // Downward pass: each card must start below the previous one
       for (let i = 1; i < col.length; i++) {
         const minY = ys[i - 1] + hs[i - 1] + CARD_GAP;
         if (ys[i] < minY) { ys[i] = minY; moved = true; }
       }
+      // Upward pass: each card must end above the next one
+      for (let i = col.length - 2; i >= 0; i--) {
+        const maxY = ys[i + 1] - hs[i] - CARD_GAP;
+        if (ys[i] > maxY) { ys[i] = maxY; moved = true; }
+      }
+      // Gentle pull back toward desired position (spring, won't re-introduce overlaps)
+      for (let i = 0; i < col.length; i++) {
+        const lo = i === 0                ? -Infinity : ys[i - 1] + hs[i - 1] + CARD_GAP;
+        const hi = i === col.length - 1   ?  Infinity : ys[i + 1] - hs[i]     - CARD_GAP;
+        const pulled = ys[i] + (desired[i] - ys[i]) * 0.3;
+        if (pulled > lo && pulled < hi) { ys[i] = pulled; moved = true; }
+      }
       if (!moved) break;
     }
     col.forEach((d, i) => { d._cardY = ys[i]; });
+  });
+
+  // ── Connector lines: node bar → displaced card ───────────
+  // When the collision resolver has moved a card away from its node,
+  // draw a dashed L-shaped line so it is clear which card belongs
+  // to which Sankey bar.
+  const connG = g.append('g');
+  graph.nodes.forEach(d => {
+    const onLeft = d.x0 < IW / 2;
+    const nodeY  = (d.y0 + d.y1) / 2;
+    const cardH  = Math.max(CARD_H, d.y1 - d.y0);
+    const cardCY = (d._cardY != null ? d._cardY : nodeY - cardH / 2) + cardH / 2;
+    if (Math.abs(cardCY - nodeY) < 4) return; // no connector needed when on-axis
+    const nodeX = onLeft ? d.x1      : d.x0;
+    const cardX = onLeft ? d.x1 + 8  : d.x0 - 8;
+    const c     = COLOR[d.kind];
+    connG.append('path')
+      .attr('d', `M${nodeX},${nodeY} L${cardX},${nodeY} L${cardX},${cardCY}`)
+      .attr('fill', 'none')
+      .attr('stroke', c.stroke)
+      .attr('stroke-width', 0.8)
+      .attr('stroke-opacity', 0.5)
+      .attr('stroke-dasharray', '3,2');
   });
 
   // ── Info cards (HTML inside foreignObject) ────────────────
