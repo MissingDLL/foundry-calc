@@ -108,19 +108,48 @@ function switchVizMode(mode) {
   _currentVizMode = mode;
   const isSankey = mode === 'sankey';
 
-  document.getElementById('tab-sankey').style.display = isSankey ? 'flex' : 'none';
-  document.getElementById('tab-boxes').style.display  = isSankey ? 'none'  : 'flex';
-
-  const activeStyle   = { background: 'rgba(255,255,255,0.18)', boxShadow: '0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.25)', color: 'rgba(255,255,255,0.92)' };
-  const inactiveStyle = { background: 'transparent', boxShadow: 'none', color: 'rgba(255,255,255,0.40)' };
-  Object.assign(document.getElementById('vizBtnSankey').style, isSankey  ? activeStyle : inactiveStyle);
-  Object.assign(document.getElementById('vizBtnBoxes').style,  !isSankey ? activeStyle : inactiveStyle);
-
-  if (isSankey) {
-    requestAnimationFrame(() => requestAnimationFrame(renderSankey));
-  } else {
-    requestAnimationFrame(() => requestAnimationFrame(renderBoxes));
+  // Slide the blob indicator to the active button (mirrors theme pill behaviour)
+  const activeBtn = document.getElementById(isSankey ? 'vizBtnSankey' : 'vizBtnBoxes');
+  const blob      = document.getElementById('vizBlobIndicator');
+  const pill      = document.getElementById('vizModePill');
+  if (activeBtn && blob && pill) {
+    const pR = pill.getBoundingClientRect();
+    const bR = activeBtn.getBoundingClientRect();
+    blob.style.transform = `translate(${bR.left - pR.left}px, ${bR.top - pR.top}px)`;
   }
+
+  // Update icon colours + active class
+  const btnSankey = document.getElementById('vizBtnSankey');
+  const btnBoxes  = document.getElementById('vizBtnBoxes');
+  btnSankey.style.color = isSankey  ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.40)';
+  btnBoxes.style.color  = !isSankey ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.40)';
+  btnSankey.classList.toggle('active-viz', isSankey);
+  btnBoxes.classList.toggle('active-viz', !isSankey);
+
+  const outgoing = document.getElementById(isSankey ? 'tab-boxes'  : 'tab-sankey');
+  const incoming = document.getElementById(isSankey ? 'tab-sankey' : 'tab-boxes');
+  const renderer = isSankey ? renderSankey : renderBoxes;
+
+  // Fade out current view, then swap and fade in new one
+  outgoing.style.transition = 'opacity 0.15s ease';
+  outgoing.style.opacity    = '0';
+
+  setTimeout(() => {
+    outgoing.style.display    = 'none';
+    outgoing.style.opacity    = '';
+    outgoing.style.transition = '';
+
+    incoming.style.opacity    = '0';
+    incoming.style.display    = 'flex';
+    incoming.style.transition = 'opacity 0.18s ease';
+
+    requestAnimationFrame(() => {
+      incoming.style.opacity = '1';
+      requestAnimationFrame(() => requestAnimationFrame(renderer));
+    });
+
+    setTimeout(() => { incoming.style.transition = ''; }, 200);
+  }, 160);
 }
 
 // Switches between the two main content tabs: 'recipes' and 'visualize'.
@@ -150,12 +179,31 @@ function switchMainTab(tab) {
   Object.assign(document.getElementById('mainTabBtnVisualize').style, isVisualize ? ab : ib);
 
   if (isVisualize) {
-    // Render whichever sub-view is active
     requestAnimationFrame(() => requestAnimationFrame(() => {
+      // Initialise viz blob position now that the pill is visible
+      _initVizBlob();
       if (_currentVizMode === 'sankey') renderSankey();
       else renderBoxes();
     }));
   }
+}
+
+// Positions the viz blob without animation on first show.
+// Safe to call multiple times — noop after the first successful placement.
+let _vizBlobReady = false;
+function _initVizBlob() {
+  if (_vizBlobReady) return;
+  const blob = document.getElementById('vizBlobIndicator');
+  const pill = document.getElementById('vizModePill');
+  const btn  = document.getElementById(_currentVizMode === 'sankey' ? 'vizBtnSankey' : 'vizBtnBoxes');
+  if (!blob || !pill || !btn) return;
+  const pR = pill.getBoundingClientRect();
+  const bR = btn.getBoundingClientRect();
+  if (pR.width === 0) return; // still hidden, try again later
+  blob.style.transition = 'none';
+  blob.style.transform  = `translate(${bR.left - pR.left}px, ${bR.top - pR.top}px)`;
+  requestAnimationFrame(() => { blob.style.transition = ''; });
+  _vizBlobReady = true;
 }
 
 // ============================================================
