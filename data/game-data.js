@@ -281,7 +281,7 @@ const RECIPE_SUBGROUPS = {
       ["Building Block", "Emergency Beacon", "Space Station Terminal", "Research Server", "Omni-Analyzer", "Robot Workstation I", "Robot Workstation II", "Robot Workstation III"],
     ]},
     { label: "Solid Item Logistics", rows: [
-      ["Conveyor Belt", "Conveyor Slope I", "Conveyor Slope II", "Conveyor Slope III", "Conveyor Slope IV", "Conveyor Balancer I", "Conveyor Balancer II", "Conveyor Balancer III", "Conveyor Balancer IV"],
+      ["Conveyor I", "Conveyor II", "Conveyor III", "Conveyor IV", "Conveyor Slope I", "Conveyor Slope II", "Conveyor Slope III", "Conveyor Slope IV", "Conveyor Balancer I", "Conveyor Balancer II", "Conveyor Balancer III", "Conveyor Balancer IV"],
       ["Freight Elevator I", "Freight Elevator II", "Freight Elevator III", "Freight Elevator IV", "Shipping Pad (Small)", "Shipping Pad (Medium, Assembly Line)", "Shipping Pad (Medium)", "Cargo Shuttle Start Pad", "Cargo Shuttle Target Pad"],
     ]},
     { label: "Liquid Handling", rows: [

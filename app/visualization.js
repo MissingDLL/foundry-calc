@@ -274,10 +274,15 @@ window.__renderBoxes = renderBoxes;
 //   2. BFS from source nodes (no incoming edges) to assign each node
 //      a column depth (longest-path assignment ensures correct order).
 //   3. Group nodes by depth → columns.
+//   3b. Barycenter heuristic: sort nodes within each column to minimise
+//       edge crossings (two left-to-right + one right-to-left pass).
 //   4. Vertically center each column; assign (x, y) to each node.
 //   5. Draw Bezier curves between box right/left edges.
+//      Rate labels are hidden by default and appear in a tooltip on hover.
 //   6. Draw boxes as rounded rectangles with a top accent stripe,
 //      item name, machine type + count, and flow rate label.
+//   7. Click a node (or an edge) to highlight the upstream dependency chain;
+//      click background or same node again to reset.
 //
 // Uses D3 only for SVG manipulation and zoom/pan; the layout is custom.
 function _drawBoxes(svgEl, data) {
@@ -325,6 +330,45 @@ function _drawBoxes(svgEl, data) {
   const maxDepth  = Math.max(...data.nodes.map(n => n.depth));
   const columns   = Array.from({ length: maxDepth + 1 }, () => []);
   data.nodes.forEach(n => columns[n.depth].push(n));
+
+  // ── Step 2b: Crossing minimization (barycenter heuristic) ─
+  // Left-to-right pass: sort each column by the average position-index
+  // of the nodes' predecessors in the immediately preceding column.
+  for (let ci = 1; ci < columns.length; ci++) {
+    const prevIdx = {};
+    columns[ci - 1].forEach((n, i) => { prevIdx[n.label] = i; });
+    columns[ci].forEach(n => {
+      const preds = inEdges[n.label].filter(s => nodeMap[s].depth === ci - 1);
+      n._bary = preds.length > 0
+        ? preds.reduce((sum, s) => sum + (prevIdx[s] ?? 0), 0) / preds.length
+        : columns[ci].indexOf(n);
+    });
+    columns[ci].sort((a, b) => a._bary - b._bary);
+  }
+  // Right-to-left pass: sort by average position of successors
+  for (let ci = columns.length - 2; ci >= 0; ci--) {
+    const nextIdx = {};
+    columns[ci + 1].forEach((n, i) => { nextIdx[n.label] = i; });
+    columns[ci].forEach(n => {
+      const succs = outEdges[n.label].filter(t => nodeMap[t].depth === ci + 1);
+      n._bary = succs.length > 0
+        ? succs.reduce((sum, t) => sum + (nextIdx[t] ?? 0), 0) / succs.length
+        : (n._bary ?? columns[ci].indexOf(n));
+    });
+    columns[ci].sort((a, b) => a._bary - b._bary);
+  }
+  // Second left-to-right pass for better convergence
+  for (let ci = 1; ci < columns.length; ci++) {
+    const prevIdx = {};
+    columns[ci - 1].forEach((n, i) => { prevIdx[n.label] = i; });
+    columns[ci].forEach(n => {
+      const preds = inEdges[n.label].filter(s => nodeMap[s].depth === ci - 1);
+      n._bary = preds.length > 0
+        ? preds.reduce((sum, s) => sum + (prevIdx[s] ?? 0), 0) / preds.length
+        : (n._bary ?? columns[ci].indexOf(n));
+    });
+    columns[ci].sort((a, b) => a._bary - b._bary);
+  }
 
   // ── Step 3: Compute (x, y) positions ─────────────────────
   const BOX_W  = 140;
@@ -386,7 +430,66 @@ function _drawBoxes(svgEl, data) {
     .attr('orient', 'auto')
     .append('path').attr('d', 'M0,-5L10,0L0,5').attr('fill', COLOR.link).attr('opacity', 0.7);
 
+  // ── Tooltip helpers ───────────────────────────────────────
+  const tooltip = document.getElementById('boxesTooltip');
+  function showTooltip(event, html) {
+    if (!tooltip) return;
+    tooltip.innerHTML = html;
+    tooltip.style.display = 'block';
+    moveTooltip(event);
+  }
+  function moveTooltip(event) {
+    if (!tooltip || !wrap) return;
+    const rect = wrap.getBoundingClientRect();
+    let x = event.clientX - rect.left + 14;
+    let y = event.clientY - rect.top  - 10;
+    if (x + 220 > wrap.clientWidth)  x = event.clientX - rect.left - 230;
+    if (y + 80  > wrap.clientHeight) y = event.clientY - rect.top  - 60;
+    tooltip.style.left = x + 'px';
+    tooltip.style.top  = y + 'px';
+  }
+  function hideTooltip() { if (tooltip) tooltip.style.display = 'none'; }
+
+  // ── Highlight state ───────────────────────────────────────
+  let _activeHighlight = null;
+  const linkEntries = []; // { path, srcLabel, tgtLabel } for highlight updates
+  const nodeGMap    = {}; // label → d3 node-group selection
+
+  function triggerHighlight(targetLabel) {
+    if (_activeHighlight === targetLabel) { resetHighlight(); return; }
+    _activeHighlight = targetLabel;
+
+    // BFS backwards: collect all upstream nodes and links
+    const hlNodes = new Set([targetLabel]);
+    const hlLinkIdx = new Set();
+    const bfsQ = [targetLabel];
+    while (bfsQ.length) {
+      const cur = bfsQ.shift();
+      linkEntries.forEach(({ srcLabel, tgtLabel }, i) => {
+        if (tgtLabel === cur && !hlLinkIdx.has(i)) {
+          hlLinkIdx.add(i);
+          if (!hlNodes.has(srcLabel)) { hlNodes.add(srcLabel); bfsQ.push(srcLabel); }
+        }
+      });
+    }
+    linkEntries.forEach(({ path }, i) =>
+      path.attr('stroke-opacity', hlLinkIdx.has(i) ? 0.9 : 0.06)
+    );
+    Object.entries(nodeGMap).forEach(([lbl, ng]) =>
+      ng.style('opacity', hlNodes.has(lbl) ? 1 : 0.12)
+    );
+  }
+
+  function resetHighlight() {
+    _activeHighlight = null;
+    linkEntries.forEach(({ path }) => path.attr('stroke-opacity', 0.6));
+    Object.values(nodeGMap).forEach(ng => ng.style('opacity', 1));
+    hideTooltip();
+  }
+
   // ── Step 6: Draw links (Bezier curves) ───────────────────
+  // Rate labels are shown in a hover tooltip rather than always-on,
+  // which removes the bulk of the visual clutter on large graphs.
   const linkG = g.append('g');
   data.links.forEach(link => {
     const s = nodeMap[typeof link.source === 'object' ? link.source.label : link.source];
@@ -405,40 +508,44 @@ function _drawBoxes(svgEl, data) {
                       : t.kind === 'final' ? COLOR.final.stroke
                       : COLOR.mid.stroke;
 
-    // Cubic Bezier curve: C mx,y1  mx,y2  x2,y2
-    linkG.append('path')
-      .attr('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`)
-      .attr('fill', 'none')
-      .attr('stroke', strokeColor)
-      .attr('stroke-width', 1.8)
-      .attr('stroke-opacity', 0.65)
-      .attr('marker-end', `url(#arrow-${markerKind})`);
-
-    // Flow rate label centred on the Bezier midpoint
     const rateVal  = link.value;
     const rateText = rateVal >= 1000
       ? (rateVal / 1000).toFixed(1) + 'k/min'
       : Math.round(rateVal * 10) / 10 + '/min';
 
-    const lx = mx;
-    const ly = (y1 + y2) / 2 - 6;
+    const srcLabel = typeof link.source === 'object' ? link.source.label : link.source;
+    const tgtLabel = typeof link.target === 'object' ? link.target.label : link.target;
 
-    // Pill background for readability
-    linkG.append('rect')
-      .attr('x', lx - 26).attr('y', ly - 11)
-      .attr('width', 52).attr('height', 16)
-      .attr('rx', 4)
-      .attr('fill', 'rgba(8,8,24,0.75)')
-      .attr('stroke', strokeColor).attr('stroke-opacity', 0.4).attr('stroke-width', 0.8);
+    // Invisible wide hit-target layered under the visible path for easier hover
+    linkG.append('path')
+      .attr('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`)
+      .attr('fill', 'none').attr('stroke', 'transparent').attr('stroke-width', 12)
+      .style('cursor', 'pointer')
+      .on('mouseenter', function(event) {
+        if (!_activeHighlight) path.attr('stroke-opacity', 0.95);
+        showTooltip(event,
+          `<div style="color:var(--accent);font-weight:700;margin-bottom:3px">${srcLabel} → ${tgtLabel}</div>
+           <div style="color:var(--accent3);font-family:monospace;font-size:11px">${rateText}</div>
+           <div style="color:#555;font-size:10px;margin-top:2px">Klicken zum Hervorheben</div>`);
+      })
+      .on('mousemove', moveTooltip)
+      .on('mouseleave', function() {
+        if (!_activeHighlight) path.attr('stroke-opacity', 0.6);
+        hideTooltip();
+      })
+      .on('click', function(event) { event.stopPropagation(); triggerHighlight(tgtLabel); });
 
-    linkG.append('text')
-      .attr('x', lx).attr('y', ly)
-      .attr('text-anchor', 'middle')
-      .attr('dominant-baseline', 'middle')
-      .attr('fill', strokeColor)
-      .attr('font-size', 9)
-      .attr('font-family', 'monospace')
-      .text('× ' + rateText);
+    // Cubic Bezier curve: C mx,y1  mx,y2  x2,y2
+    const path = linkG.append('path')
+      .attr('d', `M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`)
+      .attr('fill', 'none')
+      .attr('stroke', strokeColor)
+      .attr('stroke-width', 1.8)
+      .attr('stroke-opacity', 0.6)
+      .attr('pointer-events', 'none')
+      .attr('marker-end', `url(#arrow-${markerKind})`);
+
+    linkEntries.push({ path, srcLabel, tgtLabel });
   });
 
   // ── Step 7: Draw node boxes ───────────────────────────────
@@ -447,7 +554,16 @@ function _drawBoxes(svgEl, data) {
     const C  = COLOR[n.kind] || COLOR.mid;
     const ng = nodeG.append('g')
       .attr('transform', `translate(${n._x},${n._y})`)
-      .style('cursor', 'default');
+      .style('cursor', 'pointer')
+      .on('click', function(event) { event.stopPropagation(); triggerHighlight(n.label); })
+      .on('mouseenter', function() {
+        if (!_activeHighlight) d3.select(this).select('.main-box').attr('stroke-width', 2.5);
+      })
+      .on('mouseleave', function() {
+        if (!_activeHighlight) d3.select(this).select('.main-box').attr('stroke-width', 1.5);
+      });
+
+    nodeGMap[n.label] = ng;
 
     // Drop shadow for depth effect
     ng.append('rect')
@@ -459,6 +575,7 @@ function _drawBoxes(svgEl, data) {
 
     // Main box rectangle
     ng.append('rect')
+      .attr('class', 'main-box')
       .attr('width', BOX_W).attr('height', BOX_H)
       .attr('rx', 10)
       .attr('fill', C.fill)
@@ -529,6 +646,9 @@ function _drawBoxes(svgEl, data) {
       .attr('font-family', 'monospace')
       .text(rate + '/min');
   });
+
+  // Click on SVG background resets highlight
+  svg.on('click', resetHighlight);
 }
 
 // ============================================================

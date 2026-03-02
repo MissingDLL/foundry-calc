@@ -1,20 +1,10 @@
 const ICON_ALIASES = {
-  // Molten metals with no wiki icon → nearest metal icon
-  "Molten Superalloy": "Firmarlite Sheet",
-  "Superalloy": "Firmarlite Sheet",
   // Other items
   "Xeno-Crystal": "Charged Xeno-Crystal",
   "Olumite": "Crude Olumite",
   "Barrel": "Barrel (Empty)",
   // Assembly Line (compound machine) → use Start segment as icon
   "Assembly Line": "Assembly Line Start",
-  // Complete robot recipes → use Torso icon as representative icon
-  "Combat Robot": "Combat Robot Torso",
-  "Farmer Robot": "Farmer Robot Torso",
-  "Miner Robot": "Miner Robot Torso",
-  "Operator Robot": "Operator Robot Torso",
-  "Personal Assistant Robot": "Personal Assistant Robot Torso",
-  "Science Robot": "Science Robot Torso",
 };
 
 function getIcon(name, size = 28, isBot = false) {
@@ -80,7 +70,12 @@ const BOT_ICONS = {
   "Science Robot Head": "icons/robots/Science_Robot_Head.png",
   "Science Robot Arm": "icons/robots/Science_Robot_Arm.png",
   "Science Robot Leg": "icons/robots/Science_Robot_Leg.png",
-  
+  "Combat Robot": "icons/robots/Combat_Robot.png",
+  "Farmer Robot": "icons/robots/Farmer_Robot.png",
+  "Miner Robot": "icons/robots/Miner_Robot.png",
+  "Operator Robot": "icons/robots/Operator_Robot.png",
+  "Personal Assistant Robot": "icons/robots/Personal_Assistant_Robot.png",
+  "Science Robot": "icons/robots/Science_Robot.png",
 };
 const BUILDING_ICONS = {
   "Long Range Scanner Base": "icons/buildings/Long_Range_Scanner_Base.png",
@@ -123,6 +118,8 @@ const METALLURGY_ICONS = {
   "Steel Beams": "icons/metallurgy/Steel_Beams.png",
   "Molten Technum": "icons/metallurgy/Molten_Technum.png",
   "Molten Xenoferrite": "icons/metallurgy/Molten_Xenoferrite.png",
+  "Molten Superalloy": "icons/metallurgy/Molten_Superalloy.png",
+  "Superalloy": "icons/metallurgy/Superalloy.png",
   "Blast Furnace Slag": "icons/metallurgy/Blast_Furnace_Slag.png",
 };
 const HANDHELD_ICONS = {
@@ -279,7 +276,7 @@ const COMPONENTS_ICONS = {
   "Telluxite Wafer": "icons/components/Telluxite_Wafer.png",
   "CPU": "icons/components/CPU.png",
   "Energy Cell": "icons/components/Energy_Cell.png",
-  "Charged Xeno-Crystal": "icons/components/Charged_Xeno-Crystal.png",
+  "Charged Xeno-Crystal": "icons/components/Charged_Xeno-Crystal1.png",
   "Xeno Power Core": "icons/components/Xeno_Power_Core.png",
   "Explosives (Primitive)": "icons/components/Explosives_Primitive.png",
   "Explosives": "icons/components/Explosives.png",
@@ -356,7 +353,6 @@ const COMPONENTS_ICONS = {
   "Firmarlite Bar": "icons/components/Firmarlite_Bar.png",
   "Xenoferrite Plate": "icons/metallurgy/Xenoferrite_Plates_Tier_1.png",
   "Xenoferrite Plates": "icons/components/Xenoferrite_Plates.png",
-  "Circuit Boards": "icons/components/Circuit_Boards_1.png",
   "Technum Rods": "icons/components/Technum_Rods_1.png",
 };
 const DECOR_ICONS = {
