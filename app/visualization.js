@@ -617,6 +617,39 @@ function _drawSankey(svgEl, data) {
     .attr('stroke', d => COLOR[d.kind].stroke)
     .attr('stroke-width', 1.5);
 
+  // ── Resolve info-card Y overlaps per column ───────────────
+  // Cards have a minimum height of CARD_H (62px) which is often taller
+  // than the vertical gap between tightly-packed Sankey nodes.
+  // Group nodes by their column (rounded x0) and push card positions
+  // apart so no two cards in the same column overlap.
+  const CARD_GAP = 6;
+  const colGroups = {};
+  graph.nodes.forEach(d => {
+    const key = Math.round(d.x0);
+    if (!colGroups[key]) colGroups[key] = [];
+    colGroups[key].push(d);
+  });
+  Object.values(colGroups).forEach(col => {
+    // Sort top-to-bottom by node centre
+    col.sort((a, b) => (a.y0 + a.y1) / 2 - (b.y0 + b.y1) / 2);
+    // Desired y: centre the card on the node
+    const ys = col.map(d => {
+      const h = Math.max(CARD_H, d.y1 - d.y0);
+      return (d.y0 + d.y1) / 2 - h / 2;
+    });
+    const hs = col.map(d => Math.max(CARD_H, d.y1 - d.y0));
+    // Iterative downward push to eliminate overlaps
+    for (let pass = 0; pass < 30; pass++) {
+      let moved = false;
+      for (let i = 1; i < col.length; i++) {
+        const minY = ys[i - 1] + hs[i - 1] + CARD_GAP;
+        if (ys[i] < minY) { ys[i] = minY; moved = true; }
+      }
+      if (!moved) break;
+    }
+    col.forEach((d, i) => { d._cardY = ys[i]; });
+  });
+
   // ── Info cards (HTML inside foreignObject) ────────────────
   // Cards are placed to the right of nodes in the left half of the
   // diagram, and to the left of nodes in the right half, so they
@@ -626,10 +659,10 @@ function _drawSankey(svgEl, data) {
       const onLeft = d.x0 < IW / 2;
       return onLeft ? d.x1 + 8 : d.x0 - CARD_W - 8;
     })
-    .attr('y', d => {
+    .attr('y', d => d._cardY != null ? d._cardY : (() => {
       const h = Math.max(CARD_H, d.y1 - d.y0);
       return (d.y0 + d.y1) / 2 - h / 2;
-    })
+    })())
     .attr('width',  CARD_W)
     .attr('height', d => Math.max(CARD_H, d.y1 - d.y0))
     .append('xhtml:div')
