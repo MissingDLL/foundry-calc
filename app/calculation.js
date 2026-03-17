@@ -480,6 +480,28 @@ function calculateRecipes() {
       resolvedTotals[key].amount += line.actualOpm;
     });
     Object.entries(totals).forEach(([name, val]) => resolveAllLevels(name, val, new Set()));
+
+    // Max-depth ordering: each item gets the DEEPEST level at which it appears.
+    // This ensures raw materials (used by multiple levels) always appear at the bottom.
+    {
+      const depthMap = {};
+      function computeMaxDepth(itemName, depth, visitedPath) {
+        if (visitedPath.has(itemName)) return;
+        depthMap[itemName] = Math.max(depthMap[itemName] ?? 0, depth);
+        const info = resolvedTotals[itemName];
+        if (!info) return;
+        const rec = RECIPES[info.recipeName || itemName];
+        if (rec && rec.ingredients) {
+          const next = new Set(visitedPath);
+          next.add(itemName);
+          rec.ingredients.forEach(ing => computeMaxDepth(ing.item, depth + 1, next));
+        }
+      }
+      lines.forEach(line => computeMaxDepth(line.displayName || line.itemName, 0, new Set()));
+      Object.entries(resolvedTotals).forEach(([name, info]) => {
+        info.order = depthMap[name] ?? 999999;
+      });
+    }
   } else {
     // Modes 1 + 2: recursive resolution
     function resolveIngredient(itemName, amountPerMin, visitedPath) {
@@ -639,18 +661,25 @@ function calculateRecipes() {
   // ── Full Detail: compact Factorio-calc-style rows ─────────────
   function buildFullDetailRows(totalsMap) {
     let totMachPwr = 0, totLoaderPwr = 0;
+    let fdIdx = 0;
 
     const rows = Object.entries(totalsMap)
-      .sort((a, b) => b[1].amount - a[1].amount)
+      .sort((a, b) => (a[1].order ?? 999999) - (b[1].order ?? 999999))
       .map(([name, info]) => {
         const val     = info.amount;
         const machine = info.machine;
         const isFluid = FLUID_ITEMS.has(name);
+        const rid     = 'fd_' + (fdIdx++);
 
-        let machineCell = '<span style="color:var(--text-dim);font-size:12px">—</span>';
-        let conveyorCell = '';
-        let loaderCell  = '';
-        let pwrCell     = '<span style="color:var(--text-dim)">—</span>';
+        let machineCell  = '<span style="color:var(--text-dim);font-size:12px">—</span>';
+        let loaderCell   = '';
+        let pwrCell      = '<span style="color:var(--text-dim)">—</span>';
+        let ingPills     = '';
+
+        // Conveyor applies to all solid (non-fluid) items regardless of machine
+        const conveyorCell = isFluid
+          ? '<span style="color:var(--text-dim);font-size:12px">—</span>'
+          : `<div style="display:flex;align-items:center;gap:4px">${iconBox(conveyorType, 48)}<span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">${(val / conveyorThroughput).toFixed(2)}</span></div>`;
 
         if (machine) {
           const rec = RECIPES[info.recipeName || name];
@@ -666,12 +695,7 @@ function calculateRecipes() {
             totMachPwr   += machPwrKw;
             totLoaderPwr += loaderPwrKw;
 
-            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-size:13px;font-family:'Share Tech Mono',monospace;color:var(--accent3)">×${count}</span></div>`;
-
-            if (!isFluid) {
-              const lanes = Math.ceil(val / conveyorThroughput);
-              conveyorCell = `<div style="display:flex;align-items:center;gap:4px">${iconBox(conveyorType, 48)}<span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${lanes}</span></div>`;
-            }
+            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
 
             const totalLoaders = loaders.loaderCount * count;
             const totalSecond  = loaders.secondLaneCount * count;
@@ -686,19 +710,46 @@ function calculateRecipes() {
             }
 
             pwrCell = `<span style="font-size:12px;color:#ff9500">${fmtPwr(machPwrKw + loaderPwrKw)}</span>`;
+
+            // Build ingredient pills for expanded detail row
+            if (rec.ingredients && rec.ingredients.length) {
+              ingPills = rec.ingredients.map((ing) => {
+                const ipm  = (60 / md.cycleTime) * ing.amount * count;
+                const warn = ipm > 100;
+                return `<span style="display:inline-flex;align-items:center;gap:5px;
+                    background:${warn ? '#1a1100' : '#0d1a0d'};
+                    border:1px solid ${warn ? '#554400' : '#1a3a1a'};
+                    border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
+                    ${iconBox(ing.item, 48)}
+                    <span style="color:var(--text-dim)">${ing.item}</span>
+                    <span style="font-family:'Share Tech Mono',monospace;color:${warn ? 'var(--warn)' : 'var(--accent3)'}">
+                      ${fmt(ipm)}<span style="color:var(--text-dim);font-size:10px">/min</span>
+                    </span>
+                  </span>`;
+              }).join('');
+            }
           }
         }
 
         const cls = val > 100 ? 'num-warn' : 'num';
+        const hasDetail = ingPills.length > 0;
         return `
-      <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
-        <td style="padding:5px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(name, 48)}<span class="label" style="font-size:13px">${name}</span></div></td>
+      <tr class="recipe-main-row" onclick="${hasDetail ? `toggleRecipeRow('${rid}')` : ''}" style="border-bottom:1px solid rgba(255,255,255,0.05);${hasDetail ? 'cursor:pointer' : ''}">
+        <td style="padding:5px 12px"><div style="display:flex;align-items:center;gap:6px">
+          ${hasDetail ? `<span class="row-expand-arrow" id="arr_${rid}">▶</span>` : '<span style="display:inline-block;width:14px"></span>'}
+          ${iconBox(name, 48)}<span class="label" style="font-size:13px">${name}</span>
+        </div></td>
         <td class="${cls}" style="font-size:13px">${fmt(val)}/min</td>
         <td style="padding:5px 12px">${machineCell}</td>
         <td style="padding:5px 12px">${conveyorCell}</td>
         <td style="padding:5px 12px">${loaderCell}</td>
         <td style="padding:5px 12px;text-align:right">${pwrCell}</td>
-      </tr>`;
+      </tr>
+      ${hasDetail ? `<tr class="recipe-detail-row collapsed" id="${rid}">
+        <td colspan="6" style="padding:4px 12px 10px 52px">
+          <div style="display:flex;flex-wrap:wrap;gap:5px">${ingPills}</div>
+        </td>
+      </tr>` : ''}`;
       }).join('');
 
     const footer = `
@@ -780,6 +831,7 @@ function calculateRecipes() {
   document.getElementById("recipeResults").innerHTML =
     summaryHtml +
     `
+    ${calcDepthMode !== 3 ? `
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleSection(this)">
         <span class="ch-title">Production Overview</span>
@@ -825,7 +877,7 @@ function calculateRecipes() {
           <tbody>${infraRows}${infraFooter}</tbody>
         </table>
       </div>
-    </div>
+    </div>` : ''}
 
     ${cycleWarnings.size > 0 ? `
     <div style="background:#2a0a0a;border:1px solid #8b2020;border-radius:6px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:13px;color:#e05050">
