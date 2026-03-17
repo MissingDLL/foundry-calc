@@ -51,6 +51,12 @@ function getOutputLabel(recipe) {
 // Returns the power consumption of a machine in kW.
 // Checks the machine's own recipe first; falls back to MACHINE_POWER_KW.
 function getMachinePowerKw(machineName) {
+  // Assembly Line power = sum of its sub-machines
+  if (machineName === M.ASSEMBLY_LINE) {
+    return getMachinePowerKw(ASSEMBLY_LINE_COMPOSITION.start.name)    * ASSEMBLY_LINE_COMPOSITION.start.count
+         + getMachinePowerKw(ASSEMBLY_LINE_COMPOSITION.producer.name) * ASSEMBLY_LINE_COMPOSITION.producer.count
+         + getMachinePowerKw(ASSEMBLY_LINE_COMPOSITION.painter.name)  * ASSEMBLY_LINE_COMPOSITION.painter.count;
+  }
   const r = RECIPES[machineName];
   if (r && r.power_consumption != null) {
     return r.power_consumption_unit === 'MW'
@@ -58,6 +64,30 @@ function getMachinePowerKw(machineName) {
       : r.power_consumption;
   }
   return MACHINE_POWER_KW[machineName] || 0;
+}
+
+// Returns the first non-Character machine name for a recipe,
+// falling back to the first entry if only Character is available.
+function firstMachineFor(recipe) {
+  const entries = Object.entries(recipe.machines || {});
+  const nonChar = entries.find(([name]) => name !== 'Character');
+  return nonChar ? nonChar[0] : (entries[0] ? entries[0][0] : null);
+}
+
+// Like firstMachineFor but respects the user's machine family defaults
+// and family ordering (lowest tier first when no preference is set).
+function preferredMachineFor(recipe) {
+  const available = Object.keys(recipe.machines || {});
+  for (const family of MACHINE_FAMILIES) {
+    // Check if this recipe is built by any machine in this family
+    const familyMatch = family.machines.find(m => available.includes(m));
+    if (!familyMatch) continue;
+    // Use user's saved defaultChoice if it's available in this recipe,
+    // otherwise use the lowest-tier family machine that is available.
+    const preferred = family.defaultChoice || family.machines[0];
+    return available.includes(preferred) ? preferred : familyMatch;
+  }
+  return firstMachineFor(recipe);
 }
 
 // Calculates the optimal loader setup for a machine given the number of
@@ -258,8 +288,8 @@ function calculateRecipes() {
     ? `${(kw / 1000).toLocaleString('de-DE', {maximumFractionDigits: 2})} MW`
     : `${fmt(Math.round(kw))} kW`;
 
-  const depthLabels = ['Direct', 'Intermediate', 'Full Detail'];
-  const depthDesc   = ['immediate ingredients only', 'down to plates / rods / steel etc.', 'all the way to raw materials'];
+  const depthLabels = ['Direct', 'Intermediate', 'Raw Materials', 'Full Detail'];
+  const depthDesc   = ['immediate ingredients only', 'down to plates / rods / steel etc.', 'all the way to raw materials', 'complete production chain with conveyor'];
   const modeSelector = `
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;flex-wrap:wrap">
       <span style="font-size:12px;color:var(--text-dim);flex-shrink:0">Material depth:</span>
@@ -382,14 +412,74 @@ function calculateRecipes() {
   //   2 = Full         → recurse all the way to raw materials
   //
   // resolvedTotals[name] = { amount: Number, machine: String|null }
-  const resolvedTotals = {};
-  const cycleWarnings  = new Set();
+  const resolvedTotals  = {};
+  const resolvedMachines = {}; // machines needed for ingredient chain (modes 1+2)
+  const cycleWarnings   = new Set();
+
+  // Build a map: fluid key (lowercase_underscore) → modular building recipe name
+  // e.g. "hot_air" → "Hot Air Stove Base"
+  const fluidProducerMap = {};
+  Object.entries(RECIPES).forEach(([name, r]) => {
+    const out = r.modular_building_details?.output;
+    if (out && out !== 'none') fluidProducerMap[out] = name;
+  });
+
+  // Always compute direct-level materials (mode-0 view) — used for Direct Materials
+  // section in modes 0 and 1.
+  const directTotals = {};
+  Object.entries(totals).forEach(([name, val]) => {
+    const resolved = resolveRecipeName(name);
+    const recipe   = RECIPES[resolved];
+    const machine  = recipe ? preferredMachineFor(recipe) : null;
+    const fluidKey = resolved.toLowerCase().replace(/\s+/g, '_');
+    directTotals[name] = { amount: val, machine: machine || fluidProducerMap[fluidKey] || null, recipeName: resolved };
+  });
 
   if (calcDepthMode === 0) {
-    // Direct: just copy totals without recursion
-    Object.entries(totals).forEach(([name, val]) => {
-      resolvedTotals[name] = { amount: val, machine: null };
+    Object.assign(resolvedTotals, directTotals);
+  } else if (calcDepthMode === 3) {
+    // Full Detail: collect every item at every level of the production chain
+    function resolveAllLevels(itemName, amountPerMin, visitedPath) {
+      const resolved = resolveRecipeName(itemName);
+      if (visitedPath.has(resolved) || visitedPath.size > 50) return;
+
+      const recipe = RECIPES[resolved];
+      const addItem = (machine) => {
+        if (!resolvedTotals[itemName]) resolvedTotals[itemName] = { amount: 0, machine, recipeName: resolved };
+        resolvedTotals[itemName].amount += amountPerMin;
+      };
+
+      if (!recipe || !recipe.machines || Object.keys(recipe.machines).length === 0 || getOutputAmount(recipe) === 0) {
+        addItem(fluidProducerMap[resolved.toLowerCase().replace(/\s+/g, '_')] || null);
+        return;
+      }
+      if (!recipe.ingredients || recipe.ingredients.length === 0) {
+        const preferred = minerSettings[resolved];
+        const machineNames = Object.keys(recipe.machines);
+        addItem((preferred && machineNames.includes(preferred)) ? preferred : (firstMachineFor(recipe) || machineNames[0]));
+        return;
+      }
+      // Crafted item: add it, then recurse into ingredients
+      const machine = preferredMachineFor(recipe);
+      const machData = recipe.machines[machine];
+      const ct  = machData.cycleTime;
+      const opm = (60 / ct) * getOutputAmount(recipe);
+      addItem(machine);
+      const nextPath = new Set(visitedPath);
+      nextPath.add(resolved);
+      recipe.ingredients.forEach(ing => {
+        resolveAllLevels(ing.item, (amountPerMin / opm) * ing.amount * (60 / ct), nextPath);
+      });
+    }
+    // Start from direct ingredients AND include the produced items themselves
+    lines.forEach(line => {
+      const recipe = RECIPES[line.recipeName || line.name];
+      if (!recipe || !recipe.machines[line.machineName]) return;
+      const key = line.displayName || line.itemName;
+      if (!resolvedTotals[key]) resolvedTotals[key] = { amount: 0, machine: line.machineName, recipeName: line.recipeName || line.name };
+      resolvedTotals[key].amount += line.actualOpm;
     });
+    Object.entries(totals).forEach(([name, val]) => resolveAllLevels(name, val, new Set()));
   } else {
     // Modes 1 + 2: recursive resolution
     function resolveIngredient(itemName, amountPerMin, visitedPath) {
@@ -404,36 +494,54 @@ function calculateRecipes() {
 
       const recipe = RECIPES[resolved];
 
-      // No recipe or no output → raw material
+      // Helper: add item to resolvedTotals using canonical itemName as display key
+      const addToTotals = (machine) => {
+        if (!resolvedTotals[itemName]) resolvedTotals[itemName] = { amount: 0, machine, recipeName: resolved };
+        resolvedTotals[itemName].amount += amountPerMin;
+      };
+
+      // No recipe or no output → raw material (or fluid from modular building)
       if (!recipe || !recipe.machines || Object.keys(recipe.machines).length === 0 ||
           getOutputAmount(recipe) === 0) {
-        if (!resolvedTotals[resolved]) resolvedTotals[resolved] = { amount: 0, machine: null };
-        resolvedTotals[resolved].amount += amountPerMin;
+        // Mode 1: skip raw materials — only crafted intermediates are shown
+        if (calcDepthMode === 1) return;
+        const fluidKey = resolved.toLowerCase().replace(/\s+/g, '_');
+        addToTotals(fluidProducerMap[fluidKey] || null);
         return;
       }
 
       // Minable ore (has machines but no ingredients)
       if (!recipe.ingredients || recipe.ingredients.length === 0) {
+        // Mode 1: skip raw/mined items
+        if (calcDepthMode === 1) return;
         const machineNames = Object.keys(recipe.machines);
         const preferred    = minerSettings[resolved];
-        const machine = (preferred && machineNames.includes(preferred)) ? preferred : machineNames[0];
-        if (!resolvedTotals[resolved]) resolvedTotals[resolved] = { amount: 0, machine };
-        resolvedTotals[resolved].amount += amountPerMin;
+        const machine = (preferred && machineNames.includes(preferred)) ? preferred : (firstMachineFor(recipe) || machineNames[0]);
+        addToTotals(machine);
+        // Track miner machine count
+        const md = recipe.machines[machine];
+        if (md) {
+          const opm = (60 / md.cycleTime) * getOutputAmount(recipe);
+          resolvedMachines[machine] = (resolvedMachines[machine] || 0) + Math.ceil(amountPerMin / opm);
+        }
         return;
       }
 
       // Mode 1 stop: intermediate item → treat as a leaf
       if (calcDepthMode === 1 && INTERMEDIATE_ITEMS.has(resolved)) {
-        if (!resolvedTotals[resolved]) resolvedTotals[resolved] = { amount: 0, machine: null };
-        resolvedTotals[resolved].amount += amountPerMin;
+        addToTotals(preferredMachineFor(recipe));
         return;
       }
 
-      // Recurse into sub-ingredients
-      const [, machData] = Object.entries(recipe.machines)[0];
+      // Recurse into sub-ingredients, tracking the machine used at this level
+      const machineName = preferredMachineFor(recipe);
+      const machData    = recipe.machines[machineName];
       const ct  = machData.cycleTime;
       const opm = (60 / ct) * getOutputAmount(recipe);
       const runsPerMin = amountPerMin / opm;
+
+      // Track this machine
+      resolvedMachines[machineName] = (resolvedMachines[machineName] || 0) + Math.ceil(amountPerMin / opm);
 
       const nextPath = new Set(visitedPath);
       nextPath.add(resolved);
@@ -449,36 +557,163 @@ function calculateRecipes() {
     });
   }
 
-  // ── Resolved material table rows ─────────────────────────
-  const depthTitles = ['Direct Materials', 'Intermediate Materials', 'Raw Materials'];
-  const resolvedCount = Object.keys(resolvedTotals).length;
-  const resolvedRows = Object.entries(resolvedTotals)
-    .sort((a, b) => b[1].amount - a[1].amount)
-    .map(([name, info]) => {
-      const val     = info.amount;
-      const machine = info.machine;
-      const cls = val > 100 ? "num-warn" : "num";
+  // ── Material table builder (shared by Direct + resolved sections) ───────────
+  function buildMaterialRows(totalsMap) {
+    let totMachPwr = 0, totLoaderPwr = 0;
+    let totLoader = 0, totSecond = 0, totThird = 0;
 
-      let machineTd = '<td class="label" style="color:var(--text-dim);padding:6px 12px">—</td><td class="num">—</td>';
-      if (machine) {
-        const rec = RECIPES[name];
-        const md  = rec && rec.machines[machine];
-        if (md) {
-          const opm   = (60 / md.cycleTime) * getOutputAmount(rec);
-          const count = Math.ceil(val / opm);
-          machineTd = `<td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span></div></td><td class="num">${count}</td>`;
+    const rows = Object.entries(totalsMap)
+      .sort((a, b) => b[1].amount - a[1].amount)
+      .map(([name, info]) => {
+        const val     = info.amount;
+        const machine = info.machine;
+        const cls = val > 100 ? "num-warn" : "num";
+
+        let machineTd = '<td colspan="5"></td>';
+        if (machine) {
+          const rec = RECIPES[info.recipeName || name];
+          const md  = rec && rec.machines[machine];
+          if (md) {
+            const opm         = (60 / md.cycleTime) * getOutputAmount(rec);
+            const count       = Math.ceil(val / opm);
+            const machPwrKw   = count * getMachinePowerKw(machine);
+            const nSolid      = countSolidConnections(rec, name);
+            const loaders     = calcLoadersForMachine(machine, nSolid);
+            const loaderPwrKw = loaders.powerKw * count;
+            const loaderDesc  = [
+              loaders.loaderCount     ? `${loaders.loaderCount     * count}× Loader` : '',
+              loaders.secondLaneCount ? `${loaders.secondLaneCount * count}× 2nd`    : '',
+              loaders.thirdLaneCount  ? `${loaders.thirdLaneCount  * count}× 3rd`    : '',
+            ].filter(Boolean).join(' · ') || '—';
+
+            totMachPwr  += machPwrKw;
+            totLoaderPwr += loaderPwrKw;
+            totLoader   += loaders.loaderCount     * count;
+            totSecond   += loaders.secondLaneCount * count;
+            totThird    += loaders.thirdLaneCount  * count;
+
+            machineTd = `
+              <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span></div></td>
+              <td class="num">${count}</td>
+              <td class="num">${fmtPwr(machPwrKw)}</td>
+              <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${loaderDesc}</td>
+              <td class="num" style="color:#ff9500">${fmtPwr(machPwrKw + loaderPwrKw)}</td>`;
+          } else {
+            machineTd = `<td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span></div></td><td class="num">—</td><td class="num">—</td><td></td><td class="num">—</td>`;
+          }
         }
-      }
-      const hasMiner = !!machine;
-      return `
-    <tr>
-      <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${iconBox(name, 64)}<span class="label">${name}</span></div></td>
-      <td class="${cls}">${fmt(val)}</td>
-      <td class="num">${fmt(val / 60)}/s</td>
-      ${hasMiner ? machineTd : '<td colspan="2"></td>'}
-    </tr>`;
-    })
-    .join("");
+        return `
+      <tr>
+        <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${iconBox(name, 64)}<span class="label">${name}</span></div></td>
+        <td class="${cls}">${fmt(val)}</td>
+        <td class="num">${fmt(val / 60)}/s</td>
+        ${machineTd}
+      </tr>`;
+      }).join('');
+
+    const loaderDesc = [
+      totLoader ? `${totLoader}× Loader` : '',
+      totSecond ? `${totSecond}× 2nd`    : '',
+      totThird  ? `${totThird}× 3rd`     : '',
+    ].filter(Boolean).join(' · ') || '—';
+
+    const footer = `
+      <tr style="border-top:1px solid rgba(255,255,255,0.12);font-weight:600">
+        <td style="padding:6px 12px;color:var(--text-dim)" colspan="3">Total</td>
+        <td colspan="2"></td>
+        <td class="num">${fmtPwr(totMachPwr)}</td>
+        <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${loaderDesc}</td>
+        <td class="num" style="color:#ff9500">${fmtPwr(totMachPwr + totLoaderPwr)}</td>
+      </tr>`;
+
+    return { rows, footer, count: Object.keys(totalsMap).length };
+  }
+
+  const depthTitles = ['Direct Materials', 'Intermediate Materials', 'Raw Materials', 'Full Detail'];
+
+  // ── Conveyor throughput (for Full Detail mode) ───────────────
+  const conveyorFamily  = MACHINE_FAMILIES.find(f => f.label === 'Conveyor Belt');
+  const conveyorType    = conveyorFamily?.defaultChoice || conveyorFamily?.machines[0] || 'Conveyor I';
+  const conveyorThroughput = RECIPES[conveyorType]?.items_per_min || 160;
+
+  // ── Full Detail: compact Factorio-calc-style rows ─────────────
+  function buildFullDetailRows(totalsMap) {
+    let totMachPwr = 0, totLoaderPwr = 0;
+
+    const rows = Object.entries(totalsMap)
+      .sort((a, b) => b[1].amount - a[1].amount)
+      .map(([name, info]) => {
+        const val     = info.amount;
+        const machine = info.machine;
+        const isFluid = FLUID_ITEMS.has(name);
+
+        let machineCell = '<span style="color:var(--text-dim);font-size:12px">—</span>';
+        let conveyorCell = '';
+        let loaderCell  = '';
+        let pwrCell     = '<span style="color:var(--text-dim)">—</span>';
+
+        if (machine) {
+          const rec = RECIPES[info.recipeName || name];
+          const md  = rec && rec.machines[machine];
+          if (md) {
+            const opm         = (60 / md.cycleTime) * getOutputAmount(rec);
+            const count       = Math.ceil(val / opm);
+            const machPwrKw   = count * getMachinePowerKw(machine);
+            const nSolid      = countSolidConnections(rec, name);
+            const loaders     = calcLoadersForMachine(machine, nSolid);
+            const loaderPwrKw = loaders.powerKw * count;
+
+            totMachPwr   += machPwrKw;
+            totLoaderPwr += loaderPwrKw;
+
+            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-size:13px;font-family:'Share Tech Mono',monospace;color:var(--accent3)">×${count}</span></div>`;
+
+            if (!isFluid) {
+              const lanes = Math.ceil(val / conveyorThroughput);
+              conveyorCell = `<div style="display:flex;align-items:center;gap:4px">${iconBox(conveyorType, 48)}<span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${lanes}</span></div>`;
+            }
+
+            const totalLoaders = loaders.loaderCount * count;
+            const totalSecond  = loaders.secondLaneCount * count;
+            const totalThird   = loaders.thirdLaneCount  * count;
+            if (totalLoaders || totalSecond || totalThird) {
+              const parts = [
+                totalLoaders ? `${totalLoaders}×L1` : '',
+                totalSecond  ? `${totalSecond}×L2`  : '',
+                totalThird   ? `${totalThird}×L3`   : '',
+              ].filter(Boolean).join(' ');
+              loaderCell = `<span style="font-size:11px;color:var(--text-dim)">${parts}</span>`;
+            }
+
+            pwrCell = `<span style="font-size:12px;color:#ff9500">${fmtPwr(machPwrKw + loaderPwrKw)}</span>`;
+          }
+        }
+
+        const cls = val > 100 ? 'num-warn' : 'num';
+        return `
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <td style="padding:5px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(name, 48)}<span class="label" style="font-size:13px">${name}</span></div></td>
+        <td class="${cls}" style="font-size:13px">${fmt(val)}/min</td>
+        <td style="padding:5px 12px">${machineCell}</td>
+        <td style="padding:5px 12px">${conveyorCell}</td>
+        <td style="padding:5px 12px">${loaderCell}</td>
+        <td style="padding:5px 12px;text-align:right">${pwrCell}</td>
+      </tr>`;
+      }).join('');
+
+    const footer = `
+      <tr style="border-top:1px solid rgba(255,255,255,0.12);font-weight:600">
+        <td colspan="2" style="padding:6px 12px;color:var(--text-dim)">Total</td>
+        <td colspan="3"></td>
+        <td style="padding:6px 12px;text-align:right;color:#ff9500">${fmtPwr(totMachPwr + totLoaderPwr)}</td>
+      </tr>`;
+
+    return { rows, footer, count: Object.keys(totalsMap).length };
+  }
+
+  const direct   = buildMaterialRows(directTotals);
+  const resolved = buildMaterialRows(resolvedTotals);
+  const fullDetail = calcDepthMode === 3 ? buildFullDetailRows(resolvedTotals) : null;
 
   // ── Infrastructure table rows ─────────────────────────────
   const infraRows = Object.values(infraByMachine)
@@ -516,6 +751,10 @@ function calculateRecipes() {
   const machineTotals = {};
   lines.forEach((r) => {
     machineTotals[r.machineName] = (machineTotals[r.machineName] || 0) + r.machines;
+  });
+  // Add machines from ingredient resolution chain
+  Object.entries(resolvedMachines).forEach(([name, count]) => {
+    machineTotals[name] = (machineTotals[name] || 0) + count;
   });
   const machineRows = Object.entries(machineTotals)
     .sort((a, b) => b[1] - a[1])
@@ -594,37 +833,55 @@ function calculateRecipes() {
       <span><strong>Circular dependency detected:</strong> ${[...cycleWarnings].join(', ')} — these ingredient(s) appear in their own ingredient tree. Affected branches were not fully resolved.</span>
     </div>` : ''}
 
+    ${calcDepthMode === 1 ? `
+    <div class="collapsible-section">
+      <div class="collapsible-header" onclick="toggleSection(this)">
+        <span class="ch-title">Direct Materials</span>
+        <span style="display:flex;align-items:center;gap:12px">
+          <span class="ch-meta">${direct.count} item types · ${depthDesc[0]}</span>
+          <span class="ch-arrow">▼</span>
+        </span>
+      </div>
+      <div class="collapsible-body">
+        <table class="results-table">
+          <thead><tr><th>Material</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Second</th><th>Producer</th><th style="text-align:right">Count</th><th style="text-align:right">Machine Power</th><th>Loaders</th><th style="text-align:right">Combined</th></tr></thead>
+          <tbody>${direct.rows}${direct.footer}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    ${calcDepthMode === 3 ? `
+    <div class="collapsible-section">
+      <div class="collapsible-header" onclick="toggleSection(this)">
+        <span class="ch-title">Full Detail</span>
+        <span style="display:flex;align-items:center;gap:12px">
+          <span class="ch-meta">${fullDetail.count} items · ${conveyorType}</span>
+          <span class="ch-arrow">▼</span>
+        </span>
+      </div>
+      <div class="collapsible-body">
+        <table class="results-table">
+          <thead><tr><th>Item</th><th style="text-align:right">/ Minute</th><th>Producer</th><th>Conveyor</th><th>Loader</th><th style="text-align:right">Power</th></tr></thead>
+          <tbody>${fullDetail.rows}${fullDetail.footer}</tbody>
+        </table>
+      </div>
+    </div>` : `
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleSection(this)">
         <span class="ch-title">${depthTitles[calcDepthMode]}</span>
         <span style="display:flex;align-items:center;gap:12px">
-          <span class="ch-meta">${resolvedCount} item types · ${depthDesc[calcDepthMode]}</span>
+          <span class="ch-meta">${resolved.count} item types · ${depthDesc[calcDepthMode]}</span>
           <span class="ch-arrow">▼</span>
         </span>
       </div>
       <div class="collapsible-body">
         <table class="results-table">
-          <thead><tr><th>Material</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Second</th><th colspan="2"></th></tr></thead>
-          <tbody>${resolvedRows}</tbody>
+          <thead><tr><th>Material</th><th style="text-align:right">/ Minute</th><th style="text-align:right">/ Second</th><th>Producer</th><th style="text-align:right">Count</th><th style="text-align:right">Machine Power</th><th>Loaders</th><th style="text-align:right">Combined</th></tr></thead>
+          <tbody>${resolved.rows}${resolved.footer}</tbody>
         </table>
       </div>
-    </div>
+    </div>`}
 
-    <div class="collapsible-section">
-      <div class="collapsible-header" onclick="toggleSection(this)">
-        <span class="ch-title">Total Machines Required</span>
-        <span style="display:flex;align-items:center;gap:12px">
-          <span class="ch-meta">${uniqueMachines} Machine types · ${fmt(totalMachines)} total</span>
-          <span class="ch-arrow">▼</span>
-        </span>
-      </div>
-      <div class="collapsible-body">
-        <table class="results-table">
-          <thead><tr><th>Machine</th><th style="text-align:right">Count</th></tr></thead>
-          <tbody>${machineRows}</tbody>
-        </table>
-      </div>
-    </div>
   `;
 
   // Sankey and box diagrams subscribe to recipe data changes via

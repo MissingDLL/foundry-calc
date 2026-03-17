@@ -572,7 +572,7 @@ function loadSettings() {
       globalMiningProductivity = Math.max(0, Math.min(100, s.globalMiningProductivity));
     if (typeof s.globalFluidProductivity === 'number')
       globalFluidProductivity  = Math.max(0, Math.min(100, s.globalFluidProductivity));
-    if (typeof s.calcDepthMode === 'number' && [0, 1, 2].includes(s.calcDepthMode))
+    if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))
       calcDepthMode = s.calcDepthMode;
 
     // Only keep bot efficiency overrides that are finite numbers in [0, 200]
