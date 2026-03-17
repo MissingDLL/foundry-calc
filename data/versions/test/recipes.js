@@ -50,10 +50,11 @@ const RECIPES = {
       [M.CRUSHER_II]: { cycleTime: 1.5 },
     },
   },
-  "Firmarlite Sheet": {
+  // TEST: "Firmarlite Sheet" wurde in "Firmarlite Sheet Mk2" umbenannt (simuliert breaking change)
+  "Firmarlite Sheet Mk2": {
     category: CAT.METALLURGY,
-    ingredients: [{ item: I.FIRMARLITE_BAR, amount: 4 }],
-    output: { amount: 1 },
+    ingredients: [{ item: I.FIRMARLITE_BAR, amount: 6 }],
+    output: { amount: 2 },
     machines: {
       [M.LAVA_SMELTER_I]: { cycleTime: 6 },
       [M.LAVA_SMELTER_II]: { cycleTime: 3 },

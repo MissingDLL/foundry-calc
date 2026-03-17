@@ -144,6 +144,13 @@
           </svg>
           Bots
         </button>
+        <button id="togglePowerBtn" onclick="switchSidebarView('power')"
+          style="flex:1;padding:9px 4px;background:transparent;border:none;border-left:1px solid rgba(140,50,220,0.20);color:rgba(255,255,255,0.45);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Power
+        </button>
       </div>
 
       <!-- Bot Sidebar -->
@@ -178,6 +185,40 @@
           </div>
           <div class="bot-list" id="botList"></div>
         </div>
+      </div>
+
+      <!-- Power Sidebar -->
+      <div id="sidebar-power" style="display:none;flex-direction:column;gap:16px;overflow-y:auto;flex:1;min-height:0;padding:4px 0">
+
+        <!-- Target Power -->
+        <div>
+          <div class="section-title">Target Power</div>
+          <div class="panel" style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;gap:6px;align-items:stretch;">
+              <input id="powerTargetValue" type="number" min="0" step="any" placeholder="0"
+                oninput="onPowerTargetChange()" style="
+                flex:1; padding:6px 10px;
+                background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+                border-radius:8px; color:var(--text); font-size:16px; font-weight:700;
+                outline:none; font-variant-numeric:tabular-nums;
+                font-family:-apple-system,sans-serif; min-width:0;">
+              <select id="powerTargetUnit" onchange="onPowerTargetChange()" style="
+                width:64px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+                border-radius:8px; color:rgba(255,255,255,0.6); font-size:12px; cursor:pointer; outline:none;
+                font-family:-apple-system,sans-serif; flex-shrink:0; text-align:center;">
+                <option value="kw">kW</option>
+                <option value="mw">MW</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Power Source -->
+        <div>
+          <div class="section-title">Add Power Source</div>
+          <div id="powerAddButtons" style="display:flex;flex-direction:column;gap:6px;"></div>
+        </div>
+
       </div>
 
       <!-- Recipe Sidebar -->
@@ -419,6 +460,14 @@
 
       </div><!-- end tab-visualize -->
 
+      <!-- Power Planner Tab -->
+      <div id="tab-power" style="flex:1; overflow-y:auto; display:none;">
+        <div style="padding:24px; max-width:800px; margin:0 auto;">
+          <div id="powerRowsContainer" style="display:flex; flex-direction:column; gap:10px; margin-bottom:12px;"></div>
+          <div id="powerSummary"></div>
+        </div>
+      </div><!-- end tab-power -->
+
     </main>
 
     <!-- Recipe Settings Modal -->
@@ -621,6 +670,7 @@
   <script src="app/calculation.js?v=16"></script>
   <script src="app/ui-nav.js?v=16"></script>
   <script src="app/visualization.js?v=16"></script>
+  <script src="app/ui-power.js?v=1"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();
@@ -630,6 +680,23 @@
     renderSelectedRecipes();
     // Auto-calculate on load if there are recipes (from localStorage or URL)
     if (selectedRecipeList.length > 0) calculateRecipes();
+    // Render power planner add-buttons from POWER_GENERATORS data
+    (function() {
+      const btn = document.getElementById('powerAddButtons');
+      if (!btn) return;
+      btn.innerHTML = POWER_GENERATORS.map(gen => `
+        <button onclick="addPowerRow('${gen.id}')" style="
+          padding:8px 12px; background:rgba(168,85,247,0.10); border:1px solid rgba(168,85,247,0.22);
+          color:rgba(255,255,255,0.75); border-radius:8px; font-size:12px; cursor:pointer;
+          transition:all 0.15s; display:flex; align-items:center; gap:7px; width:100%;
+          font-family:-apple-system,sans-serif; text-align:left;"
+          onmouseover="this.style.background='rgba(168,85,247,0.22)'"
+          onmouseout="this.style.background='rgba(168,85,247,0.10)'">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          ${gen.name}
+        </button>`).join('');
+      initPowerPlanner();
+    })();
   </script>
 </body>
 

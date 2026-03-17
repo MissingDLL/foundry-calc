@@ -259,6 +259,7 @@ describe('saveSettings() / loadSettings() round-trip', () => {
   it('falls back to first machine when saved machine is invalid', () => {
     // "Firmarlite Sheet" has two machines: Lava Smelter I and Lava Smelter II
     localStorage.setItem('fc_settings', JSON.stringify({
+      gameVersion: GAME_VERSION_ID,
       selectedRecipeList: [{
         itemName:    'Firmarlite Sheet',
         recipeName:  'Firmarlite Sheet',
@@ -274,6 +275,7 @@ describe('saveSettings() / loadSettings() round-trip', () => {
 
   it('clamps goal values to the valid range on load', () => {
     localStorage.setItem('fc_settings', JSON.stringify({
+      gameVersion: GAME_VERSION_ID,
       selectedRecipeList: [{
         itemName:    'Firmarlite Sheet',
         recipeName:  'Firmarlite Sheet',
@@ -287,13 +289,17 @@ describe('saveSettings() / loadSettings() round-trip', () => {
 
   it('silently ignores corrupt JSON in localStorage', () => {
     localStorage.setItem('fc_settings', '{NOT VALID JSON!!!');
-    // should not throw
+    // loadSettings() should catch the parse error and warn — suppress the expected warn
+    const origWarn = console.warn;
+    console.warn = () => {};
     loadSettings();
+    console.warn = origWarn;
     expect(globalMiningProductivity).toBe(0);
   });
 
   it('skips recipes that no longer exist in RECIPES', () => {
     localStorage.setItem('fc_settings', JSON.stringify({
+      gameVersion: GAME_VERSION_ID,
       selectedRecipeList: [
         { itemName: 'Ghost Item', recipeName: 'RECIPE_THAT_DOES_NOT_EXIST', goal: 60 },
         { itemName: 'Firmarlite Sheet', recipeName: 'Firmarlite Sheet',
@@ -386,6 +392,31 @@ describe('_applyImportedPlan()', () => {
     });
     expect(selectedRecipeList.length).toBe(1);
     expect(selectedRecipeList[0].recipeName).toBe('Firmarlite Sheet');
+  });
+});
+
+
+// ════════════════════════════════════════════════════════════
+// 6. Recipe data integrity
+//    Checks concrete values in RECIPES so that breaking changes
+//    in game data are immediately visible in the test runner.
+// ════════════════════════════════════════════════════════════
+describe('Recipe data integrity', () => {
+  it('Firmarlite Sheet exists in RECIPES', () => {
+    expect(!!RECIPES['Firmarlite Sheet']).toBeTruthy();
+  });
+
+  it('Firmarlite Sheet requires 4 Firmarlite Bars', () => {
+    const ing = (RECIPES['Firmarlite Sheet'].ingredients || []).find(i => i.item === I.FIRMARLITE_BAR);
+    expect(ing && ing.amount).toBe(4);
+  });
+
+  it('Firmarlite Sheet output amount is 1', () => {
+    expect(RECIPES['Firmarlite Sheet'].output.amount).toBe(1);
+  });
+
+  it('Firmarlite Sheet has Lava-Smelter I as a machine', () => {
+    expect(!!RECIPES['Firmarlite Sheet'].machines[M.LAVA_SMELTER_I]).toBeTruthy();
   });
 });
 

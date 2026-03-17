@@ -9,7 +9,7 @@
            background: #0d0d0d; color: #f0f0f0; margin: 0; padding: 24px;
            font-size: 14px; line-height: 1.5; }
     h1   { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 4px; }
-    .sub { color: #666; font-size: 12px; margin-bottom: 24px; }
+    .sub { color: #666; font-size: 12px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 
     #stats { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
     .stat  { padding: 10px 18px; border-radius: 8px; font-weight: 700;
@@ -42,11 +42,23 @@
                     margin-top: 3px; white-space: pre-wrap; word-break: break-all; }
 
     #loading { color: #888; font-size: 13px; padding: 20px 0; }
+
+    #versionSelect {
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15);
+      color: #f0f0f0; border-radius: 6px; padding: 3px 8px; font-size: 12px;
+      cursor: pointer; outline: none;
+    }
+    #versionSelect:hover { border-color: rgba(255,255,255,.3); }
   </style>
 </head>
 <body>
   <h1>Foundry Calc — Unit Tests</h1>
-  <p class="sub">Open this file in a browser. No build step required.</p>
+  <p class="sub">
+    <span>Open this file in a browser. No build step required.</span>
+    <span style="color:rgba(255,255,255,.25)">|</span>
+    <label for="versionSelect" style="color:#888">Version:</label>
+    <select id="versionSelect"></select>
+  </p>
 
   <div id="stats"><div id="loading">Running tests…</div></div>
   <div id="results"></div>
@@ -62,9 +74,38 @@
   <div id="recipeSettingsOverlay" style="display:none"></div>
   <div id="recipeSettingsModal"   style="display:none"></div>
 
-  <!-- Game data -->
-  <script src="../data/game-data.js"></script>
-  <script src="../data/recipes.js"></script>
+  <!-- Version registry (defines GAME_VERSIONS + GAME_VERSION_DEFAULT) -->
+  <script src="../data/version-registry.js"></script>
+
+  <!-- Populate the version selector and wire up reload-on-change -->
+  <script>
+    (function () {
+      var sel = localStorage.getItem('fc_game_version') || GAME_VERSION_DEFAULT;
+      if (!GAME_VERSIONS.some(function (v) { return v.id === sel; }))
+        sel = GAME_VERSION_DEFAULT;
+
+      var select = document.getElementById('versionSelect');
+      GAME_VERSIONS.forEach(function (v) {
+        var opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = v.label;
+        if (v.id === sel) opt.selected = true;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener('change', function () {
+        localStorage.setItem('fc_game_version', this.value);
+        location.reload();
+      });
+
+      // Inject the versioned data scripts synchronously so that state.js sees them.
+      // Use Date.now() as cache-buster so the test runner always fetches fresh files.
+      var cb = '?t=' + Date.now();
+      document.write('<scr' + 'ipt src="../data/versions/' + sel + '/game-data.js' + cb + '"></scr' + 'ipt>');
+      document.write('<scr' + 'ipt src="../data/versions/' + sel + '/recipes.js'   + cb + '"></scr' + 'ipt>');
+    })();
+  </script>
+
   <!-- Stub the icon helper so icons.js (25 MB) is not needed -->
   <script>function getIcon() { return ''; }</script>
 

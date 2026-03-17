@@ -57,27 +57,37 @@ function toggleSidebar() {
 // "Recipes" browser (#sidebar-recipes), and updates button highlight styles.
 // Also activates the corresponding main tab via showTab().
 function switchSidebarView(mode) {
-  const isBots = mode === 'bots';
+  const isBots    = mode === 'bots';
   const isRecipes = mode === 'recipes';
+  const isPower   = mode === 'power';
 
-  document.getElementById('sidebar-bots').style.display = isBots ? 'flex' : 'none';
-  document.getElementById('sidebar-recipes').style.display = isRecipes ? 'flex' : 'none';
+  document.getElementById('sidebar-bots').style.display    = isBots    ? 'flex'  : 'none';
+  document.getElementById('sidebar-recipes').style.display = isRecipes ? 'flex'  : 'none';
+  document.getElementById('sidebar-power').style.display   = isPower   ? 'flex'  : 'none';
 
-  const activeStyle = { bg: 'rgba(10,132,255,0.18)', color: '#0a84ff' };
+  const activeStyle   = { bg: 'rgba(10,132,255,0.18)', color: '#0a84ff' };
   const inactiveStyle = { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.40)' };
 
   [
-    { id: 'toggleBotBtn', active: isBots },
+    { id: 'toggleBotBtn',    active: isBots    },
     { id: 'toggleRecipeBtn', active: isRecipes },
+    { id: 'togglePowerBtn',  active: isPower   },
   ].forEach(function (item) {
     const el = document.getElementById(item.id);
+    if (!el) return;
     el.style.background = item.active ? activeStyle.bg : inactiveStyle.bg;
-    el.style.color = item.active ? activeStyle.color : inactiveStyle.color;
+    el.style.color      = item.active ? activeStyle.color : inactiveStyle.color;
   });
 
-  const tabName = isBots ? 'overview' : 'recipes';
-  const tabEl = document.querySelector('.tab[onclick*="\'' + tabName + '\'"]');
-  if (tabEl) showTab(tabName, tabEl);
+  if (isPower) {
+    switchMainTab('power');
+  } else {
+    const tabName = isBots ? 'overview' : 'recipes';
+    const tabEl = document.querySelector('.tab[onclick*="\'' + tabName + '\'"]');
+    if (tabEl) showTab(tabName, tabEl);
+    // Switch main back to recipes view if coming from power
+    switchMainTab('recipes');
+  }
 }
 // ── Number formatter ──────────────────────────────────────────
 // Formats a number for display using German locale (period as
@@ -159,14 +169,17 @@ function switchVizMode(mode) {
 function switchMainTab(tab) {
   const isRecipes   = tab === 'recipes';
   const isVisualize = tab === 'visualize';
+  const isPower     = tab === 'power';
 
   const recipesEl   = document.getElementById('tab-recipes');
   const vizEl       = document.getElementById('tab-visualize');
+  const powerEl     = document.getElementById('tab-power');
 
   recipesEl.style.display = isRecipes   ? 'block' : 'none';
   vizEl.style.display     = isVisualize ? 'flex'  : 'none';
+  powerEl.style.display   = isPower     ? 'block' : 'none';
 
-  const incoming = isRecipes ? recipesEl : vizEl;
+  const incoming = isRecipes ? recipesEl : isPower ? powerEl : vizEl;
   incoming.style.animation = 'none';
   incoming.offsetHeight;
   incoming.style.animation = 'tabContentIn 0.32s cubic-bezier(0.22,1,0.36,1) both';
@@ -180,7 +193,6 @@ function switchMainTab(tab) {
 
   if (isVisualize) {
     requestAnimationFrame(() => requestAnimationFrame(() => {
-      // Initialise viz blob position now that the pill is visible
       _initVizBlob();
       if (_currentVizMode === 'sankey') renderSankey();
       else renderBoxes();
