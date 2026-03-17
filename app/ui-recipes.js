@@ -46,6 +46,10 @@ function renderRecipeBrowser() {
   if (!grid) return;
 
   // Build deduplicated canonical item list
+  // Fuel variants (BURNABLE_GROUPS) are excluded from the browser —
+  // they are only relevant as power-plant inputs, not as production targets.
+  const burnableVariants = new Set(BURNABLE_GROUPS.flatMap(g => g.variants));
+
   const shown = new Set();
   const items = [];
   VARIANT_GROUPS.forEach((g) => {
@@ -63,6 +67,7 @@ function renderRecipeBrowser() {
   Object.keys(RECIPES).forEach((name) => {
     if (shown.has(name)) return; // skip if already shown as canonical
     if (VARIANT_GROUPS.some((g) => g.variants.includes(name))) return; // skip variant entries
+    if (burnableVariants.has(name)) return; // skip fuel recipes
     const r = RECIPES[name];
     const catMatch =
       activeBrowserCat === "Alle" || r.category === activeBrowserCat;

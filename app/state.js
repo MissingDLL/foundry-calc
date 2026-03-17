@@ -347,6 +347,12 @@ const botEfficiencyOverrides = {}; // { botName → efficiencyValue (%) }
 let globalMiningProductivity = 0;  // global % bonus applied to all Crusher recipes
 let globalFluidProductivity  = 0;  // global % bonus applied to all Fluid/Chemical recipes
 
+// ── Calculation depth mode ────────────────────────────────────
+// 0 = Direct   – show only the immediate ingredients of selected recipes
+// 1 = Intermediate – resolve until hitting INTERMEDIATE_ITEMS, stop there
+// 2 = Full     – resolve all the way down to raw/minable materials
+let calcDepthMode = 1;
+
 // ── Workstation configuration ────────────────────────────────
 // workstationConfigs holds one entry per machine category:
 //   { [category]: { tier, robots: [botName, ...], chargedCore: bool } }
@@ -535,6 +541,7 @@ function _flushSaveSettings() {
       botEfficiencyOverrides,
       globalMiningProductivity,
       globalFluidProductivity,
+      calcDepthMode,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
       // Save recipe list without UI-only state (wsExpanded)
@@ -565,6 +572,8 @@ function loadSettings() {
       globalMiningProductivity = Math.max(0, Math.min(100, s.globalMiningProductivity));
     if (typeof s.globalFluidProductivity === 'number')
       globalFluidProductivity  = Math.max(0, Math.min(100, s.globalFluidProductivity));
+    if (typeof s.calcDepthMode === 'number' && [0, 1, 2].includes(s.calcDepthMode))
+      calcDepthMode = s.calcDepthMode;
 
     // Only keep bot efficiency overrides that are finite numbers in [0, 200]
     if (s.botEfficiencyOverrides) {

@@ -380,6 +380,39 @@ const RECIPE_SUBGROUPS = {
   ],
 };
 
+// ── Fluid / gas items (transported via pipes, not loaders) ───
+// Any ingredient or output listed here requires pipes instead of
+// conveyor belts and is therefore excluded from the loader count.
+const FLUID_ITEMS = new Set([
+  "Water", "Steam", "Hot Air", "Air",
+  "Steam (Portable Fuel)", "Steam (Jetpack Fuel)",
+  "Steam (Coked Ignium)", "Steam (Ignium Fuel Rod)",
+  "Liquid Telluxite", "Liquid Polymer", "Liquid Fuel",
+  "Olumic Acid", "Olumite Gas", "Waste Gas",
+  "Ignium-Enriched Water", "Fracking Liquid",
+  "Molten Xenoferrite", "Molten Technum", "Molten Superalloy",
+  "Crude Olumite", "Impure High Density Olumite",
+  "High Density Olumite",
+]);
+
+// ── Intermediate items (depth-mode 1 stop boundary) ──────────
+// When the calculation depth is set to "Intermediate", ingredient
+// resolution stops here — these items are shown as-is rather than
+// being expanded further into their own sub-ingredients.
+const INTERMEDIATE_ITEMS = new Set([
+  // Xenoferrite Plates (all tier variants)
+  "Xenoferrite Plates", "Xenoferrite Plates (Tier 1)",
+  "Xenoferrite Plates (Tier 2)", "Xenoferrite Plates (Tier 3)",
+  // Technum Rods (all tier variants)
+  "Technum Rods", "Technum Rods (Tier 1)",
+  "Technum Rods (Tier 2)", "Technum Rods (Tier 3)",
+  // Steel Beams (all tier variants)
+  "Steel Beams", "Steel Beams (Tier 1)", "Steel Beams (Tier 2)",
+  // Other intermediates
+  "Glass", "Concrete", "Firmarlite Bar",
+  "Telluxite Ingot", "Rubber", "Polymer Board",
+]);
+
 // ── Machine power consumption (kW) ───────────────────────────
 // Fallback power values for machines that have no recipe entry
 // (starter machines or machines defined outside recipes.js).
