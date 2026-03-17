@@ -1078,14 +1078,12 @@ const RECIPES = {
       [M.ASSEMBLER_II]: { cycleTime: 5.333 },
       [M.ASSEMBLER_III]: { cycleTime: 4 },
     },
+    power_consumption: 455,
+    power_consumption_unit: "kW",
     size: "7x8x15",
-
     type: "Power Consumer",
-
     grid: "High Voltage",
-
     connection_range_m: 15,
-
     max_connections: 4,
   },
   "Assembly Line Producer": {
@@ -1103,14 +1101,12 @@ const RECIPES = {
       [M.ASSEMBLER_II]: { cycleTime: 5.333 },
       [M.ASSEMBLER_III]: { cycleTime: 4 },
     },
+    power_consumption: 220,
+    power_consumption_unit: "kW",
     size: "7x8x15",
-
     type: "Power Consumer",
-
     grid: "High Voltage",
-
     connection_range_m: 15,
-
     max_connections: 4,
   },
   "Assembly Line Rail": {
@@ -1167,14 +1163,12 @@ const RECIPES = {
       [M.ASSEMBLER_II]: { cycleTime: 5.333 },
       [M.ASSEMBLER_III]: { cycleTime: 4 },
     },
+    power_consumption: 54,
+    power_consumption_unit: "kW",
     size: "5x8x7",
-
     type: "Power Consumer",
-
     grid: "High Voltage",
-
     connection_range_m: 15,
-
     max_connections: 4,
   },
   [M.BARREL_FILLER_I]: {
@@ -2341,6 +2335,7 @@ const RECIPES = {
       [M.ASSEMBLER_II]: { cycleTime: 2.666 },
       [M.ASSEMBLER_III]: { cycleTime: 2 },
     },
+    throughput_l_per_min: 36000,
     size: "1x1x1",
     modes: [
       "Straight",
@@ -3058,6 +3053,23 @@ const RECIPES = {
 
     max_connections: 4,
   },
+  "Advanced Smelter": {
+    category: CAT.STRUCTURES,
+    ingredients: [
+      { item: I.STEEL_BEAMS, amount: 15 },
+      { item: I.ADVANCED_MACHINERY_PARTS, amount: 5 },
+      { item: I.CIRCUIT_BOARDS, amount: 5 },
+    ],
+    output: { amount: 1 },
+    machines: {
+      [M.CHARACTER]: { cycleTime: 1.666 },
+      [M.ASSEMBLER_I]: { cycleTime: 10 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666 },
+      [M.ASSEMBLER_III]: { cycleTime: 5 },
+    },
+    power_consumption: 150,
+    power_consumption_unit: "kW",
+  },
   "Electric Arc Furnace": {
     category: CAT.STRUCTURES,
     ingredients: [
@@ -3086,6 +3098,23 @@ const RECIPES = {
     tags: ["Requires Foundation", "Data System Support"],
   },
 
+  "Assembler I": {
+    category: CAT.STRUCTURES,
+    ingredients: [
+      { item: I.XENOFERRITE_PLATES, amount: 10 },
+      { item: I.MACHINERY_PARTS, amount: 10 },
+      { item: I.ELECTRONIC_COMPONENTS, amount: 5 },
+    ],
+    output: { amount: 1 },
+    machines: {
+      [M.CHARACTER]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_I]: { cycleTime: 8 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_III]: { cycleTime: 4 },
+    },
+    power_consumption: 50,
+    power_consumption_unit: "kW",
+  },
   "Assembler II": {
     category: CAT.STRUCTURES,
     ingredients: [
@@ -3150,6 +3179,23 @@ const RECIPES = {
  tags: ["Requires Foundation", "Data System Support"],
   },
 
+  "Smelter (Small)": {
+    category: CAT.STRUCTURES,
+    ingredients: [
+      { item: I.XENOFERRITE_PLATES, amount: 10 },
+      { item: I.MACHINERY_PARTS, amount: 4 },
+      { item: I.ELECTRONIC_COMPONENTS, amount: 4 },
+    ],
+    output: { amount: 1 },
+    machines: {
+      [M.CHARACTER]: { cycleTime: 1.666 },
+      [M.ASSEMBLER_I]: { cycleTime: 10 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666 },
+      [M.ASSEMBLER_III]: { cycleTime: 5 },
+    },
+    power_consumption: 100,
+    power_consumption_unit: "kW",
+  },
   "Lava-Smelter I": {
     category: CAT.STRUCTURES,
     ingredients: [
@@ -3164,8 +3210,9 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 10 },
       [M.ASSEMBLER_II]: { cycleTime: 6.666 },
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-    }, size: "11x12x7",
- tags: ["Data System Support"],
+    },
+    size: "11x12x7",
+    tags: ["Data System Support"],
   },
 
   "Lava-Smelter II": {
@@ -3182,8 +3229,9 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 15 },
       [M.ASSEMBLER_II]: { cycleTime: 10 },
       [M.ASSEMBLER_III]: { cycleTime: 7.5 },
-    }, size: "11x12x7",
- tags: ["Data System Support"],
+    },
+    size: "11x12x7",
+    tags: ["Data System Support"],
   },
 
   "Crusher I": {
@@ -3382,12 +3430,13 @@ const RECIPES = {
 
     modular_building: true,
 
+    power_consumption: 8400,
+    power_consumption_unit: "kW",
     modular_building_details: {
         input: "none",
         output: "air",
         adjacency_bonus: false,
       },
-
     tags: ["Blast Resistant", "Requires Foundation"],
   },
   "Blast Furnace Base": {
@@ -3467,12 +3516,16 @@ const RECIPES = {
 
     modular_building: true,
 
+    power_consumption: 10000,
+    power_consumption_unit: "kW",
     modular_building_details: {
         input: "air",
         output: "hot_air",
         adjacency_bonus: true,
+        power_base_kw: 10000,
+        power_per_neighbor_reduction_kw: 2500,
+        max_neighbors: 2,
       },
-
     tags: ["Blast Resistant", "Requires Foundation"],
   },
   "Long Range Scanner Base": {

@@ -379,3 +379,109 @@ const RECIPE_SUBGROUPS = {
     ]},
   ],
 };
+
+// ── Machine power consumption (kW) ───────────────────────────
+// Fallback power values for machines that have no recipe entry
+// (starter machines or machines defined outside recipes.js).
+// For machines WITH a recipe, power_consumption in recipes.js
+// is authoritative — this table only fills the gaps.
+const MACHINE_POWER_KW = Object.freeze({
+  [M.ASSEMBLER_I]:    50,
+  [M.SMELTER_SMALL]:  100,
+  [M.ADVANCED_SMELTER]: 150,
+  // Lava Smelters run on lava heat — no electrical consumption
+  [M.LAVA_SMELTER_I]:  0,
+  [M.LAVA_SMELTER_II]: 0,
+  // Boiler runs on fuel — no electrical consumption
+  [M.BOILER]: 0,
+  // Blast Furnace runs on hot air — no electrical consumption
+  [M.BLAST_FURNACE]: 0,
+});
+
+// ── Machine connection layout ─────────────────────────────────
+// Defines the loader/belt connection slots available on each side
+// of every production machine.
+//
+// sides: [N, E, S, W] — max loader connections per side (solid items only).
+//   Fluid/gas connections are handled via pipes and are not counted here.
+//   Sides are ordered consistently (not necessarily compass directions,
+//   just an ordered 4-tuple of the machine's four faces).
+//
+// loader_needed: false — machine feeds/ejects items without loaders
+//   (e.g. miners that output directly onto a belt, shipping pads,
+//   assembly line segments, blast furnace).
+//
+// special: optional string — human-readable note for unusual behaviour.
+//
+// Machines not listed here are assumed to need no loader (e.g. Character).
+const MACHINE_CONNECTIONS = Object.freeze({
+  // ── Assemblers ────────────────────────────────────────────
+  [M.ASSEMBLER_I]:        { sides: [3, 3, 3, 3], loader_needed: true  },
+  [M.ASSEMBLER_II]:       { sides: [3, 3, 3, 3], loader_needed: true  },
+  [M.ASSEMBLER_III]:      { sides: [3, 3, 3, 3], loader_needed: true  },
+  [M.FLUID_ASSEMBLER_I]:  { sides: [3, 3, 3, 3], loader_needed: true  },
+  [M.BARREL_FILLER_I]:    { sides: [3, 3, 3, 3], loader_needed: true  },
+
+  // ── Crushers ──────────────────────────────────────────────
+  [M.CRUSHER_I]:          { sides: [2, 2, 2, 2], loader_needed: true  },
+  [M.CRUSHER_II]:         { sides: [2, 2, 2, 2], loader_needed: true  },
+
+  // ── Smelters ──────────────────────────────────────────────
+  [M.SMELTER_SMALL]:      { sides: [2, 2, 2, 2], loader_needed: true  },
+  [M.ADVANCED_SMELTER]:   { sides: [3, 3, 3, 3], loader_needed: true  },
+  [M.LAVA_SMELTER_I]:     { sides: [2, 4, 2, 0], loader_needed: true  },
+  [M.LAVA_SMELTER_II]:    { sides: [2, 4, 2, 0], loader_needed: true  },
+  [M.ELECTRIC_ARC_FURNACE]: { sides: [18, 9, 18, 9], loader_needed: true },
+
+  // ── Chemical / Fluid processing ───────────────────────────
+  [M.CHEMICAL_PROCESSOR]:   { sides: [5, 3, 5, 3], loader_needed: true  },
+  [M.DISTILLATION_COLUMN]:  { sides: [3, 3, 3, 3], loader_needed: true  },
+  [M.CASTING_MACHINE]:      { sides: [3, 6, 3, 6], loader_needed: true  },
+  [M.GREENHOUSE]:           { sides: [5, 3, 5, 3], loader_needed: true  },
+  [M.CRYSTAL_REFINER]:      { sides: [4, 4, 4, 4], loader_needed: true  },
+  [M.INCINERATOR]:          { sides: [4, 3, 4, 3], loader_needed: true  },
+
+  // ── Boiler ────────────────────────────────────────────────
+  [M.BOILER]:             { sides: [5, 2, 2, 0], loader_needed: true  },
+
+  // ── Research ──────────────────────────────────────────────
+  // (Research Server uses solid item inputs for science packs)
+  "Research Server":      { sides: [3, 3, 3, 3], loader_needed: true  },
+
+  // ── Miners / Extractors (no loader — output directly to belt) ─
+  [M.DRONE_MINER_I]:      { sides: [2, 2, 2, 2], loader_needed: false },
+  [M.DRONE_MINER_II]:     { sides: [2, 2, 2, 2], loader_needed: false },
+  [M.ORE_VEIN_MINER]:     { sides: [1, 0, 0, 0], loader_needed: false },
+  [M.PUMPJACK_I]:         { sides: [0, 0, 0, 0], loader_needed: false }, // fluid only
+  "Xeno-Scrap-Extraktor": { sides: [1, 0, 0, 0], loader_needed: false },
+  "Xeno-Crystal-Extraktor": { sides: [1, 0, 0, 0], loader_needed: false },
+  "Resource Separator":   { sides: [1, 0, 0, 0], loader_needed: false },
+  "Scrap Recycler":       { sides: [1, 0, 0, 0], loader_needed: false },
+
+  // ── Freight / Logistics ───────────────────────────────────
+  "Freight Elevator I":   { sides: [4, 3, 4, 3], loader_needed: true  },
+  "Freight Elevator II":  { sides: [4, 3, 4, 3], loader_needed: true  },
+  "Freight Elevator III": { sides: [4, 3, 4, 3], loader_needed: true  },
+  "Freight Elevator IV":  { sides: [4, 3, 4, 3], loader_needed: true  },
+
+  // Shipping pads: items are loaded/unloaded by the pad itself — no loaders
+  "Shipping Pad (Small)":                  { sides: [2, 2, 2, 2], loader_needed: false, special: "2 in + 2 out, same side" },
+  "Shipping Pad (Medium)":                 { sides: [4, 4, 4, 4], loader_needed: false, special: "4 in + 4 out, same side" },
+  "Shipping Pad (Medium, Assembly Line)":  { sides: [3, 0, 0, 0], loader_needed: false, special: "3 inputs only, same side" },
+
+  // Cargo shuttle pads
+  "Cargo Shuttle Start Pad":  { sides: [5, 5, 5, 5], loader_needed: true },
+  "Cargo Shuttle Target Pad": { sides: [5, 5, 5, 5], loader_needed: true },
+
+  // ── Generators ────────────────────────────────────────────
+  "Burner Generator":     { sides: [4, 4, 4, 4], loader_needed: true  },
+
+  // ── Blast Furnace system ──────────────────────────────────
+  // Inputs/outputs are hot air and ore — handled via modular building
+  // connections, not standard loaders.
+  [M.BLAST_FURNACE]:      { sides: [4, 4, 4, 4], loader_needed: false },
+
+  // ── Assembly Line segments ────────────────────────────────
+  [M.ASSEMBLY_LINE_START]:    { sides: [1, 0, 1, 0], loader_needed: false },
+  [M.ASSEMBLY_LINE_PRODUCER]: { sides: [1, 0, 1, 0], loader_needed: false },
+});
