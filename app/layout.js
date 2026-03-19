@@ -38,7 +38,7 @@ const LAYOUT_COLORS = {
   grid:  'rgba(100,140,255,0.07)',
   arrow: 'rgba(168,85,247,0.55)',
   arrowHead: '#a855f7',
-});
+};
 
 // ── Data builder ──────────────────────────────────────────────
 
