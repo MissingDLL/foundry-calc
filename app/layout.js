@@ -1,438 +1,445 @@
 // ============================================================
-// app/layout.js
+// app/layout.js  — Tile-accurate factory layout planner
 // ============================================================
-// Factory Layout Planner: generates a 2D top-down blueprint
-// view of all machines needed for the current production plan.
+// Generates a 2D top-down blueprint showing:
+//   • Machine footprints at correct tile sizes
+//   • Belt lanes in corridors between production stages
+//   • Loader tiles at machine connection points
+//   • Splitter / merger junctions where lanes branch
 //
-// Algorithm:
-//   1. Build a production graph (items + ingredient edges)
-//   2. Assign columns via longest-path BFS (raw left, final right)
-//   3. Each node = one machine group (item + machine type + count)
-//   4. Arrange multiple machines of same type in a tight sub-grid
-//   5. Pack sub-grids into columns; leave conveyor/pipe gaps
-//   6. Render to SVG with pan/zoom
+// Layout direction: LEFT (raw materials) → RIGHT (final product)
 //
-// Dependencies (loaded before this file):
-//   data/game-data.js  → RECIPES, MACHINE_CONNECTIONS
-//   app/state.js       → selectedRecipeList, resolveRecipeName,
-//                        preferredMachineFor, MINING_MACHINES
-//   app/calculation.js → getOutputAmount()
-//   app/ui-nav.js      → fmt()
+// Corridor structure between stage A and stage B:
+//   [stage A machines] [out-loaders | belt lanes | in-loaders] [stage B machines]
+//
+// Within each corridor, one vertical belt "trunk" per item type.
+// Horizontal spurs connect each machine's loader to the trunk.
+// A junction tile (T-shape) marks every spur–trunk intersection.
+//
+// Dependencies: same as visualization.js
 // ============================================================
 
-// ── Constants ─────────────────────────────────────────────────
-const LAYOUT = Object.freeze({
-  TILE_PX:       18,   // pixels per in-game tile at 1× zoom
-  COL_GAP_TILES:  6,   // horizontal gap between columns (conveyor space)
-  ROW_GAP_TILES:  3,   // vertical gap between machine groups in same column
-  MACH_GAP_TILES: 1,   // gap between individual machines within a group
-  MIN_LABEL_TILES: 3,  // minimum size for the label area inside a box
+// ── Tile type constants ───────────────────────────────────────
+const TT = Object.freeze({
+  EMPTY:      'empty',
+  MACHINE:    'machine',
+  LOADER_IN:  'loader_in',
+  LOADER_OUT: 'loader_out',
+  BELT_H:     'belt_h',
+  BELT_V:     'belt_v',
+  JUNCTION:   'junction',   // spur meets trunk (merge or split)
 });
 
-// Dark-theme palette matching the rest of the app
-const LAYOUT_COLORS = {
-  raw:   { fill: '#0e2010', stroke: '#2a6a2a', text: '#6adf6a', accent: '#3a9a3a' },
-  mid:   { fill: '#080f1e', stroke: '#1e3a70', text: '#6a9adf', accent: '#2a5aa0' },
-  final: { fill: '#1e0e04', stroke: '#7a3010', text: '#e08050', accent: '#a04020' },
-  bg:    '#04080f',
-  grid:  'rgba(100,140,255,0.07)',
-  arrow: 'rgba(168,85,247,0.55)',
-  arrowHead: '#a855f7',
+// ── Layout constants ──────────────────────────────────────────
+const LP = Object.freeze({
+  TILE:     16,   // px per tile
+  MACH_GAP:  2,   // tiles between machines in same group
+  BELT_TIER: 4,   // 1=Conveyor I … 4=Conveyor IV
+});
+
+const BELT_CAPACITY = { 1: 160, 2: 320, 3: 640, 4: 1280 };
+
+// ── Colour helpers ────────────────────────────────────────────
+const LC = {
+  bg:   '#030608',
+  grid: 'rgba(80,110,180,0.10)',
+  machine: {
+    raw:   { fill: '#081508', stroke: '#1a5a1a', text: '#50df50' },
+    mid:   { fill: '#03080f', stroke: '#152845', text: '#4a80d0' },
+    final: { fill: '#0f0600', stroke: '#5a1e04', text: '#d86030' },
+  },
+  loaderIn:  { fill: '#0a180a', stroke: '#28781e' },
+  loaderOut: { fill: '#0a0a1e', stroke: '#28287a' },
+  junction:  { fill: '#180e00', stroke: '#b06000' },
 };
 
-// ── Data builder ──────────────────────────────────────────────
-
-function buildLayoutData() {
-  if (!selectedRecipeList || !selectedRecipeList.length) return null;
-
-  const nodeMap  = {}; // label → node
-  const edgeMap  = {}; // "src|||tgt" → link
-  const links    = [];
-
-  function getNode(label, kind) {
-    if (!nodeMap[label]) {
-      nodeMap[label] = {
-        label, kind: kind || 'mid', rate: 0,
-        machineName: null, machineCount: 0,
-        sizeW: 3, sizeD: 3,
-      };
-    }
-    return nodeMap[label];
-  }
-
-  function addEdge(src, tgt, value) {
-    const key = src + '|||' + tgt;
-    if (edgeMap[key]) { edgeMap[key].value += value; return; }
-    const lnk = { source: src, target: tgt, value };
-    edgeMap[key] = lnk;
-    links.push(lnk);
-  }
-
-  function parseSize(sizeStr) {
-    if (!sizeStr) return { w: 3, d: 3 };
-    const parts = sizeStr.split('x').map(Number);
-    return { w: parts[0] || 3, d: (parts[2] || parts[0] || 3) };
-  }
-
-  function isRaw(resolved) {
-    const r = RECIPES[resolved];
-    return !r || !r.ingredients || r.ingredients.length === 0 ||
-           !r.machines || Object.keys(r.machines).length === 0 ||
-           getOutputAmount(r) === 0;
-  }
-
-  function expand(itemName, rateNeeded, visited) {
-    const resolved = resolveRecipeName(itemName);
-    if (visited.has(resolved) || visited.size > 60) return null;
-
-    const raw  = isRaw(resolved);
-    const node = getNode(resolved, raw ? 'raw' : 'mid');
-    node.rate += rateNeeded;
-
-    if (raw) {
-      const rr = RECIPES[resolved];
-      if (rr && rr.machines) {
-        const mEntries = Object.entries(rr.machines).filter(([n]) => n !== 'Character');
-        if (mEntries.length) {
-          const [mName] = mEntries[0];
-          node.machineName = mName;
-          const machRec = RECIPES[mName];
-          if (machRec?.size) { const s = parseSize(machRec.size); node.sizeW = s.w; node.sizeD = s.d; }
-          const md = rr.machines[mName];
-          if (md) node.machineCount += rateNeeded / ((60 / md.cycleTime) * getOutputAmount(rr));
-        }
-      }
-      return resolved;
-    }
-
-    const r        = RECIPES[resolved];
-    const mEntries = Object.entries(r.machines).filter(([n]) => n !== 'Character');
-    if (!mEntries.length) return null;
-
-    const [machineName, md] = mEntries[0];
-    const preferred = (typeof preferredMachineFor === 'function') ? preferredMachineFor(r) : machineName;
-    const preferredMd = r.machines[preferred] || md;
-    const usedMachine = preferred;
-    const usedMd      = preferredMd;
-
-    const opm  = (60 / usedMd.cycleTime) * getOutputAmount(r);
-    const runs = rateNeeded / opm;
-
-    node.machineName    = usedMachine;
-    node.machineCount  += runs;
-
-    // Machine footprint — look up in RECIPES for the machine building itself
-    if (!node.sizeSet) {
-      const machRec = RECIPES[usedMachine];
-      if (machRec?.size) {
-        const s = parseSize(machRec.size);
-        node.sizeW = s.w; node.sizeD = s.d;
-        node.sizeSet = true;
-      } else if (r.size) {
-        // Fallback: use the recipe's own size (for modular buildings)
-        const s = parseSize(r.size);
-        node.sizeW = s.w; node.sizeD = s.d;
-        node.sizeSet = true;
-      }
-    }
-
-    const next = new Set(visited);
-    next.add(resolved);
-
-    r.ingredients.forEach(ing => {
-      const ingRate  = runs * ing.amount * (60 / usedMd.cycleTime);
-      const ingLabel = expand(ing.item, ingRate, next);
-      if (ingLabel) addEdge(ingLabel, resolved, ingRate);
-    });
-
-    return resolved;
-  }
-
-  // ── Root: selected recipes ────────────────────────────────
-  selectedRecipeList.forEach(item => {
-    const r = RECIPES[item.recipeName || item.name];
-    if (!r || !r.machines[item.machineName]) return;
-
-    const ct       = r.machines[item.machineName].cycleTime;
-    const opm      = (60 / ct) * getOutputAmount(r);
-    const machines = Math.ceil(item.goal / opm);
-    const actualOpm = machines * opm;
-
-    const label = item.itemName || item.name;
-    const node  = getNode(label, 'final');
-    node.rate        += actualOpm;
-    node.kind         = 'final';
-    node.machineName  = item.machineName;
-    node.machineCount = machines;
-
-    const machRec = RECIPES[item.machineName];
-    if (machRec?.size) {
-      const s = parseSize(machRec.size);
-      node.sizeW = s.w; node.sizeD = s.d;
-      node.sizeSet = true;
-    } else if (r.size) {
-      const s = parseSize(r.size);
-      node.sizeW = s.w; node.sizeD = s.d;
-      node.sizeSet = true;
-    }
-
-    r.ingredients.forEach(ing => {
-      const ingRate  = (60 / ct) * ing.amount * machines;
-      const ingLabel = expand(ing.item, ingRate, new Set([label]));
-      if (ingLabel) addEdge(ingLabel, label, ingRate);
-    });
-  });
-
-  const nodes = Object.values(nodeMap);
-  if (!nodes.length) return null;
-
-  // ── BFS longest-path depth assignment ────────────────────
-  const inEdges  = {};
-  const outEdges = {};
-  nodes.forEach(n => { inEdges[n.label] = []; outEdges[n.label] = []; n.depth = 0; });
-  links.forEach(l => {
-    const s = l.source, t = l.target;
-    outEdges[s].push(t);
-    inEdges[t].push(s);
-  });
-
-  const visited = new Set();
-  const queue   = nodes.filter(n => inEdges[n.label].length === 0)
-                       .map(n => { n.depth = 0; return n.label; });
-  queue.forEach(l => visited.add(l));
-  while (queue.length) {
-    const cur = queue.shift();
-    outEdges[cur].forEach(tgt => {
-      const d = nodeMap[cur].depth + 1;
-      if (d > nodeMap[tgt].depth) nodeMap[tgt].depth = d;
-      if (!visited.has(tgt)) { visited.add(tgt); queue.push(tgt); }
-    });
-  }
-
-  // ── Group into columns ────────────────────────────────────
-  const maxDepth = Math.max(...nodes.map(n => n.depth));
-  const columns  = Array.from({ length: maxDepth + 1 }, () => []);
-  nodes.forEach(n => columns[n.depth].push(n));
-
-  // Sort each column: final first, then by rate desc
-  columns.forEach(col => col.sort((a, b) => {
-    if (a.kind === 'final' && b.kind !== 'final') return -1;
-    if (b.kind === 'final' && a.kind !== 'final') return  1;
-    return b.rate - a.rate;
-  }));
-
-  // ── Compute machine group layout ──────────────────────────
-  // For each node, decide how to arrange its N machines as a grid
-  const G = LAYOUT.MACH_GAP_TILES;
-  nodes.forEach(n => {
-    const count = Math.max(1, Math.ceil(n.machineCount));
-    const cols  = Math.max(1, Math.ceil(Math.sqrt(count)));
-    const rows  = Math.ceil(count / cols);
-    n.groupCols  = cols;
-    n.groupRows  = rows;
-    n.machCount  = count;
-    n.groupW     = cols * n.sizeW + (cols - 1) * G;  // total width in tiles
-    n.groupH     = rows * n.sizeD + (rows - 1) * G;  // total height in tiles
-  });
-
-  return { nodes, columns, links, nodeMap };
+// Stable item→colour based on name hash
+function itemColour(name) {
+  let h = 5381;
+  for (let i = 0; i < name.length; i++) h = (Math.imul(h, 33) ^ name.charCodeAt(i)) >>> 0;
+  const hue = h % 360;
+  return {
+    fill:   `hsl(${hue},50%,18%)`,
+    stroke: `hsl(${hue},70%,48%)`,
+    text:   `hsl(${hue},80%,68%)`,
+  };
 }
 
-// ── SVG renderer ──────────────────────────────────────────────
+// ── Sparse tile map ───────────────────────────────────────────
+function makeTileMap() {
+  const m = new Map();
+  return {
+    set(x, y, tile) { m.set(`${x},${y}`, { x, y, ...tile }); },
+    get(x, y)       { return m.get(`${x},${y}`); },
+    has(x, y)       { return m.has(`${x},${y}`); },
+    forEach(fn)     { m.forEach(fn); },
+  };
+}
 
-function drawLayoutSVG(data) {
-  const T  = LAYOUT.TILE_PX;
-  const CG = LAYOUT.COL_GAP_TILES;
-  const RG = LAYOUT.ROW_GAP_TILES;
-  const C  = LAYOUT_COLORS;
+// ── Arrow path helper ─────────────────────────────────────────
+function arrowPath(cx, cy, dir, r) {
+  const h = { right: [[-r,-r/2],[r,0],[-r,r/2]], left:  [[r,-r/2],[-r,0],[r,r/2]],
+               down:  [[-r/2,-r],[0,r],[r/2,-r]], up:   [[-r/2,r],[0,-r],[r/2,r]] }[dir];
+  return h ? `M${cx+h[0][0]},${cy+h[0][1]} L${cx+h[1][0]},${cy+h[1][1]} L${cx+h[2][0]},${cy+h[2][1]}Z` : '';
+}
 
-  // ── Compute column widths and heights ─────────────────────
-  const colWidths  = data.columns.map(col =>
-    col.length ? Math.max(...col.map(n => n.groupW)) : 0
-  );
-  const colHeights = data.columns.map(col =>
-    col.reduce((sum, n, i) => sum + n.groupH + (i > 0 ? RG : 0), 0)
-  );
+// ── Core layout builder ───────────────────────────────────────
+function buildTileGrid() {
+  const graph = buildLayoutData();
+  if (!graph) return null;
 
-  const totalW = colWidths.reduce((s, w, i) => s + w + (i > 0 ? CG : 0), 0);
-  const totalH = Math.max(...colHeights);
+  const beltCap = BELT_CAPACITY[LP.BELT_TIER];
+  const tiles   = makeTileMap();
 
-  const PAD  = 40;  // canvas padding (px)
-  const svgW = totalW * T + PAD * 2;
-  const svgH = totalH * T + PAD * 2;
-
-  // ── Assign pixel positions to every node ─────────────────
-  let curX = PAD;
-  data.columns.forEach((col, ci) => {
-    const colW = colWidths[ci];
-    let curY = PAD;
-    col.forEach(n => {
-      n.px = curX + ((colW - n.groupW) / 2) * T; // center within column
-      n.py = curY;
-      curY += (n.groupH + RG) * T;
+  // ── 1. Assign machine grid positions within each stage ──────
+  // Each stage (column in graph.columns) stacks nodes vertically.
+  // Within a node group, machines are arranged in rows of groupCols.
+  graph.columns.forEach(col => {
+    let curY = 0;
+    col.forEach(node => {
+      node._physMachines = []; // { gx, gy } local to stage x=0
+      for (let mr = 0; mr < node.groupRows; mr++) {
+        for (let mc = 0; mc < node.groupCols; mc++) {
+          if (mr * node.groupCols + mc >= node.machCount) break;
+          node._physMachines.push({
+            gx: mc * (node.sizeW + LP.MACH_GAP),
+            gy: curY + mr * (node.sizeD + LP.MACH_GAP),
+          });
+        }
+      }
+      node._baseY = curY;
+      curY += node.groupH + LP.MACH_GAP;
     });
-    curX += (colW + CG) * T;
   });
 
-  // ── Build SVG ─────────────────────────────────────────────
-  let defs = `
-  <defs>
-    <marker id="lArrow" markerWidth="8" markerHeight="8" refX="7" refY="3.5" orient="auto">
-      <path d="M0,0 L0,7 L8,3.5 Z" fill="${C.arrowHead}" opacity="0.8"/>
-    </marker>
-    <pattern id="gridPat" width="${T}" height="${T}" patternUnits="userSpaceOnUse">
-      <path d="M ${T} 0 L 0 0 0 ${T}" fill="none" stroke="${C.grid}" stroke-width="0.5"/>
+  // ── 2. Compute corridor contents ────────────────────────────
+  // For each adjacent stage pair, collect item flows from graph links.
+  const corridors = graph.columns.slice(0, -1).map((leftCol, si) => {
+    const rightCol = graph.columns[si + 1];
+    const items = [];
+
+    graph.links.forEach(link => {
+      const src = graph.nodeMap[link.source];
+      const tgt = graph.nodeMap[link.target];
+      if (!src || !tgt || src.depth !== si || tgt.depth !== si + 1) return;
+      const lanes = Math.max(1, Math.ceil(link.value / beltCap));
+      items.push({ item: link.source, srcNode: src, tgtNode: tgt,
+                   throughput: link.value, lanes, iCol: itemColour(link.source) });
+    });
+
+    // Assign x-offsets within the lane zone (after the output-loader column)
+    let off = 0;
+    items.forEach(it => { it.laneOff = off; off += it.lanes; });
+    const totalLanes = off || 1;
+
+    // Corridor layout:  [1 col output-loaders] + [totalLanes cols belts] + [1 col input-loaders]
+    return { items, totalLanes, width: 2 + totalLanes, si };
+  });
+
+  // ── 3. Compute absolute x for each stage ───────────────────
+  let curX = 0;
+  graph.columns.forEach((col, si) => {
+    const stageW = col.length ? Math.max(...col.map(n => n.groupW)) : 0;
+    col.forEach(n => { n._stageX = curX; n._stageW = stageW; });
+    curX += stageW;
+    if (si < corridors.length) {
+      corridors[si].startX = curX;
+      curX += corridors[si].width;
+    }
+  });
+
+  const gridW = curX;
+  const gridH = Math.max(1, ...graph.columns.map(col =>
+    col.reduce((s, n) => s + n.groupH + LP.MACH_GAP, 0)));
+
+  // ── 4. Place machine tiles ───────────────────────────────────
+  graph.columns.forEach(col => {
+    col.forEach(node => {
+      node._physMachines.forEach(({ gx, gy }) => {
+        for (let dy = 0; dy < node.sizeD; dy++) {
+          for (let dx = 0; dx < node.sizeW; dx++) {
+            tiles.set(node._stageX + gx + dx, gy + dy, {
+              type: TT.MACHINE, kind: node.kind, node,
+              dx, dy, machW: node.sizeW, machH: node.sizeD,
+            });
+          }
+        }
+      });
+    });
+  });
+
+  // ── 5. Route belts, loaders, and junctions ──────────────────
+  corridors.forEach(cor => {
+    const leftCol  = graph.columns[cor.si];
+    const rightCol = graph.columns[cor.si + 1];
+    const outLoaderX = cor.startX;                       // output-loader column
+    const inLoaderX  = cor.startX + cor.totalLanes + 1;  // input-loader column
+
+    // Draw vertical trunk belt for each lane
+    cor.items.forEach(({ item, lanes, laneOff, iCol }) => {
+      for (let l = 0; l < lanes; l++) {
+        const lx = cor.startX + 1 + laneOff + l;
+        for (let gy = 0; gy < gridH; gy++) {
+          if (!tiles.has(lx, gy)) {
+            tiles.set(lx, gy, { type: TT.BELT_V, item, dir: 'down', iCol });
+          }
+        }
+      }
+    });
+
+    // Output loaders + merge spurs  (left stage → trunk)
+    cor.items.forEach(({ item, laneOff, iCol, srcNode }) => {
+      if (!srcNode) return;
+      const laneX = cor.startX + 1 + laneOff;
+
+      srcNode._physMachines.forEach(({ gy }) => {
+        const ly = gy + Math.floor(srcNode.sizeD / 2);
+
+        // Output loader tile
+        tiles.set(outLoaderX, ly, { type: TT.LOADER_OUT, item, dir: 'right', iCol });
+
+        // Horizontal belt from loader to trunk
+        for (let gx = outLoaderX + 1; gx < laneX; gx++) {
+          if (!tiles.has(gx, ly))
+            tiles.set(gx, ly, { type: TT.BELT_H, item, dir: 'right', iCol });
+        }
+
+        // Junction (merge) where spur meets trunk
+        tiles.set(laneX, ly, { type: TT.JUNCTION, item, mode: 'merge', iCol });
+      });
+    });
+
+    // Input loaders + split spurs  (trunk → right stage)
+    cor.items.forEach(({ item, laneOff, iCol }) => {
+      const laneX = cor.startX + 1 + laneOff;
+
+      rightCol.forEach(node => {
+        // Only connect if this node's recipe consumes the item
+        const rec = RECIPES[resolveRecipeName(node.label)];
+        if (!rec?.ingredients?.some(ing => ing.item === item)) return;
+
+        node._physMachines.forEach(({ gy }) => {
+          const ly = gy + Math.floor(node.sizeD / 2);
+
+          // Input loader tile
+          tiles.set(inLoaderX, ly, { type: TT.LOADER_IN, item, dir: 'right', iCol });
+
+          // Horizontal belt from trunk to loader
+          for (let gx = laneX + 1; gx < inLoaderX; gx++) {
+            if (!tiles.has(gx, ly))
+              tiles.set(gx, ly, { type: TT.BELT_H, item, dir: 'right', iCol });
+          }
+
+          // Junction (split) where trunk splits to spur
+          tiles.set(laneX, ly, { type: TT.JUNCTION, item, mode: 'split', iCol });
+        });
+      });
+    });
+  });
+
+  return { tiles, gridW, gridH, graph };
+}
+
+// ── SVG tile renderer ─────────────────────────────────────────
+function drawTile(tile, T) {
+  const px = tile.x * T;
+  const py = tile.y * T;
+
+  if (tile.type === TT.MACHINE) {
+    const c = (LC.machine[tile.kind] || LC.machine.mid);
+    // Alternating cell tint for depth cue
+    const tint = (tile.dx + tile.dy) % 2 === 0 ? '14' : '00';
+    return `<rect x="${px}" y="${py}" width="${T}" height="${T}"
+      fill="${c.fill}" stroke="${c.stroke}" stroke-width="0.4" opacity="0.95"/>
+      <rect x="${px}" y="${py}" width="${T}" height="${T}" fill="#ffffff${tint}"/>`;
+  }
+
+  if (tile.type === TT.LOADER_IN || tile.type === TT.LOADER_OUT) {
+    const c  = tile.type === TT.LOADER_IN ? LC.loaderIn : LC.loaderOut;
+    const ic = tile.iCol || { stroke: '#888' };
+    const ap = arrowPath(px + T/2, py + T/2, 'right', T * 0.22);
+    return `<rect x="${px+1}" y="${py+1}" width="${T-2}" height="${T-2}"
+        rx="2" fill="${c.fill}" stroke="${ic.stroke}" stroke-width="1.8"/>
+      <path d="${ap}" fill="${ic.stroke}"/>`;
+  }
+
+  if (tile.type === TT.BELT_H || tile.type === TT.BELT_V) {
+    const ic  = tile.iCol || { fill: '#1a1a1a', stroke: '#555' };
+    const isH = tile.type === TT.BELT_H;
+    const bw  = T * 0.45;
+    const bx  = isH ? px       : px + (T - bw) / 2;
+    const by  = isH ? py + (T - bw) / 2 : py;
+    const bW  = isH ? T        : bw;
+    const bH  = isH ? bw       : T;
+    const ap  = arrowPath(px + T/2, py + T/2, isH ? 'right' : 'down', T * 0.18);
+    return `<rect x="${bx}" y="${by}" width="${bW}" height="${bH}"
+        fill="${ic.fill}" stroke="${ic.stroke}" stroke-width="0.5" rx="1"/>
+      <path d="${ap}" fill="${ic.stroke}" opacity="0.85"/>`;
+  }
+
+  if (tile.type === TT.JUNCTION) {
+    const ic = tile.iCol || { fill: '#222', stroke: '#888' };
+    const r  = T / 2 - 1;
+    // Cross shape: vertical trunk + horizontal spur
+    const bw = T * 0.45;
+    const hb = `<rect x="${px}" y="${py+(T-bw)/2}" width="${T}" height="${bw}"
+      fill="${ic.fill}" stroke="${ic.stroke}" stroke-width="0.5" rx="1"/>`;
+    const vb = `<rect x="${px+(T-bw)/2}" y="${py}" width="${bw}" height="${T}"
+      fill="${ic.fill}" stroke="${ic.stroke}" stroke-width="0.5" rx="1"/>`;
+    const dot = `<circle cx="${px+T/2}" cy="${py+T/2}" r="${T*0.22}"
+      fill="${ic.stroke}" opacity="0.9"/>`;
+    return hb + vb + dot;
+  }
+
+  return '';
+}
+
+// ── Machine label overlay ─────────────────────────────────────
+function drawMachineLabels(graph, T) {
+  let out = '';
+  graph.nodes.forEach(node => {
+    if (!node._physMachines || !node._physMachines.length) return;
+    const mc  = LC.machine[node.kind] || LC.machine.mid;
+    // Bounding box of entire group
+    const xs = node._physMachines.map(m => node._stageX + m.gx);
+    const ys = node._physMachines.map(m => m.gy);
+    const x0 = Math.min(...xs);
+    const y0 = Math.min(...ys);
+    const x1 = Math.max(...xs) + node.sizeW;
+    const y1 = Math.max(...ys) + node.sizeD;
+    const cx = (x0 + x1) / 2 * T;
+    const cy = (y0 + y1) / 2 * T;
+    const bw = (x1 - x0) * T - 4;
+    const bh = 44;
+
+    // Semi-transparent pill background
+    out += `<rect x="${cx - bw/2}" y="${cy - bh/2}" width="${bw}" height="${bh}"
+      rx="3" fill="rgba(0,0,0,0.72)" stroke="${mc.stroke}" stroke-width="0.8"/>`;
+    // Item name
+    const nameStr = node.label.length > 18 ? node.label.slice(0, 16) + '…' : node.label;
+    out += `<text x="${cx}" y="${cy - 9}" text-anchor="middle"
+      font-family="-apple-system,sans-serif" font-size="9" font-weight="600"
+      fill="${mc.text}">${nameStr}</text>`;
+    // Machine name (shortened)
+    const mach = (node.machineName || '').replace(/ I$/, ' I').replace(/ II$/, ' II');
+    const machStr = mach.length > 20 ? mach.slice(0, 18) + '…' : mach;
+    out += `<text x="${cx}" y="${cy + 2}" text-anchor="middle"
+      font-family="-apple-system,sans-serif" font-size="8"
+      fill="rgba(255,255,255,0.45)">${machStr}</text>`;
+    // Count + footprint
+    out += `<text x="${cx}" y="${cy + 14}" text-anchor="middle"
+      font-family="'Share Tech Mono',monospace" font-size="10" font-weight="700"
+      fill="${mc.text}">×${node.machCount} <tspan font-size="8" opacity="0.5"
+      >${node.sizeW}×${node.sizeD}</tspan></text>`;
+    // Rate
+    const rStr = node.rate >= 1000
+      ? (node.rate/1000).toFixed(1) + 'k/m'
+      : (Math.round(node.rate * 10) / 10) + '/m';
+    out += `<text x="${cx}" y="${cy + 26}" text-anchor="middle"
+      font-family="'Share Tech Mono',monospace" font-size="8" opacity="0.6"
+      fill="${mc.text}">${rStr}</text>`;
+  });
+  return out;
+}
+
+// ── Belt-lane legend ──────────────────────────────────────────
+function drawLegend(graph, svgW, T) {
+  // Collect all unique items in all corridors
+  const seen = new Map();
+  graph.links.forEach(l => {
+    if (!seen.has(l.source)) seen.set(l.source, { item: l.source, rate: 0 });
+    seen.get(l.source).rate += l.value;
+  });
+  if (!seen.size) return '';
+  const items = [...seen.values()];
+  const LH = 16, LW = 140, PAD = 8;
+  const boxH = items.length * LH + PAD * 2 + 14;
+  const bx   = svgW - LW - 12;
+  const by   = 12;
+
+  let out = `<rect x="${bx}" y="${by}" width="${LW}" height="${boxH}"
+    rx="4" fill="rgba(0,0,0,0.75)" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+    <text x="${bx+PAD}" y="${by+PAD+9}" font-family="-apple-system,sans-serif"
+      font-size="9" font-weight="600" fill="rgba(255,255,255,0.5)">BELT LANES</text>`;
+
+  items.forEach(({ item, rate }, i) => {
+    const ic  = itemColour(item);
+    const iy  = by + PAD + 14 + i * LH;
+    const cap = BELT_CAPACITY[LP.BELT_TIER];
+    const lanes = Math.max(1, Math.ceil(rate / cap));
+    out += `<rect x="${bx+PAD}" y="${iy}" width="10" height="10"
+      rx="2" fill="${ic.fill}" stroke="${ic.stroke}" stroke-width="1"/>`;
+    const label = item.length > 20 ? item.slice(0, 18) + '…' : item;
+    out += `<text x="${bx+PAD+14}" y="${iy+8}"
+      font-family="-apple-system,sans-serif" font-size="8" fill="${ic.text}"
+      >${label} <tspan fill="rgba(255,255,255,0.35)">${lanes}×</tspan></text>`;
+  });
+  return out;
+}
+
+// ── SVG builder ───────────────────────────────────────────────
+function buildLayoutSVG(tileData) {
+  const T   = LP.TILE;
+  const { tiles, gridW, gridH, graph } = tileData;
+  const PAD = 24;
+  const svgW = gridW * T + PAD * 2;
+  const svgH = gridH * T + PAD * 2;
+
+  const defs = `<defs>
+    <pattern id="lGrid" width="${T}" height="${T}" patternUnits="userSpaceOnUse"
+      x="${PAD}" y="${PAD}">
+      <path d="M${T} 0H0V${T}" fill="none" stroke="${LC.grid}" stroke-width="0.5"/>
     </pattern>
   </defs>`;
 
-  // Background + grid
-  let body = `
-  <rect width="${svgW}" height="${svgH}" fill="${C.bg}"/>
-  <rect width="${svgW}" height="${svgH}" fill="url(#gridPat)"/>`;
+  let body = `<rect width="${svgW}" height="${svgH}" fill="${LC.bg}"/>
+  <rect x="${PAD}" y="${PAD}" width="${gridW*T}" height="${gridH*T}" fill="url(#lGrid)"/>
+  <g transform="translate(${PAD},${PAD})">`;
 
-  // ── Draw edges first (behind nodes) ──────────────────────
-  data.links.forEach(l => {
-    const src = data.nodeMap[l.source];
-    const tgt = data.nodeMap[l.target];
-    if (!src || !tgt) return;
+  // Tile layer
+  tiles.forEach(tile => { body += drawTile(tile, T); });
 
-    // Start from right edge center of source, end at left edge center of target
-    const x1 = src.px + src.groupW * T;
-    const y1 = src.py + (src.groupH * T) / 2;
-    const x2 = tgt.px;
-    const y2 = tgt.py + (tgt.groupH * T) / 2;
+  // Label overlay (on top of tiles)
+  body += drawMachineLabels(graph, T);
 
-    const cx = (x1 + x2) / 2;
-    const thickness = Math.max(1.5, Math.min(8, Math.sqrt(l.value) * 0.3));
-
-    body += `<path d="M${x1},${y1} C${cx},${y1} ${cx},${y2} ${x2},${y2}"
-      fill="none" stroke="${C.arrow}" stroke-width="${thickness}"
-      marker-end="url(#lArrow)" opacity="0.7"/>`;
-
-    // Flow rate label on the midpoint
-    const mx = cx;
-    const my = (y1 + y2) / 2;
-    const rateStr = l.value >= 1000 ? (l.value / 1000).toFixed(1) + 'k' : Math.round(l.value) + '';
-    body += `<text x="${mx}" y="${my - 4}" text-anchor="middle"
-      font-family="-apple-system,sans-serif" font-size="9" fill="${C.arrowHead}" opacity="0.8">${rateStr}/min</text>`;
-  });
-
-  // ── Draw nodes ────────────────────────────────────────────
-  data.nodes.forEach(n => {
-    const color  = C[n.kind] || C.mid;
-    const G      = LAYOUT.MACH_GAP_TILES * T;
-    const count  = n.machCount;
-
-    // Draw each individual machine tile
-    for (let r = 0; r < n.groupRows; r++) {
-      for (let c = 0; c < n.groupCols; c++) {
-        const idx = r * n.groupCols + c;
-        if (idx >= count) break;
-
-        const mx = n.px + c * (n.sizeW * T + G);
-        const my = n.py + r * (n.sizeD * T + G);
-        const mw = n.sizeW * T;
-        const mh = n.sizeD * T;
-
-        // Machine tile background
-        body += `<rect x="${mx}" y="${my}" width="${mw}" height="${mh}"
-          rx="3" fill="${color.fill}" stroke="${color.stroke}" stroke-width="1.5" opacity="0.95"/>`;
-
-        // Subtle size indicator stripes (every 2 tiles)
-        for (let tx = 2; tx < n.sizeW; tx += 2) {
-          body += `<line x1="${mx + tx * T}" y1="${my}" x2="${mx + tx * T}" y2="${my + mh}"
-            stroke="${color.stroke}" stroke-width="0.5" opacity="0.4"/>`;
-        }
-        for (let tz = 2; tz < n.sizeD; tz += 2) {
-          body += `<line x1="${mx}" y1="${my + tz * T}" x2="${mx + mw}" y2="${my + tz * T}"
-            stroke="${color.stroke}" stroke-width="0.5" opacity="0.4"/>`;
-        }
-
-        // Machine number badge (only if multiple machines)
-        if (count > 1) {
-          const numStr = `#${idx + 1}`;
-          body += `<text x="${mx + 4}" y="${my + 12}" font-family="monospace"
-            font-size="9" fill="${color.stroke}" opacity="0.6">${numStr}</text>`;
-        }
-      }
-    }
-
-    // Group border
-    body += `<rect x="${n.px}" y="${n.py}" width="${n.groupW * T}" height="${n.groupH * T}"
-      rx="4" fill="none" stroke="${color.accent}" stroke-width="2" stroke-dasharray="4,3" opacity="0.5"/>`;
-
-    // Label area — centered over the group
-    const labelX = n.px + (n.groupW * T) / 2;
-    const labelY = n.py + (n.groupH * T) / 2;
-
-    // Semi-transparent pill background for labels
-    const lblW = Math.min(n.groupW * T - 8, 130);
-    const lblH = 46;
-    body += `<rect x="${labelX - lblW/2}" y="${labelY - lblH/2}"
-      width="${lblW}" height="${lblH}" rx="4"
-      fill="rgba(0,0,0,0.65)" stroke="${color.stroke}" stroke-width="1" opacity="0.9"/>`;
-
-    // Item name
-    const displayName = n.label.length > 18 ? n.label.slice(0, 16) + '…' : n.label;
-    body += `<text x="${labelX}" y="${labelY - 10}" text-anchor="middle"
-      font-family="-apple-system,sans-serif" font-size="10" font-weight="600"
-      fill="${color.text}">${displayName}</text>`;
-
-    // Machine name + count
-    const machShort = (n.machineName || '?').replace(' I', ' I').length > 20
-      ? (n.machineName || '?').slice(0, 18) + '…' : (n.machineName || '?');
-    body += `<text x="${labelX}" y="${labelY + 4}" text-anchor="middle"
+  // Stage column headers
+  graph.columns.forEach((col, si) => {
+    if (!col.length) return;
+    const stageX = col[0]._stageX;
+    const stageW = col[0]._stageW;
+    const cx = (stageX + stageW / 2) * T;
+    const depthLabels = ['Raw', 'Stage 1', 'Stage 2', 'Stage 3', 'Stage 4',
+                         'Stage 5', 'Stage 6', 'Stage 7', 'Stage 8'];
+    const lbl = depthLabels[si] || `Stage ${si}`;
+    body += `<text x="${cx}" y="-6" text-anchor="middle"
       font-family="-apple-system,sans-serif" font-size="9"
-      fill="rgba(255,255,255,0.55)">${machShort}</text>`;
-
-    // Count + footprint
-    const footprint = `${n.sizeW}×${n.sizeD}`;
-    body += `<text x="${labelX}" y="${labelY + 17}" text-anchor="middle"
-      font-family="'Share Tech Mono',monospace" font-size="11" font-weight="700"
-      fill="${color.text}">×${count} <tspan font-size="9" opacity="0.6">${footprint}</tspan></text>`;
-
-    // Rate
-    const rateStr = n.rate >= 1000
-      ? (n.rate / 1000).toFixed(1) + 'k/min'
-      : Math.round(n.rate * 10) / 10 + '/min';
-    body += `<text x="${labelX}" y="${labelY + 30}" text-anchor="middle"
-      font-family="'Share Tech Mono',monospace" font-size="9" opacity="0.7"
-      fill="${color.text}">${rateStr}</text>`;
+      fill="rgba(255,255,255,0.25)">${lbl}</text>`;
   });
 
-  // ── Scale bar ─────────────────────────────────────────────
-  const scaleBarTiles = 10;
-  const scaleBarPx    = scaleBarTiles * T;
-  const sbX = PAD;
-  const sbY = svgH - 22;
-  body += `
-  <line x1="${sbX}" y1="${sbY}" x2="${sbX + scaleBarPx}" y2="${sbY}"
-    stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-  <line x1="${sbX}" y1="${sbY - 4}" x2="${sbX}" y2="${sbY + 4}"
-    stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-  <line x1="${sbX + scaleBarPx}" y1="${sbY - 4}" x2="${sbX + scaleBarPx}" y2="${sbY + 4}"
-    stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
-  <text x="${sbX + scaleBarPx / 2}" y="${sbY - 7}" text-anchor="middle"
-    font-family="-apple-system,sans-serif" font-size="9" fill="rgba(255,255,255,0.4)"
-    >${scaleBarTiles} tiles</text>`;
+  body += `</g>`;
 
-  // ── Total area info ───────────────────────────────────────
-  body += `
-  <text x="${svgW - PAD}" y="${svgH - 10}" text-anchor="end"
-    font-family="-apple-system,sans-serif" font-size="9" fill="rgba(255,255,255,0.3)"
-    >${totalW}×${totalH} tiles (excl. gaps)</text>`;
+  // Legend (outside the main transform)
+  body += `<g transform="translate(0,0)">${drawLegend(graph, svgW, T)}</g>`;
+
+  // Scale bar
+  const scTiles = 10, scPx = scTiles * T;
+  const scX = PAD, scY = svgH - 14;
+  body += `<line x1="${scX}" y1="${scY}" x2="${scX+scPx}" y2="${scY}"
+    stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <line x1="${scX}"     y1="${scY-3}" x2="${scX}"     y2="${scY+3}" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <line x1="${scX+scPx}" y1="${scY-3}" x2="${scX+scPx}" y2="${scY+3}" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+  <text x="${scX+scPx/2}" y="${scY-5}" text-anchor="middle"
+    font-family="-apple-system,sans-serif" font-size="8"
+    fill="rgba(255,255,255,0.3)">${scTiles} tiles</text>`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg"
-    width="${svgW}" height="${svgH}"
-    viewBox="0 0 ${svgW} ${svgH}"
-    style="display:block;max-width:100%">
-    ${defs}${body}
-  </svg>`;
+    width="${svgW}" height="${svgH}" viewBox="0 0 ${svgW} ${svgH}"
+    style="display:block;min-width:${svgW}px">${defs}${body}</svg>`;
 }
 
 // ── Public entry point ────────────────────────────────────────
-
 let _layoutDirty = true;
+function markLayoutDirty() { _layoutDirty = true; }
 
 function renderLayout() {
   const container = document.getElementById('layoutCanvas');
@@ -440,67 +447,55 @@ function renderLayout() {
   _layoutDirty = false;
 
   if (!selectedRecipeList || !selectedRecipeList.length) {
-    container.innerHTML = `
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
-        height:100%;gap:12px;color:rgba(255,255,255,0.3);font-family:-apple-system,sans-serif">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-          stroke-width="1.5" opacity="0.3">
-          <rect x="3" y="3" width="7" height="7" rx="1"/>
-          <rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/>
-          <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-        <span>No recipes selected — add items to your production list first.</span>
-      </div>`;
+    container.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;
+      height:100%;flex-direction:column;gap:10px;color:rgba(255,255,255,0.25);
+      font-family:-apple-system,sans-serif;font-size:13px">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="1.5" opacity="0.3">
+        <rect x="3" y="3" width="7" height="7" rx="1"/>
+        <rect x="14" y="3" width="7" height="7" rx="1"/>
+        <rect x="3" y="14" width="7" height="7" rx="1"/>
+        <rect x="14" y="14" width="7" height="7" rx="1"/>
+      </svg>
+      Keine Rezepte ausgewählt — zuerst Produkte zur Produktionsliste hinzufügen.
+    </div>`;
     return;
   }
 
-  const data = buildLayoutData();
-  if (!data) {
-    container.innerHTML = '<div style="padding:24px;color:rgba(255,255,255,0.4)">Could not build layout.</div>';
+  const tileData = buildTileGrid();
+  if (!tileData) {
+    container.innerHTML = '<div style="padding:20px;color:rgba(255,255,255,0.4)">Layout konnte nicht berechnet werden.</div>';
     return;
   }
 
-  // Summary stats
-  const totalMachines = data.nodes.reduce((s, n) => s + n.machCount, 0);
-  const totalTiles = data.columns.reduce((s, col, ci) => {
-    const w = Math.max(...col.map(n => n.groupW), 0);
-    const h = col.reduce((sh, n, i) => sh + n.groupH + (i > 0 ? LAYOUT.ROW_GAP_TILES : 0), 0);
-    return s + w * h;
-  }, 0);
-  const cols = data.columns.length;
+  const { graph, gridW, gridH } = tileData;
+  const totalMachines = graph.nodes.reduce((s, n) => s + (n.machCount || 0), 0);
+  const totalTileArea = gridW * gridH;
 
-  // Stats bar
-  const statsHtml = `
-    <div style="display:flex;align-items:center;gap:20px;padding:10px 16px;
-      background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.08);
-      flex-shrink:0;font-family:-apple-system,sans-serif;font-size:12px;flex-wrap:wrap">
-      <span style="color:rgba(255,255,255,0.4)">
-        <span style="color:var(--accent);font-weight:600">${data.nodes.length}</span> machine types
-      </span>
-      <span style="color:rgba(255,255,255,0.4)">
-        <span style="color:var(--accent);font-weight:600">${totalMachines}</span> total machines
-      </span>
-      <span style="color:rgba(255,255,255,0.4)">
-        <span style="color:var(--accent);font-weight:600">${cols}</span> production stages
-      </span>
-      <span style="flex:1"></span>
-      <button onclick="renderLayout()" style="
-        background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.3);
-        color:#a855f7;padding:4px 12px;border-radius:4px;cursor:pointer;
-        font-size:11px;font-family:-apple-system,sans-serif">
-        ↺ Refresh
-      </button>
-    </div>`;
+  const statsBar = `<div style="display:flex;align-items:center;gap:20px;padding:8px 14px;
+    background:rgba(255,255,255,0.04);border-bottom:1px solid rgba(255,255,255,0.07);
+    flex-shrink:0;font-family:-apple-system,sans-serif;font-size:11px;flex-wrap:wrap">
+    <span style="color:rgba(255,255,255,0.35)">
+      <b style="color:var(--accent)">${graph.nodes.length}</b> Maschinentypen
+    </span>
+    <span style="color:rgba(255,255,255,0.35)">
+      <b style="color:var(--accent)">${totalMachines}</b> Maschinen gesamt
+    </span>
+    <span style="color:rgba(255,255,255,0.35)">
+      Raster <b style="color:var(--accent)">${gridW}×${gridH}</b> Tiles
+    </span>
+    <span style="color:rgba(255,255,255,0.35)">
+      Conveyor ${['', 'I', 'II', 'III', 'IV'][LP.BELT_TIER]} (${BELT_CAPACITY[LP.BELT_TIER]}/min)
+    </span>
+    <span style="flex:1"></span>
+    <button onclick="renderLayout()" style="background:rgba(168,85,247,0.15);
+      border:1px solid rgba(168,85,247,0.3);color:#a855f7;padding:3px 10px;
+      border-radius:4px;cursor:pointer;font-size:10px;font-family:-apple-system,sans-serif">
+      ↺ Aktualisieren
+    </button>
+  </div>`;
 
-  const svgHtml = drawLayoutSVG(data);
-
-  container.innerHTML = statsHtml + `
-    <div id="layoutSvgWrap" style="flex:1;overflow:auto;padding:16px;
-      display:flex;align-items:flex-start;justify-content:flex-start">
-      ${svgHtml}
-    </div>`;
+  container.innerHTML = statsBar + `<div style="flex:1;overflow:auto;padding:16px">
+    ${buildLayoutSVG(tileData)}
+  </div>`;
 }
-
-// Mark layout as dirty whenever the recipe list changes so it redraws on tab open
-function markLayoutDirty() { _layoutDirty = true; }
