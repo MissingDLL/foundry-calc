@@ -284,7 +284,7 @@ function buildTileGrid() {
 
     // Output loaders + merge spurs  (left stage → trunk)
     cor.items.forEach(({ item, laneOff, iCol, srcNode }) => {
-      if (!srcNode) return;
+      if (!srcNode?._physMachines) return;
       const laneX = cor.startX + 1 + laneOff;
 
       srcNode._physMachines.forEach(({ gy }) => {
@@ -313,6 +313,7 @@ function buildTileGrid() {
         const rec = RECIPES[resolveRecipeName(node.label)];
         if (!rec?.ingredients?.some(ing => ing.item === item)) return;
 
+        if (!node._physMachines) return;
         node._physMachines.forEach(({ gy }) => {
           const ly = gy + Math.floor(node.sizeD / 2);
 
