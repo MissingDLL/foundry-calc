@@ -83,6 +83,101 @@ function arrowPath(cx, cy, dir, r) {
   return h ? `M${cx+h[0][0]},${cy+h[0][1]} L${cx+h[1][0]},${cy+h[1][1]} L${cx+h[2][0]},${cy+h[2][1]}Z` : '';
 }
 
+// ── Machine footprint sizes (width × depth in tiles) ─────────
+const MACHINE_SIZES = {
+  'Assembler I':            [3, 3],
+  'Assembler II':           [5, 5],
+  'Assembler III':          [7, 7],
+  'Fluid-Assembler I':      [5, 5],
+  'Barrel Filler I':        [5, 5],
+  'Crusher I':              [5, 5],
+  'Crusher II':             [7, 7],
+  'Smelter (Small)':        [3, 3],
+  'Advanced Smelter':       [5, 5],
+  'Lava-Smelter I':         [5, 5],
+  'Lava-Smelter II':        [5, 5],
+  'Electric Arc Furnace':   [9, 9],
+  'Blast Furnace':          [9, 9],
+  'Chemical Processor':     [5, 5],
+  'Distillation Column':    [3, 9],
+  'Casting Machine':        [7, 7],
+  'Greenhouse':             [7, 7],
+  'Crystal Refiner':        [5, 5],
+  'Incinerator':            [5, 5],
+  'Boiler':                 [5, 5],
+  'Drone Miner I':          [5, 5],
+  'Drone Miner II':         [7, 7],
+  'Ore Vein Miner':         [3, 3],
+  'Pumpjack I':             [3, 3],
+  'Assembly Line':          [3, 3],
+  'Assembly Line Start':    [3, 3],
+  'Assembly Line Producer': [3, 3],
+  'Assembly Line Painter':  [3, 3],
+};
+const DEFAULT_MACH_SIZE = [3, 3];
+const GROUP_COLS = 4; // max machines per row in a group
+
+// Builds a depth-annotated production graph from the current recipe list.
+// Returns { nodes, columns, links, nodeMap } or null if nothing to show.
+// Reuses buildSankeyGraph() (from visualization.js) for the graph data,
+// then adds depth assignment, column grouping, and tile-size info.
+function buildLayoutData() {
+  const raw = buildSankeyGraph();
+  if (!raw) return null;
+
+  const { nodes, links } = raw;
+
+  // Build edge lookup maps
+  const inEdges  = {}, outEdges = {};
+  nodes.forEach(n => { inEdges[n.label] = []; outEdges[n.label] = []; n.depth = 0; });
+  links.forEach(l => {
+    const s = typeof l.source === 'object' ? l.source.label : l.source;
+    const t = typeof l.target === 'object' ? l.target.label : l.target;
+    if (outEdges[s]) outEdges[s].push(t);
+    if (inEdges[t])  inEdges[t].push(s);
+  });
+
+  // Longest-path depth assignment (BFS from roots)
+  const queue   = nodes.filter(n => inEdges[n.label].length === 0).map(n => n.label);
+  const visited = new Set(queue);
+  while (queue.length) {
+    const cur = queue.shift();
+    (outEdges[cur] || []).forEach(tgt => {
+      const d = nodes.find(n => n.label === cur)?.depth + 1 || 1;
+      const tgtNode = nodes.find(n => n.label === tgt);
+      if (tgtNode && d > tgtNode.depth) tgtNode.depth = d;
+      if (!visited.has(tgt)) { visited.add(tgt); queue.push(tgt); }
+    });
+  }
+
+  // Build nodeMap
+  const nodeMap = {};
+  nodes.forEach(n => { nodeMap[n.label] = n; });
+
+  // Group into depth columns (skip sink/byproduct nodes)
+  const maxDepth = Math.max(0, ...nodes.map(n => n.depth));
+  const columns  = Array.from({ length: maxDepth + 1 }, () => []);
+  nodes.forEach(n => {
+    if (n.kind === 'sink' || n.kind === 'byproduct') return;
+    columns[n.depth].push(n);
+  });
+
+  // Add tile size & group layout to every non-sink node
+  nodes.forEach(node => {
+    if (node.kind === 'sink' || node.kind === 'byproduct') return;
+    const [w, d] = MACHINE_SIZES[node.machineName] || DEFAULT_MACH_SIZE;
+    node.sizeW     = w;
+    node.sizeD     = d;
+    node.machCount = Math.max(1, Math.ceil(node.machineCount));
+    node.groupCols = Math.min(node.machCount, GROUP_COLS);
+    node.groupRows = Math.ceil(node.machCount / node.groupCols);
+    node.groupW    = node.groupCols * (w + LP.MACH_GAP) - LP.MACH_GAP;
+    node.groupH    = node.groupRows * (d + LP.MACH_GAP) - LP.MACH_GAP;
+  });
+
+  return { nodes, columns, links, nodeMap };
+}
+
 // ── Core layout builder ───────────────────────────────────────
 function buildTileGrid() {
   const graph = buildLayoutData();
