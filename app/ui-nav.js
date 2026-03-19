@@ -170,16 +170,19 @@ function switchMainTab(tab) {
   const isRecipes   = tab === 'recipes';
   const isVisualize = tab === 'visualize';
   const isPower     = tab === 'power';
+  const isLayout    = tab === 'layout';
 
-  const recipesEl   = document.getElementById('tab-recipes');
-  const vizEl       = document.getElementById('tab-visualize');
-  const powerEl     = document.getElementById('tab-power');
+  const recipesEl = document.getElementById('tab-recipes');
+  const vizEl     = document.getElementById('tab-visualize');
+  const powerEl   = document.getElementById('tab-power');
+  const layoutEl  = document.getElementById('tab-layout');
 
   recipesEl.style.display = isRecipes   ? 'block' : 'none';
   vizEl.style.display     = isVisualize ? 'flex'  : 'none';
   powerEl.style.display   = isPower     ? 'block' : 'none';
+  if (layoutEl) layoutEl.style.display = isLayout ? 'flex' : 'none';
 
-  const incoming = isRecipes ? recipesEl : isPower ? powerEl : vizEl;
+  const incoming = isRecipes ? recipesEl : isPower ? powerEl : isLayout ? layoutEl : vizEl;
   incoming.style.animation = 'none';
   incoming.offsetHeight;
   incoming.style.animation = 'tabContentIn 0.32s cubic-bezier(0.22,1,0.36,1) both';
@@ -190,12 +193,19 @@ function switchMainTab(tab) {
   const ib = { borderBottomColor: 'transparent',   color: inactiveColor    };
   Object.assign(document.getElementById('mainTabBtnRecipes').style,   isRecipes   ? ab : ib);
   Object.assign(document.getElementById('mainTabBtnVisualize').style, isVisualize ? ab : ib);
+  const layoutBtn = document.getElementById('mainTabBtnLayout');
+  if (layoutBtn) Object.assign(layoutBtn.style, isLayout ? ab : ib);
 
   if (isVisualize) {
     requestAnimationFrame(() => requestAnimationFrame(() => {
       _initVizBlob();
       if (_currentVizMode === 'sankey') renderSankey();
       else renderBoxes();
+    }));
+  }
+  if (isLayout) {
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (typeof renderLayout === 'function') renderLayout();
     }));
   }
 }

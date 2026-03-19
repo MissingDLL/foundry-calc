@@ -1191,6 +1191,7 @@ function calculateRecipes() {
   // the visualize tab stays in sync even if it is currently hidden.
   renderSankey();
   renderBoxes();
+  if (typeof markLayoutDirty === 'function') markLayoutDirty();
 }
 
 // ── Collapsible section toggle ──────────────────────────

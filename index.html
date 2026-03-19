@@ -307,6 +307,17 @@
           </svg>
           Visualize
         </button>
+        <button id="mainTabBtnLayout" onclick="switchMainTab('layout')" style="
+          padding:11px 22px; background:transparent; border:none;
+          border-bottom:2px solid transparent; color:rgba(255,255,255,0.40);
+          cursor:pointer; font-family:-apple-system,sans-serif; font-size:12px; font-weight:500;
+          letter-spacing:0; transition:all 0.18s; display:flex; align-items:center; gap:7px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          Layout
+        </button>
       </div>
 
       <!-- Ergebnisse Tab -->
@@ -467,6 +478,11 @@
           <div id="powerSummary"></div>
         </div>
       </div><!-- end tab-power -->
+
+      <!-- Layout Planner Tab -->
+      <div id="tab-layout" style="flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0;">
+        <div id="layoutCanvas" style="display:flex;flex-direction:column;height:100%"></div>
+      </div><!-- end tab-layout -->
 
     </main>
 
@@ -671,6 +687,7 @@
   <script src="app/ui-nav.js?v=16"></script>
   <script src="app/visualization.js?v=16"></script>
   <script src="app/ui-power.js?v=1"></script>
+  <script src="app/layout.js?v=1"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();
