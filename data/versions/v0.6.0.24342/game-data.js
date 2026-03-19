@@ -413,6 +413,33 @@ const INTERMEDIATE_ITEMS = new Set([
   "Telluxite Ingot", "Rubber", "Polymer Board",
 ]);
 
+// ── Raw fluid sources ──────────────────────────────────────────
+// Maps fluid key (lowercase_underscore) → { machine, capacityPerMin }
+// for fluids that come from environment-sourcing structures (not modular buildings).
+const FLUID_SOURCE_MACHINES = Object.freeze({
+  'water': { machine: 'Pipe Intake', capacityPerMin: 30000 },
+});
+
+// ── Byproduct disposal ────────────────────────────────────────
+// Items produced as secondary outputs that must be actively handled.
+// Maps item name → { machine, capacityPerMin }
+const BYPRODUCT_DISPOSAL = Object.freeze({
+  'Waste Gas': { machine: 'Flare Stack', capacityPerMin: 3000 },
+  'Blast Furnace Slag': {
+    machine: 'Flare Stack', capacityPerMin: 3000,
+    reprocess: { recipe: 'Cement (Slag Reprocessing)', produces: 'Cement' },
+  },
+});
+
+// ── Minimum fluid supply per machine instance ─────────────────
+// Some machines require a fixed minimum fluid flow regardless of
+// actual recipe throughput.  The value is L/min per machine unit.
+const MACHINE_FLUID_MINIMUMS = Object.freeze({
+  // Blast Furnace always needs 324,000 L/min Hot Air per furnace,
+  // even when running well below full capacity.
+  'Blast Furnace': { 'Hot Air': 324000 },
+});
+
 // ── Machine power consumption (kW) ───────────────────────────
 // Fallback power values for machines that have no recipe entry
 // (starter machines or machines defined outside recipes.js).
@@ -481,9 +508,9 @@ const MACHINE_CONNECTIONS = Object.freeze({
   // (Research Server uses solid item inputs for science packs)
   "Research Server":      { sides: [3, 3, 3, 3], loader_needed: true  },
 
-  // ── Miners / Extractors (no loader — output directly to belt) ─
-  [M.DRONE_MINER_I]:      { sides: [2, 2, 2, 2], loader_needed: false },
-  [M.DRONE_MINER_II]:     { sides: [2, 2, 2, 2], loader_needed: false },
+  // ── Miners / Extractors ───────────────────────────────────────
+  [M.DRONE_MINER_I]:      { sides: [2, 2, 2, 2], loader_needed: true  },
+  [M.DRONE_MINER_II]:     { sides: [2, 2, 2, 2], loader_needed: true  },
   [M.ORE_VEIN_MINER]:     { sides: [1, 0, 0, 0], loader_needed: false },
   [M.PUMPJACK_I]:         { sides: [0, 0, 0, 0], loader_needed: false }, // fluid only
   "Xeno-Scrap-Extraktor": { sides: [1, 0, 0, 0], loader_needed: false },

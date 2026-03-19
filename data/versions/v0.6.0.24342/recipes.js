@@ -3429,6 +3429,7 @@ const RECIPES = {
     size: "5x5x5",
 
     modular_building: true,
+    throughput_l_per_min: 162000,
 
     power_consumption: 8400,
     power_consumption_unit: "kW",
@@ -3515,6 +3516,7 @@ const RECIPES = {
     size: "11x5x17",
 
     modular_building: true,
+    throughput_l_per_min: 108000,
 
     power_consumption: 10000,
     power_consumption_unit: "kW",

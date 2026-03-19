@@ -799,13 +799,13 @@ function getPreferredMachine(recipeName) {
 // ── Recipe Browser (Modal) ───────────────────────────────────
 const RECIPE_CATEGORIES = [
   "Alle",
-  "Metallurgy",
-  "Components",
   "Structures",
-  "Buildings",
-  "Handhelds",
+  "Components",
   "Robots",
+  "Metallurgy",
   "Decor",
+  "Handhelds",
+  "Buildings",
 ];
 let activeBrowserCat = "Alle";
 const _collapsedSubgroups = new Set(); // keys: "Category|Subgroup label"

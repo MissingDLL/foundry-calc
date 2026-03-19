@@ -52,10 +52,12 @@
 //   raw   / mid / final: { fill, stroke, text, card, cborder }
 //   link: string  (CSS color for flow paths)
 const VIZ_COLORS_DARK = {
-  raw:   { fill: '#122a12', stroke: '#2a6a2a', text: '#6adf6a', card: '#0e2010', cborder: '#1a4a1a' },
-  mid:   { fill: '#0a1628', stroke: '#1e3a70', text: '#6a9adf', card: '#080f1e', cborder: '#162040' },
-  final: { fill: '#2a1206', stroke: '#7a3010', text: '#e08050', card: '#1e0e04', cborder: '#5a2010' },
-  link:  '#4a8adf',
+  raw:       { fill: '#122a12', stroke: '#2a6a2a', text: '#6adf6a', card: '#0e2010', cborder: '#1a4a1a' },
+  mid:       { fill: '#0a1628', stroke: '#1e3a70', text: '#6a9adf', card: '#080f1e', cborder: '#162040' },
+  final:     { fill: '#2a1206', stroke: '#7a3010', text: '#e08050', card: '#1e0e04', cborder: '#5a2010' },
+  byproduct: { fill: '#1a1200', stroke: '#7a5a00', text: '#d4a020', card: '#110e00', cborder: '#4a3800' },
+  sink:      { fill: '#1a0a14', stroke: '#6a2050', text: '#c060a0', card: '#0e060c', cborder: '#421030' },
+  link:      '#4a8adf',
 };
 // Expose so theme.js can reference the same palette for legend swatches
 // (theme.js is loaded before this file, so it reads this on user-triggered
@@ -131,7 +133,7 @@ function buildSankeyGraph() {
       // For mineable ores / resources: still attach the preferred extraction machine
       const rr = RECIPES[resolved];
       if (rr && rr.machines && Object.keys(rr.machines).length > 0) {
-        const machineNames = Object.keys(rr.machines);
+        const machineNames = Object.keys(rr.machines).filter(n => n !== 'Character');
         const preferred = minerSettings[resolved];
         const machineName = (preferred && machineNames.includes(preferred)) ? preferred : machineNames[0];
         if (!node.machineName) node.machineName = machineName;
@@ -142,7 +144,9 @@ function buildSankeyGraph() {
     }
 
     const r  = RECIPES[resolved];
-    const [machineName, md] = Object.entries(r.machines)[0]; // use first machine (default)
+    const machEntries = Object.entries(r.machines).filter(([n]) => n !== 'Character');
+    if (!machEntries.length) return null;
+    const [machineName, md] = machEntries[0];
     const opm  = (60 / md.cycleTime) * getOutputAmount(r);   // output items/min per machine
     const runs = rateNeeded / opm; // how many machines are needed (fractional, not rounded)
 
@@ -159,6 +163,18 @@ function buildSankeyGraph() {
       const ingLabel = expand(ing.item, ingRate, nextPath);
       if (ingLabel) addEdge(ingLabel, resolved, ingRate);
     });
+
+    // Add secondary outputs (byproducts) as outgoing edges from the
+    // primary product node so they appear downstream of the same process.
+    if (Array.isArray(r.output) && r.output.length > 1) {
+      for (let i = 1; i < r.output.length; i++) {
+        const sec     = r.output[i];
+        const secRate = runs * (sec.amount * (sec.chance ?? 1)) * (60 / md.cycleTime);
+        const secNode = getNode(sec.item, 'byproduct');
+        secNode.rate += secRate;
+        addEdge(resolved, sec.item, secRate);
+      }
+    }
 
     return resolved;
   }
@@ -194,7 +210,55 @@ function buildSankeyGraph() {
       const ingLabel = expand(ing.item, ingRate, new Set([item.itemName]));
       if (ingLabel) addEdge(ingLabel, item.itemName, ingRate);
     });
+
+    // Secondary outputs of the final product — connect from the
+    // primary product itself so byproducts appear downstream of it.
+    if (Array.isArray(r.output) && r.output.length > 1) {
+      for (let i = 1; i < r.output.length; i++) {
+        const sec     = r.output[i];
+        const secRate = (60 / ct) * (sec.amount * (sec.chance ?? 1)) * machines;
+        const secNode = getNode(sec.item, 'byproduct');
+        secNode.rate += secRate;
+        addEdge(item.itemName, sec.item, secRate);
+      }
+    }
   });
+
+  // Add disposal / reprocessing sink nodes for byproducts
+  if (typeof BYPRODUCT_DISPOSAL !== 'undefined') {
+    Object.entries(BYPRODUCT_DISPOSAL).forEach(([itemName, disposal]) => {
+      const byproductNode = nodeMap[itemName];
+      if (!byproductNode) return;
+
+      const rp = disposal.reprocess;
+      if (rp && nodeMap[rp.produces]) {
+        // Reprocessing path: byproduct → reprocessing recipe node (sink)
+        const repRecipe = RECIPES[rp.recipe];
+        if (repRecipe) {
+          const repMachineEntries = Object.entries(repRecipe.machines).filter(([n]) => n !== 'Character');
+          if (repMachineEntries.length) {
+            const [repMachine, repMd] = repMachineEntries[0];
+            const slagPerMachinePerMin   = (60 / repMd.cycleTime) * repRecipe.ingredients[0].amount;
+            const processors = Math.ceil(byproductNode.rate / slagPerMachinePerMin);
+            const sink = getNode(rp.recipe, 'sink');
+            sink.rate        += byproductNode.rate;
+            sink.machineName  = repMachine;
+            sink.machineCount += processors;
+            addEdge(itemName, rp.recipe, byproductNode.rate);
+            return;
+          }
+        }
+      }
+
+      // Default: disposal machine (e.g. Flare Stack)
+      const sinkLabel = disposal.machine;
+      const sink = getNode(sinkLabel, 'sink');
+      sink.rate        += byproductNode.rate;
+      sink.machineName  = disposal.machine;
+      sink.machineCount += byproductNode.rate / disposal.capacityPerMin;
+      addEdge(itemName, sinkLabel, byproductNode.rate);
+    });
+  }
 
   const nodes = Object.values(nodeMap);
   // Need at least 2 nodes and 1 link to draw a meaningful graph
@@ -423,7 +487,7 @@ function _drawBoxes(svgEl, data) {
 
   // ── Step 5: Arrow markers (one per node kind) ────────────
   const defs = svg.append('defs');
-  ['raw','mid','final'].forEach(kind => {
+  ['raw','mid','final','byproduct','sink'].forEach(kind => {
     const c = COLOR[kind];
     defs.append('marker')
       .attr('id', `arrow-${kind}`)
@@ -515,10 +579,8 @@ function _drawBoxes(svgEl, data) {
     const y2 = t._y + BOX_H / 2;
     const mx = (x1 + x2) / 2; // x of both cubic Bezier control points
 
-    const markerKind  = t.kind || 'mid';
-    const strokeColor = t.kind === 'raw'   ? COLOR.raw.stroke
-                      : t.kind === 'final' ? COLOR.final.stroke
-                      : COLOR.mid.stroke;
+    const markerKind  = (COLOR[t.kind] ? t.kind : null) || 'mid';
+    const strokeColor = (COLOR[t.kind] || COLOR.mid).stroke;
 
     const rateVal  = link.value;
     const rateText = rateVal >= 1000
@@ -780,8 +842,8 @@ function _drawSankey(svgEl, data) {
     .attr('width',  d => d.x1 - d.x0)
     .attr('height', d => Math.max(3, d.y1 - d.y0)) // minimum 3px so tiny flows remain visible
     .attr('rx', 3)
-    .attr('fill',   d => COLOR[d.kind].fill)
-    .attr('stroke', d => COLOR[d.kind].stroke)
+    .attr('fill',   d => (COLOR[d.kind] || COLOR.mid).fill)
+    .attr('stroke', d => (COLOR[d.kind] || COLOR.mid).stroke)
     .attr('stroke-width', 1.5)
     .style('cursor', 'pointer')
     .on('click', function(event, d) {
@@ -811,7 +873,7 @@ function _drawSankey(svgEl, data) {
     .style('flex-direction', d => (d.x0 < IW / 2) ? 'row' : 'row-reverse')
     .style('overflow',       'visible')
     .html(d => {
-      const c        = COLOR[d.kind];
+      const c        = COLOR[d.kind] || COLOR.mid;
       const onLeft   = d.x0 < IW / 2;
       const textAlign = onLeft ? 'left' : 'right';
       const maxTxtW   = LABEL_W - 30;
