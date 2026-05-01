@@ -1,0 +1,3586 @@
+[
+  {
+    "identifier": "_base_admin_bot_i",
+    "name": "Operator Bot",
+    "icon_identifier": "admin_bot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_admin_robot_01_arm",
+    "name": "Operator Robot Arm",
+    "icon_identifier": "admin_robot_i_arm",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_admin_robot_01_head",
+    "name": "Operator Robot Head",
+    "icon_identifier": "admin_robot_i_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_admin_robot_01_leg",
+    "name": "Operator Robot Leg",
+    "icon_identifier": "admin_robot_i_leg",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_admin_robot_01_torso",
+    "name": "Operator Robot Torso",
+    "icon_identifier": "admin_robot_i_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_admin_robot_i",
+    "name": "Operator Robot",
+    "icon_identifier": "admin_robot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_advanced_steel_mixture",
+    "name": "Advanced Xenoferrite-Ignium Ore Blend",
+    "icon_identifier": "advanced_xenoferrite_ignium_blend",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_agriculture_bot_i",
+    "name": "Planter Drone",
+    "icon_identifier": "agriculture_bot",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_agriculture_bot_ii",
+    "name": "Hydro-Farming Bot",
+    "icon_identifier": "agriculture_bot_ii",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_agriculture_robot_01_arm",
+    "name": "Farmer Robot Arm",
+    "icon_identifier": "agriculture_robot_i_arm",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_agriculture_robot_01_head",
+    "name": "Farmer Robot Head",
+    "icon_identifier": "agriculture_robot_i_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_agriculture_robot_01_leg",
+    "name": "Farmer Robot Leg",
+    "icon_identifier": "agriculture_robot_i_leg",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_agriculture_robot_01_torso",
+    "name": "Farmer Robot Torso",
+    "icon_identifier": "agriculture_robot_i_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_agriculture_robot_i",
+    "name": "Farmer Robot",
+    "icon_identifier": "agriculture_robot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_air_intake_base",
+    "name": "Air Intake Base",
+    "icon_identifier": "air_intake_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_air_intake_module",
+    "name": "Air Intake Module",
+    "icon_identifier": "air_intake_base",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_al_end_consumer_i",
+    "name": "Assembly Line Logistics Container",
+    "icon_identifier": "al_end_consumer_i",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_al_merger",
+    "name": "Assembly Line Merger",
+    "icon_identifier": "al_merger",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_al_painter_i",
+    "name": "Assembly Line Painter",
+    "icon_identifier": "al_painter",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_al_producer_i",
+    "name": "Assembly Line Producer",
+    "icon_identifier": "al_producer",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_al_rail_straight",
+    "name": "Assembly Line Rail",
+    "icon_identifier": "al_rail_straight",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_al_splitter",
+    "name": "Assembly Line Splitter",
+    "icon_identifier": "al_splitter",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_al_start",
+    "name": "Assembly Line Start",
+    "icon_identifier": "al_start",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_alien_scrap_i",
+    "name": "Xeno-Scrap",
+    "icon_identifier": "alien_scrap",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_alien_scrap_world_decor_i",
+    "name": "Large Xeno-Scrap",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_alien_scrap_world_decor_ii",
+    "name": "Xeno-Scrap",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_alien_scrap_world_decor_iii",
+    "name": "Xeno-Scrap",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_alien_scrap_world_decor_iv",
+    "name": "Xeno-Scrap",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_alien_scrap_world_decor_v",
+    "name": "Xeno-Scrap Remnants",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_assembler_fluid_i",
+    "name": "Fluid Assembler I",
+    "icon_identifier": "fluid_assembler_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_assembler_i",
+    "name": "Assembler I",
+    "icon_identifier": "assembler_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_assembler_ii",
+    "name": "Assembler II",
+    "icon_identifier": "assembler_ii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_assembler_iii",
+    "name": "Assembler III",
+    "icon_identifier": "assembler_iii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_barrel_empty",
+    "name": "Barrel (Empty)",
+    "icon_identifier": "barrel_empty",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_barrel_filler_i",
+    "name": "Barrel Filler I",
+    "icon_identifier": "barrel_filler_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_barrel_olumite",
+    "name": "Barrel (Olumite)",
+    "icon_identifier": "barrel_olumite",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_baseStation01",
+    "name": "Drop Pods",
+    "icon_identifier": "landing_pod",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_battery_i",
+    "name": "Battery (Small)",
+    "icon_identifier": "battery_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_battery_ii",
+    "name": "Battery (Large)",
+    "icon_identifier": "battery_ii",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_biomass",
+    "name": "Biomass",
+    "icon_identifier": "biomass",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_biomass_burner",
+    "name": "Biomass Burner",
+    "icon_identifier": "biomass_burner",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_blast_furnace_base",
+    "name": "Blast Furnace Base",
+    "icon_identifier": "blast_furnace_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_blast_furnace_module",
+    "name": "Blast Furnace Module",
+    "icon_identifier": "blast_furnace_module",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_boiler_i",
+    "name": "Boiler",
+    "icon_identifier": "boiler",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_boreal_forest_grouprock_small",
+    "name": "Boreal Forest Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_mushroom_01",
+    "name": "Boreal Forest Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_mushroom_02",
+    "name": "Boreal Forest Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_mushroom_03",
+    "name": "Boreal Forest Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_mushroom_04",
+    "name": "Boreal Forest Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_plant_01",
+    "name": "Boreal Forest Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_rock_01",
+    "name": "Boreal Forest Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_rock_02",
+    "name": "Boreal Forest Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_seed_plants",
+    "name": "Forest Seed (Plants)",
+    "icon_identifier": "plant_seed_cyan",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_boreal_forest_seed_trees",
+    "name": "Forest Seed (Trees)",
+    "icon_identifier": "plant_seed_green",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_boreal_forest_tree_01",
+    "name": "Boreal Forest Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_tree_02",
+    "name": "Boreal Forest Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_tree_03",
+    "name": "Boreal Forest Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_boreal_forest_tree_04",
+    "name": "Boreal Forest Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_bugfix_wastegasdrain",
+    "name": "WGD[do not use]",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_building_part",
+    "name": "Building Block",
+    "icon_identifier": "floor",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_burner_generator_lvg",
+    "name": "Burner Generator",
+    "icon_identifier": "burner_generator",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_c3bb_hub",
+    "name": "C3-BB Hub",
+    "icon_identifier": "buddy_kennel_i",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_casting_building_base",
+    "name": "Heavy Caster Base",
+    "icon_identifier": "casting_building_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_casting_building_module",
+    "name": "Heavy Caster Module",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_casting_machine",
+    "name": "Casting Machine",
+    "icon_identifier": "casting_machine",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_cave_crystal_large_i",
+    "name": "Xeno-Crystal",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_crystal_large_ii",
+    "name": "Xeno-Crystal",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_crystal_large_iii",
+    "name": "Xeno-Crystal",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_crystal_medium_i",
+    "name": "Xeno-Crystal",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_crystal_small_i",
+    "name": "Xeno-Crystal",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_stalactite_01",
+    "name": "Stalactite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_stalactite_02",
+    "name": "Stalactite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_stalactite_03",
+    "name": "Stalactite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_stalagmite_large",
+    "name": "Stalagmite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_stalagmite_medium",
+    "name": "Stalagmite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cave_stalagmite_small",
+    "name": "Stalagmite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_caveplant_01_large",
+    "name": "Cave Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_caveplant_01_medium",
+    "name": "Cave Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_caveplant_01_small",
+    "name": "Cave Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_caveplant_02_large",
+    "name": "Cave Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_caveplant_02_medium",
+    "name": "Cave Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_caveplant_02_small",
+    "name": "Cave Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cement",
+    "name": "Cement",
+    "icon_identifier": "cement",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_chemical_processor_i",
+    "name": "Chemical Processor",
+    "icon_identifier": "chemical_processor_i",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_chest",
+    "name": "Crate",
+    "icon_identifier": "crate",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_cleaning_bot_i",
+    "name": "Vacuum Bot",
+    "icon_identifier": "vacuum_bot",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_cleaning_bot_ii",
+    "name": "Cleaning Bot",
+    "icon_identifier": "buffer_bot",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_coked_ignium",
+    "name": "Coked Ignium",
+    "icon_identifier": "coked_ignium",
+    "category": "_base_raw_materials",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_commands",
+    "name": "Commands",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 0
+  },
+  {
+    "identifier": "_base_concrete",
+    "name": "Concrete",
+    "icon_identifier": "concrete",
+    "category": "_base_raw_materials",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_construction_decor",
+    "name": "Construction Site Decor",
+    "icon_identifier": "construction_cone",
+    "category": "",
+    "stackSize": 500
+  },
+  {
+    "identifier": "_base_construction_drone_port_i",
+    "name": "Construction Ship Port",
+    "icon_identifier": "construction_drone_port_i",
+    "category": "",
+    "stackSize": 5
+  },
+  {
+    "identifier": "_base_construction_hazard_block",
+    "name": "Hazard Concrete",
+    "icon_identifier": "hazard_block",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_construction_material_i",
+    "name": "Construction Material",
+    "icon_identifier": "construction_material_i",
+    "category": "_base_construction_material",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_construction_material_ii",
+    "name": "High-Tech Construction Material",
+    "icon_identifier": "construction_material_ii",
+    "category": "_base_construction_material",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_construction_rubble_i",
+    "name": "Construction Site Rubble",
+    "icon_identifier": "construction_rubble",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_construction_rubble_ii",
+    "name": "High-Tech Construction Site Rubble",
+    "icon_identifier": "construction_rubble_ii",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_construction_warehouse_i",
+    "name": "Construction Warehouse",
+    "icon_identifier": "construction_warehouse_i",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_container",
+    "name": "Container",
+    "icon_identifier": "container",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_conveyor_balancer_i",
+    "name": "Conveyor Balancer I",
+    "icon_identifier": "conveyor_balancer_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_conveyor_balancer_ii",
+    "name": "Conveyor Balancer II",
+    "icon_identifier": "conveyor_balancer_ii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_conveyor_balancer_iii",
+    "name": "Conveyor Balancer III",
+    "icon_identifier": "conveyor_balancer_iii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_conveyor_balancer_iv",
+    "name": "Conveyor Balancer IV",
+    "icon_identifier": "conveyor_balancer_iv",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_conveyor_i",
+    "name": "Conveyor I",
+    "icon_identifier": "conveyor_i",
+    "category": "",
+    "stackSize": 500
+  },
+  {
+    "identifier": "_base_conveyor_ii",
+    "name": "Conveyor II",
+    "icon_identifier": "conveyor_ii",
+    "category": "",
+    "stackSize": 500
+  },
+  {
+    "identifier": "_base_conveyor_iii",
+    "name": "Conveyor III",
+    "icon_identifier": "conveyor_iii",
+    "category": "",
+    "stackSize": 500
+  },
+  {
+    "identifier": "_base_conveyor_iv",
+    "name": "Conveyor IV",
+    "icon_identifier": "conveyor_iv",
+    "category": "",
+    "stackSize": 500
+  },
+  {
+    "identifier": "_base_conveyor_slope_i",
+    "name": "Conveyor Slope I",
+    "icon_identifier": "conveyor_slope_i",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_conveyor_slope_ii",
+    "name": "Conveyor Slope II",
+    "icon_identifier": "conveyor_slope_ii",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_conveyor_slope_iii",
+    "name": "Conveyor Slope III",
+    "icon_identifier": "conveyor_slope_iii",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_conveyor_slope_iv",
+    "name": "Conveyor Slope IV",
+    "icon_identifier": "conveyor_slope_iv",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_coral_plant_01_large",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_coral_plant_01_medium",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_coral_plant_01_small",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_coral_plant_02_large",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_coral_plant_02_medium",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_coral_plant_02_small",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_coral_plant_03_large",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_coral_plant_03_medium",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_coral_plant_03_small",
+    "name": "Coral Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_cpu",
+    "name": "CPU",
+    "icon_identifier": "cpu",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_critter_forest",
+    "name": "Forest Critter",
+    "icon_identifier": "critter_forest",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_critter_jungle",
+    "name": "Jungle Critter",
+    "icon_identifier": "critter_jungle",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_critter_rocky_desert",
+    "name": "Rocky Desert Critter",
+    "icon_identifier": "critter_rocky_desert",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_critter_sandy_desert",
+    "name": "Sandy DesertCritter",
+    "icon_identifier": "critter_sandy_desert",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_critter_shrublands",
+    "name": "Shrublands Critter",
+    "icon_identifier": "critter_shrubland",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_critter_tundra",
+    "name": "Tundra Critter",
+    "icon_identifier": "critter_tundra",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_crusher_i",
+    "name": "Crusher I",
+    "icon_identifier": "ore_crusher",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_crusher_ii",
+    "name": "Crusher II",
+    "icon_identifier": "ore_crusher_ii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_crystal_i",
+    "name": "Xeno-Crystal",
+    "icon_identifier": "crystal_blue",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_crystal_ii",
+    "name": "Charged Xeno-Crystal",
+    "icon_identifier": "crystal_orange",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_crystal_refiner_i",
+    "name": "Crystal Refiner",
+    "icon_identifier": "crystal_refiner_i",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_crystals_medium",
+    "name": "Crystals",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_data_cable",
+    "name": "Data Cable",
+    "icon_identifier": "data_cable",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_data_comparer",
+    "name": "Data Evaluator",
+    "icon_identifier": "data_comparer",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_data_memory",
+    "name": "Data Memory Cell",
+    "icon_identifier": "data_memory",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_data_processor",
+    "name": "Data Processor",
+    "icon_identifier": "data_processor",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_data_source_button",
+    "name": "Data Source (Button)",
+    "icon_identifier": "data_source_button",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_data_source_lever",
+    "name": "Data Source (Lever)",
+    "icon_identifier": "data_source_lever",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_data_source_static",
+    "name": "Data Source",
+    "icon_identifier": "data_source",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_debris_decor_i",
+    "name": "Debris",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_debris_i",
+    "name": "Debris I",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_debris_ii",
+    "name": "Debris I",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_debris_iii",
+    "name": "Debris I",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_decor_base",
+    "name": "Decor (Basic Shapes)",
+    "icon_identifier": "decor_base",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_base_cube_caution",
+    "name": "Decor (Basic Shapes)",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_decor_misc",
+    "name": "Decor (Misc)",
+    "icon_identifier": "decor_misc",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_struts",
+    "name": "Decor (Struts)",
+    "icon_identifier": "decor_struts",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_support",
+    "name": "Decor (Support)",
+    "icon_identifier": "decor_support",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_support_truss",
+    "name": "Decor (Support Truss)",
+    "icon_identifier": "decor_truss_straight",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_wall",
+    "name": "Decor (Walls)",
+    "icon_identifier": "decor_wall",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_window",
+    "name": "Decor (Windows)",
+    "icon_identifier": "decor_window",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_window_modular",
+    "name": "Decor (Modular Windows)",
+    "icon_identifier": "decor_window_modular",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_window_modular_slope",
+    "name": "Decor (Windows Modular Slope)",
+    "icon_identifier": "decor_window_slope",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_window_modular_slope_edge",
+    "name": "Decor (Windows Modular Slope Edge)",
+    "icon_identifier": "decor_window_slope_edge",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_decor_window_modular_wedge",
+    "name": "Decor (Windows Modular Wedge)",
+    "icon_identifier": "decor_window_wedge",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_dirt",
+    "name": "Dirt",
+    "icon_identifier": "dirt",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_distillation_column_i",
+    "name": "Distillation Column",
+    "icon_identifier": "distillation_column",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_door_i",
+    "name": "Door (Single)",
+    "icon_identifier": "door_i",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_door_ii",
+    "name": "Door (Double)",
+    "icon_identifier": "door_ii",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_door_iii",
+    "name": "Hangar Gate",
+    "icon_identifier": "door_iii",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_door_iii_station",
+    "name": "Hangar Gate",
+    "icon_identifier": "door_iii",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_drill_bot",
+    "name": "Drill Ship",
+    "icon_identifier": "drill_ship",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_drill_bot_preview",
+    "name": "Drill Ship PREVIEW",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_drone_controller",
+    "name": "Excavation Drone Controller",
+    "icon_identifier": "mining_drone_controller",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_drone_miner_i",
+    "name": "Drone Miner I",
+    "icon_identifier": "drone_miner_i",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_drone_miner_ii",
+    "name": "Drone Miner II",
+    "icon_identifier": "drone_miner_ii",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_drone_transport_startpad_i",
+    "name": "Cargo Shuttle Start Pad",
+    "icon_identifier": "drone_transport_startpad",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_drone_transport_startpad_liquid_i",
+    "name": "Cargo Shuttle Start Pad (Liquids)",
+    "icon_identifier": "drone_transport_liquid_startpad",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_drone_transport_targetpad_i",
+    "name": "Cargo Shuttle Target Pad",
+    "icon_identifier": "drone_transport_targetpad",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_drone_transport_targetpad_liquid_i",
+    "name": "Cargo Shuttle Target Pad (Liquids)",
+    "icon_identifier": "drone_transport_liquid_targetpad",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_dynamite_i",
+    "name": "Explosive Charge",
+    "icon_identifier": "dynamite_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_dynamite_ii",
+    "name": "Heavy Explosive Charge",
+    "icon_identifier": "dynamite_ii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_dynamite_remote_control",
+    "name": "Explosives Detonator",
+    "icon_identifier": "dynamite_remote_control",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_eic_i",
+    "name": "Electronic Components",
+    "icon_identifier": "ec",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_eic_ii",
+    "name": "Circuit Board",
+    "icon_identifier": "curcuit_board",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_electric_arc_furnace",
+    "name": "Electric Arc Furnace",
+    "icon_identifier": "electric_arc_furnace",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_elevator_i",
+    "name": "Elevator",
+    "icon_identifier": "elevator_i",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_elevator_structure_i",
+    "name": "Elevator Structure",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_emergency_beacon",
+    "name": "Emergency Beacon",
+    "icon_identifier": "emergency_beacon",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_emotes",
+    "name": "Emotes",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 0
+  },
+  {
+    "identifier": "_base_endless_miner_crystals_i",
+    "name": "Xeno-Crystal-Extractor",
+    "icon_identifier": "endless_miner_crystal_i",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_endless_miner_scrap_i",
+    "name": "Xeno-Scrap-Extractor",
+    "icon_identifier": "endless_miner_scrap_i",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_energy_cell",
+    "name": "Energy Cell",
+    "icon_identifier": "energy_cell",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_escalator",
+    "name": "Escalator I",
+    "icon_identifier": "escalator_tiling_i",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_escalator_ii",
+    "name": "Escalator II",
+    "icon_identifier": "escalator_tiling_ii",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_escalator_iii",
+    "name": "Escalator III",
+    "icon_identifier": "escalator_tiling_iii",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_exploration_analyzer",
+    "name": "Omni-Analyzer",
+    "icon_identifier": "exploration_analyzer",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_explosives_i",
+    "name": "Explosives",
+    "icon_identifier": "explosives",
+    "category": "_base_components",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_firmarlite_bar",
+    "name": "Firmarlite Bar",
+    "icon_identifier": "firmarlite_bar",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_firmarlite_sheet",
+    "name": "Firmarlite Sheet",
+    "icon_identifier": "firmarlite_sheet",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_flare_stack",
+    "name": "Flare Stack",
+    "icon_identifier": "flare_stack",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_forest_plant_01_large",
+    "name": "Boreal Forest Plant Large",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_forest_plant_01_small",
+    "name": "Boreal Forest Plant Small",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_forest_plant_01_small_ff",
+    "name": "Boreal Forest Plant Small",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_fracking_tower_base",
+    "name": "Fracking Tower Base",
+    "icon_identifier": "fracking_tower",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_fracking_tower_module",
+    "name": "Fracking Tower Module",
+    "icon_identifier": "fracking_tower",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_freight_elevator_i",
+    "name": "Freight Elevator I",
+    "icon_identifier": "freight_elevator_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_freight_elevator_ii",
+    "name": "Freight Elevator II",
+    "icon_identifier": "freight_elevator_ii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_freight_elevator_iii",
+    "name": "Freight Elevator III",
+    "icon_identifier": "freight_elevator_iii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_freight_elevator_iv",
+    "name": "Freight Elevator IV",
+    "icon_identifier": "freight_elevator_iv",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_fuel_rod_casing",
+    "name": "Fuel Rod Casing",
+    "icon_identifier": "fuel_rod_casing",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_geological_scanner_i",
+    "name": "Geological Scanner",
+    "icon_identifier": "geological_scanner_i",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_geothermal_generator_i",
+    "name": "Geothermal Boiler",
+    "icon_identifier": "geothermal_generator",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_geothermal_vent",
+    "name": "Geothermal Vent",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_birch_01",
+    "name": "Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_birch_02",
+    "name": "Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_birch_02_large",
+    "name": "Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_birch_03",
+    "name": "Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_birch_03_large",
+    "name": "Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_birch_04",
+    "name": "Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_birch_04_large",
+    "name": "Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_fansy_plant_large",
+    "name": "Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_gl_fansy_plant_small",
+    "name": "Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_glass",
+    "name": "Glass",
+    "icon_identifier": "glass",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_gravel",
+    "name": "Gravel",
+    "icon_identifier": "gravel",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_greenhouse_i",
+    "name": "Greenhouse",
+    "icon_identifier": "greenhouse",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_hazard_robot_i",
+    "name": "Hazard Robot",
+    "icon_identifier": "hazard_robot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_hot_air_stove_base",
+    "name": "Hot Air Stove Base",
+    "icon_identifier": "hot_air_stove_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_hot_air_stove_module",
+    "name": "Hot Air Stove Module",
+    "icon_identifier": "hot_air_stove_base",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_hover_engine",
+    "name": "Hover Engine",
+    "icon_identifier": "hover_engine",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_hydraulic_piston",
+    "name": "Hydraulic Piston",
+    "icon_identifier": "hydraulic_piston",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_ignium_fuel_rod",
+    "name": "Ignium Fuel Rod",
+    "icon_identifier": "ignium_fuel_rod",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_ignium_powder",
+    "name": "Ignium Powder",
+    "icon_identifier": "ignium_powder",
+    "category": "_base_raw_materials",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_incinerator",
+    "name": "Incinerator",
+    "icon_identifier": "incinerator",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_jetpack_fuel",
+    "name": "Jetpack Fuel",
+    "icon_identifier": "jetpack_fuel",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_jungle_palmtree_01",
+    "name": "Jungle Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_jungle_palmtree_02",
+    "name": "Jungle Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_jungle_palmtree_03",
+    "name": "Jungle Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_jungle_plant_large_01",
+    "name": "Jungle Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_jungle_tree_large_01",
+    "name": "Jungle Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_kelp_01_large",
+    "name": "Kelp",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_kelp_01_medium",
+    "name": "Kelp",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_kelp_01_small",
+    "name": "Kelp",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_kelp_02_large",
+    "name": "Kelp",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_kelp_02_medium",
+    "name": "Kelp",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_kelp_02_small",
+    "name": "Kelp",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_ladder_i",
+    "name": "Ladder",
+    "icon_identifier": "ladder",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_light_bot_i",
+    "name": "Light Bot",
+    "icon_identifier": "light_bot",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_light_ceiling_i",
+    "name": "Ceiling Light I",
+    "icon_identifier": "ceiling_light",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_light_ceiling_ii",
+    "name": "Ceiling Light II",
+    "icon_identifier": "ceiling_light_ii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_light_portable_i",
+    "name": "Portable Light",
+    "icon_identifier": "portable_light",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_light_wall_i",
+    "name": "Wall Light I",
+    "icon_identifier": "wall_light",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_lightpole_i",
+    "name": "Light Pole I",
+    "icon_identifier": "light_post",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_lightpole_ii",
+    "name": "Light Pole II",
+    "icon_identifier": "pole_light",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_loader_1st_i",
+    "name": "Loader",
+    "icon_identifier": "loader_one_i",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_loader_1st_i_filter",
+    "name": "Filter Loader",
+    "icon_identifier": "loader_one_filter_i",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_loader_2nd_i",
+    "name": "Loader (2nd Lane)",
+    "icon_identifier": "loader_two_i",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_loader_3rd_i",
+    "name": "Loader (3rd Lane)",
+    "icon_identifier": "loader_three_i",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_logistic_container_i",
+    "name": "Logistic Container I",
+    "icon_identifier": "logistic_container_i",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_logistic_container_ii",
+    "name": "Logistic Container II",
+    "icon_identifier": "logistic_container_ii",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_logistic_container_iii",
+    "name": "Logistic Container III",
+    "icon_identifier": "logistic_container_iii",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_logistics_tower_i",
+    "name": "Xeno-Logistics Tower",
+    "icon_identifier": "logistics_tower_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_lrs_module",
+    "name": "Long Range Scanner Module",
+    "icon_identifier": "long_range_scanner",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_maintenance_drone_i",
+    "name": "Maintenance Drone",
+    "icon_identifier": "maintenance_drone",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_mb_planner",
+    "name": "Modular Building Planner",
+    "icon_identifier": "modular_building_planer",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_mic_i",
+    "name": "Machinery Parts",
+    "icon_identifier": "machinery_parts",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_mic_ii",
+    "name": "Advanced Machinery Parts",
+    "icon_identifier": "machinery_parts_advanced",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_mic_iii",
+    "name": "High-Tech Machinery Parts",
+    "icon_identifier": "machinery_parts_high_tech",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_military_bot_i",
+    "name": "Combat Drone",
+    "icon_identifier": "military_bot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_01_arm",
+    "name": "Combat Robot Arm",
+    "icon_identifier": "military_robot_i_arm",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_01_head",
+    "name": "Combat Robot Head",
+    "icon_identifier": "military_robot_i_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_01_leg",
+    "name": "Combat Robot Leg",
+    "icon_identifier": "military_robot_i_leg",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_01_torso",
+    "name": "Combat Robot Torso",
+    "icon_identifier": "military_robot_i_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_02_arm",
+    "name": "Assault Robot Arm",
+    "icon_identifier": "military_robot_ii_arm",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_02_head",
+    "name": "Assault Robot Head",
+    "icon_identifier": "military_robot_ii_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_02_leg",
+    "name": "Assault Robot Leg",
+    "icon_identifier": "military_robot_ii_leg",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_02_torso",
+    "name": "Assault Robot Torso",
+    "icon_identifier": "military_robot_ii_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_i",
+    "name": "Combat Robot",
+    "icon_identifier": "military_robot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_military_robot_ii",
+    "name": "Assault Robot",
+    "icon_identifier": "military_robot_ii",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_mining_bot_i",
+    "name": "Mining Drone",
+    "icon_identifier": "mining_bot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_mining_bot_ii",
+    "name": "Hydro-Mining Bot",
+    "icon_identifier": "mining_bot_ii",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_mining_drill",
+    "name": "Mining Drill",
+    "icon_identifier": "hand_drill",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_mining_laser",
+    "name": "Mining Laser",
+    "icon_identifier": "mining_laser",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_mining_robot_01_arm",
+    "name": "Miner Robot Arm",
+    "icon_identifier": "mining_robot_i_arm",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_mining_robot_01_head",
+    "name": "Miner Robot Head",
+    "icon_identifier": "mining_robot_i_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_mining_robot_01_leg",
+    "name": "Miner Robot Leg",
+    "icon_identifier": "mining_robot_i_leg",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_mining_robot_01_torso",
+    "name": "Miner Robot Torso",
+    "icon_identifier": "mining_robot_i_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_mining_robot_i",
+    "name": "Miner Robot",
+    "icon_identifier": "mining_robot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_modular_entity_module_debug_tool",
+    "name": "Module Debug Tool",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_modular_fluid_tank_base",
+    "name": "Modular Storage Tank Base",
+    "icon_identifier": "modular_fluid_tank_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_modular_fluid_tank_module",
+    "name": "Modular Storage Tank (Module)",
+    "icon_identifier": "modular_fluid_tank_base",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_monument",
+    "name": "Monument Base",
+    "icon_identifier": "monument",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_monument_module",
+    "name": "Monument (Module)",
+    "icon_identifier": "monument",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_mussel_large",
+    "name": "Mussel Large",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_mussel_medium",
+    "name": "Mussel Medium",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_mussel_small",
+    "name": "Mussel Small",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_neon_decor_i",
+    "name": "Neon Decor",
+    "icon_identifier": "neon_decor_straight_i",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_neon_decor_i_slope",
+    "name": "Neon Decor (Slopes)",
+    "icon_identifier": "neon_decor_slope_straight_v_i",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_neon_decor_i_slope_junctions",
+    "name": "Neon Decor (Slope Junctions)",
+    "icon_identifier": "neon_decor_slope_4_way_i",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_neon_decor_ii",
+    "name": "Neon Decor (Large)",
+    "icon_identifier": "neon_decor_straight_ii",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_neon_decor_slope",
+    "name": "Neon Decor (Large Slopes)",
+    "icon_identifier": "neon_decor_slope_straight_v_ii",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_neon_decor_slope_junctions",
+    "name": "Neon Decor (Large Slope Junctions)",
+    "icon_identifier": "neon_decor_slope_4_way_ii",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_npp_cooling_tower_base",
+    "name": "Cooling Tower Base",
+    "icon_identifier": "npp_cooling_tower_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_cooling_tower_module",
+    "name": "Cooling Tower Module",
+    "icon_identifier": "npp_cooling_tower_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_pressurizer_base",
+    "name": "Reactor Fuel Mixer Base",
+    "icon_identifier": "npp_pressurizer_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_pressurizer_module",
+    "name": "Reactor Fuel Mixer Module",
+    "icon_identifier": "npp_pressurizer_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_reactor_base",
+    "name": "Xeno Reactor Base",
+    "icon_identifier": "npp_reactor_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_reactor_module",
+    "name": "Xeno Reactor Module",
+    "icon_identifier": "npp_reactor_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_steam_generator_base",
+    "name": "Steam Generator Base",
+    "icon_identifier": "npp_steam_generator_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_steam_generator_module",
+    "name": "Steam Generator Module",
+    "icon_identifier": "npp_steam_generator_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_steam_turbine_base",
+    "name": "High-Pressure Turbine Base",
+    "icon_identifier": "npp_steam_turbine_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_npp_steam_turbine_module",
+    "name": "High-Pressure Turbine Module",
+    "icon_identifier": "npp_steam_turbine_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_office_blocks",
+    "name": "Wooden Blocks",
+    "icon_identifier": "office_wall_i_plain",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_office_blocks_deluxe",
+    "name": "Wooden Decor Blocks",
+    "icon_identifier": "office_wall_i",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_office_chair",
+    "name": "Office Chair",
+    "icon_identifier": "office_chair",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_chair_deluxe",
+    "name": "Executive Office Chair",
+    "icon_identifier": "office_chair_deluxe",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_couch",
+    "name": "Office Couch",
+    "icon_identifier": "office_couch",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_couch_deluxe",
+    "name": "Executive Office Couch",
+    "icon_identifier": "office_couch_deluxe",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_desk",
+    "name": "Office Desk",
+    "icon_identifier": "office_desk",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_desk_deluxe",
+    "name": "Executive Office Desk",
+    "icon_identifier": "office_desk_deluxe",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_file_cabinet",
+    "name": "Office File Cabinet",
+    "icon_identifier": "office_file_cabinet",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_file_cabinet_deluxe",
+    "name": "Executive Office File Cabinet",
+    "icon_identifier": "office_file_cabinet_deluxe",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_marble_black_deluxe",
+    "name": "Marble (Black)",
+    "icon_identifier": "office_marble_black",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_office_marble_white_deluxe",
+    "name": "Marble (White)",
+    "icon_identifier": "office_marble_white",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_office_nameplate_deluxe",
+    "name": "Office Nameplate",
+    "icon_identifier": "office_nameplate",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_plant",
+    "name": "Office Plant",
+    "icon_identifier": "office_plant",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_plant_deluxe",
+    "name": "Executive Office Plant",
+    "icon_identifier": "office_plant_deluxe",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_statue_deluxe",
+    "name": "Office Statue",
+    "icon_identifier": "office_statue",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_table",
+    "name": "Office Table",
+    "icon_identifier": "office_table",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_table_deluxe",
+    "name": "Executive Office Table",
+    "icon_identifier": "office_table_deluxe",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_office_wall_plaque_deluxe",
+    "name": "Office Wall Plaque",
+    "icon_identifier": "office_wall_plaque",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_orbital_uplink",
+    "name": "Orbital Uplink",
+    "icon_identifier": "orbital_uplink",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_ore_ignium",
+    "name": "Ignium Ore",
+    "icon_identifier": "ore_ignium",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_ore_mineral_rock",
+    "name": "Mineral Rocks",
+    "icon_identifier": "mineral_rock",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_ore_technum",
+    "name": "Technum Ore",
+    "icon_identifier": "ore_technum",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_ore_telluxite",
+    "name": "Telluxite Ore",
+    "icon_identifier": "ore_telluxite",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_ore_vein_miner_i",
+    "name": "Ore Vein Miner",
+    "icon_identifier": "ore_vein_miner",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_ore_vein_scanner",
+    "name": "Ore Scanner",
+    "icon_identifier": "ore_scanner",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_ore_xenoferrite",
+    "name": "Xenoferrite Ore",
+    "icon_identifier": "ore_xenoferrite",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_paint_roller",
+    "name": "Paint Roller",
+    "icon_identifier": "color_tool",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_personal_logistic_container",
+    "name": "Xeno-Logistics Container",
+    "icon_identifier": "xeno_logistic_container_i",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_pipe",
+    "name": "Pipe",
+    "icon_identifier": "pipe",
+    "category": "",
+    "stackSize": 500
+  },
+  {
+    "identifier": "_base_pipe_adapter",
+    "name": "Pipe Adapter",
+    "icon_identifier": "pipe_adapter",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_pipe_intake_i",
+    "name": "Liquid Intake",
+    "icon_identifier": "pipe_intake",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_pipeline",
+    "name": "Pipeline",
+    "icon_identifier": "pipeline",
+    "category": "",
+    "stackSize": 250
+  },
+  {
+    "identifier": "_base_pipeline_intake_i",
+    "name": "Liquid Intake (Pipeline)",
+    "icon_identifier": "pipeline_intake",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_plumber_tool",
+    "name": "Plumber Tool",
+    "icon_identifier": "plumber_tool",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_polymer_board",
+    "name": "Polymer Board",
+    "icon_identifier": "polymer_board",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_portable_fuel",
+    "name": "Portable Fuel",
+    "icon_identifier": "portable_fuel",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_power_core_entity_ii",
+    "name": "Xeno Power Core",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_power_core_i",
+    "name": "Xeno Power Core (Damaged)",
+    "icon_identifier": "power_core_i",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_power_core_ii",
+    "name": "Xeno Power Core",
+    "icon_identifier": "power_core_ii",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_power_line_i",
+    "name": "Power Line",
+    "icon_identifier": "powerline",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_power_pole_i",
+    "name": "Power Pole (Small)",
+    "icon_identifier": "power_pole_i",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_power_pole_ii",
+    "name": "Power Pole (Large)",
+    "icon_identifier": "power_pole_ii",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_power_pole_iii",
+    "name": "Power Pole (Wall-Mounted)",
+    "icon_identifier": "power_pole_iii",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_pump_pipe_to_pipeline_i",
+    "name": "Pipe-to-Pipeline Pump",
+    "icon_identifier": "pump_pipe_to_pipeline_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_pump_pipeline_to_pipe_i",
+    "name": "Pipeline-to-Pipe Pump",
+    "icon_identifier": "pump_pipeline_to_pipe_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_pump_pipelines_i",
+    "name": "Pump (Pipelines)",
+    "icon_identifier": "pump_pipelines",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_pump_pipes_i",
+    "name": "Pump (Pipes)",
+    "icon_identifier": "pump_pipes",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_pumpjack_i",
+    "name": "Pumpjack I",
+    "icon_identifier": "pumpjack_i",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_quarry_building_i",
+    "name": "Quarry",
+    "icon_identifier": "quarry_building_i",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_radio_tower_base",
+    "name": "Radio Tower Base",
+    "icon_identifier": "radio_tower_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_radio_tower_module",
+    "name": "Radio Tower Module",
+    "icon_identifier": "radio_tower_base",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_railings",
+    "name": "Railings",
+    "icon_identifier": "railings_straight",
+    "category": "",
+    "stackSize": 500
+  },
+  {
+    "identifier": "_base_reactive_briquette_i",
+    "name": "Reactive Briquette",
+    "icon_identifier": "reactive_briquette_i",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_recycler_scrap",
+    "name": "Scrap Recycler",
+    "icon_identifier": "recycler_scrap",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_recycler_terrain",
+    "name": "Resource Separator",
+    "icon_identifier": "recycler_terrain",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_research_entity",
+    "name": "Research Server",
+    "icon_identifier": "research_entity",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_resource_node_alien_scrap",
+    "name": "Resource Node: Alien Scrap",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_resource_node_crystal",
+    "name": "Resource Node: Crystal",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_robot01_arm",
+    "name": "Personal Assistant Robot Arm",
+    "icon_identifier": "robot01_arm_left",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot01_head",
+    "name": "Personal Assistant Robot Head",
+    "icon_identifier": "robot01_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot01_leg",
+    "name": "Personal Assistant Robot Leg",
+    "icon_identifier": "robot01_leg_left",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot01_torso",
+    "name": "Personal Assistant Robot Torso",
+    "icon_identifier": "robot01_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_01",
+    "name": "Personal Assistant Robot",
+    "icon_identifier": "robot01",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_hazard_01_arm",
+    "name": "Hazard Robot Arm",
+    "icon_identifier": "hazard_robot_i_arm",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_hazard_01_head",
+    "name": "Hazard Robot Head",
+    "icon_identifier": "hazard_robot_i_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_hazard_01_leg",
+    "name": "Hazard Robot Leg",
+    "icon_identifier": "hazard_robot_i_leg",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_hazard_01_torso",
+    "name": "Hazard Robot Torso",
+    "icon_identifier": "hazard_robot_i_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_parts_i",
+    "name": "Robot Parts",
+    "icon_identifier": "robot_parts",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_robot_parts_ii",
+    "name": "High-Tech Robot Parts",
+    "icon_identifier": "robot_parts_ii",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_robot_science_01_arm",
+    "name": "Science Robot Arm",
+    "icon_identifier": "science_robot_i_arm",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_science_01_head",
+    "name": "Science Robot Head",
+    "icon_identifier": "science_robot_i_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_science_01_leg",
+    "name": "Science Robot Leg",
+    "icon_identifier": "science_robot_i_leg",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_science_01_torso",
+    "name": "Science Robot Torso",
+    "icon_identifier": "science_robot_i_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_scout_01_arm",
+    "name": "Scout Robot Arm",
+    "icon_identifier": "scout_robot_i_arm",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_scout_01_head",
+    "name": "Scout Robot Head",
+    "icon_identifier": "scout_robot_i_head",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_scout_01_leg",
+    "name": "Scout Robot Leg",
+    "icon_identifier": "scout_robot_i_leg",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_robot_scout_01_torso",
+    "name": "Scout Robot Torso",
+    "icon_identifier": "scout_robot_i_torso",
+    "category": "",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_rocky_desert_dirt",
+    "name": "Rocky Desert Dirt",
+    "icon_identifier": "rocky_desert_dirt",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_rocky_desert_plant_01",
+    "name": "Rocky Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_plant_02",
+    "name": "Rocky Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_plant_03",
+    "name": "Rocky Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_plant_04",
+    "name": "Rocky Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_plant_05",
+    "name": "Rocky Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_plant_06",
+    "name": "Rocky Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_01",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_pillar_01",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_pillar_01_large",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_pillar_02",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_pillar_02_large",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_pillar_03",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_pillar_03_large",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_pillar_04",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_rock_pillar_04_large",
+    "name": "Rocky Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_seed_plants",
+    "name": "Rocky Desert Seed (Plants)",
+    "icon_identifier": "plant_seed_pink",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_rocky_desert_seed_trees",
+    "name": "Rocky Desert Seed (Trees)",
+    "icon_identifier": "plant_seed_red",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_rocky_desert_tree_01",
+    "name": "Rocky Desert Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rocky_desert_tree_02",
+    "name": "Rocky Desert Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_rubber_i",
+    "name": "Rubber",
+    "icon_identifier": "rubber",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_rubble_ignium",
+    "name": "Ignium Ore Rubble",
+    "icon_identifier": "ore_rubble_ignium",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_rubble_technum",
+    "name": "Technum Ore Rubble",
+    "icon_identifier": "ore_rubble_technum",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_rubble_telluxite",
+    "name": "Telluxite Ore Rubble",
+    "icon_identifier": "ore_rubble_telluxite",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_rubble_xenoferrite",
+    "name": "Xenoferrite Ore Rubble",
+    "icon_identifier": "ore_rubble_xenoferrite",
+    "category": "_base_resources",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_sand",
+    "name": "Sand",
+    "icon_identifier": "sand",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_sandy_desert_plant_01",
+    "name": "Sandy Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sandy_desert_plant_03",
+    "name": "Sandy Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sandy_desert_plant_05",
+    "name": "Sandy Desert Plant",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sandy_desert_rock_01",
+    "name": "Sandy Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sandy_desert_rock_02",
+    "name": "Sandy Desert Rock",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sandy_desert_seed_plants",
+    "name": "Sandy Desert Seed (Plants)",
+    "icon_identifier": "plant_seed_yellow",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_sandy_desert_seed_trees",
+    "name": "Sandy Desert Seed (Trees)",
+    "icon_identifier": "plant_seed_orange",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_sandy_desert_tree_01",
+    "name": "Sandy Desert Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sandy_desert_tree_04",
+    "name": "Sandy Desert Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sandy_desert_tree_05",
+    "name": "Sandy Desert Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sandy_desert_tree_07",
+    "name": "Sandy Desert Tree",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_scanning_entity_i",
+    "name": "Long Range Scanner",
+    "icon_identifier": "long_range_scanner",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_science_bot_i",
+    "name": "Science Assistant Drone",
+    "icon_identifier": "science_bot",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_science_bot_ii",
+    "name": "Marine Exploration Bot",
+    "icon_identifier": "science_bot_ii",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_science_pack_i",
+    "name": "Science Pack I",
+    "icon_identifier": "science_pack_i",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_science_pack_ii",
+    "name": "Science Pack II",
+    "icon_identifier": "science_pack_ii",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_science_pack_iii",
+    "name": "Science Pack III",
+    "icon_identifier": "science_pack_iii",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_science_pack_iv",
+    "name": "Science Pack IV",
+    "icon_identifier": "science_pack_iv",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_science_pack_v",
+    "name": "Science Pack V",
+    "icon_identifier": "science_pack_v",
+    "category": "",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_science_robot_i",
+    "name": "Science Robot",
+    "icon_identifier": "science_robot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_scout_robot_i",
+    "name": "Scout Robot",
+    "icon_identifier": "scout_robot_i",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_screen_bot_i",
+    "name": "Screen Bot",
+    "icon_identifier": "screen_bot",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_shaped_charge_i",
+    "name": "Shaped Charge",
+    "icon_identifier": "shaped_charge_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_shaped_charge_i_preview",
+    "name": "Shaped Charge PREVIEW",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_shaped_charge_ii",
+    "name": "Shaped Charge (Heavy)",
+    "icon_identifier": "shaped_charge_ii",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_shaped_charge_ii_preview",
+    "name": "Shaped Charge PREVIEW",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_shipping_pad_i",
+    "name": "Shipping Pad (Small)",
+    "icon_identifier": "shipping_pad_small_i",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_shipping_pad_ii",
+    "name": "Shipping Pad (Medium)",
+    "icon_identifier": "shipping_pad_ii",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_shipping_pad_ii_al",
+    "name": "Shipping Pad (Medium, Assembly Line)",
+    "icon_identifier": "shipping_pad_ii_al",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_sign",
+    "name": "Sign",
+    "icon_identifier": "sign_floor_1x1",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_smelter_i",
+    "name": "Advanced Smelter",
+    "icon_identifier": "smelter",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_smelter_lava_i",
+    "name": "Lava-Smelter I",
+    "icon_identifier": "smelter_lava",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_smelter_lava_ii",
+    "name": "Lava-Smelter II",
+    "icon_identifier": "smelter_lava_ii",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_smelter_small_i",
+    "name": "Smelter (Small)",
+    "icon_identifier": "smelter_small",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_snack_bot_i",
+    "name": "Snack Bot",
+    "icon_identifier": "snack_bot",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_solar_panel_i",
+    "name": "Solar Panel (Small)",
+    "icon_identifier": "solar_panel_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_solar_panel_ii",
+    "name": "Solar Panel (Large)",
+    "icon_identifier": "solar_panel_large",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_space_ship_fuel",
+    "name": "Space Ship Fuel Canister",
+    "icon_identifier": "space_ship_fuel",
+    "category": "_base_components",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_space_station_props",
+    "name": "Space Station Machinery",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_space_station_terminal",
+    "name": "Space Station Terminal",
+    "icon_identifier": "space_station_terminal",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_stairs_straight",
+    "name": "Stairs",
+    "icon_identifier": "stairs_straight",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_stalagmite_large",
+    "name": "Stalagmite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_stalagmite_large_ceiling",
+    "name": "Stalactite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_stalagmite_medium",
+    "name": "Stalagmite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_stalagmite_medium_ceiling",
+    "name": "Stalactite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_stalagmite_small",
+    "name": "Stalagmite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_stalagmite_tall",
+    "name": "Stalagmite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_stalagmite_tall_ceiling",
+    "name": "Stalactite",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_station_shuttle_pad_i",
+    "name": "Station Shuttle Pad",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_steel_mixture",
+    "name": "Xenoferrite-Ignium Ore Blend",
+    "icon_identifier": "xenoferrite_ignium_blend",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_stone",
+    "name": "Stone",
+    "icon_identifier": "stone",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_strut_pillar_i",
+    "name": "Strut",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_super_alloy_plate_i",
+    "name": "Superalloy",
+    "icon_identifier": "superalloy",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_tank_i",
+    "name": "Tank I",
+    "icon_identifier": "tank",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_technum_rods",
+    "name": "Technum Rods",
+    "icon_identifier": "rods",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_telluxite_ingot",
+    "name": "Telluxite Ingot",
+    "icon_identifier": "ingots_telluxite",
+    "category": "_base_raw_materials",
+    "stackSize": 100
+  },
+  {
+    "identifier": "_base_telluxite_wafer",
+    "name": "Telluxite Wafer",
+    "icon_identifier": "telluxite_wafer",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_train_loading_station",
+    "name": "Train Loading Station",
+    "icon_identifier": "train_loading_station",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_train_station",
+    "name": "Train Station",
+    "icon_identifier": "train_station",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_transformer_i",
+    "name": "Transformer (Small)",
+    "icon_identifier": "transformer_i",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_transformer_ii",
+    "name": "Transformer (Large)",
+    "icon_identifier": "transformer_ii",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_transport_bot_i",
+    "name": "Transport Bot",
+    "icon_identifier": "transport_bot",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_transport_bot_ii",
+    "name": "Heavy Duty Transport Bot",
+    "icon_identifier": "transport_bot_ii",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_transport_bot_iii",
+    "name": "Aquatic Hauling Bot",
+    "icon_identifier": "transport_bot_iii",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_transport_drone_i",
+    "name": "Transport Drone",
+    "icon_identifier": "transport_drone",
+    "category": "_base_sales_items",
+    "stackSize": 10
+  },
+  {
+    "identifier": "_base_transport_drone_port_i",
+    "name": "Transport Ship Port",
+    "icon_identifier": "transport_drone_port",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tropical_rainforest_dirt",
+    "name": "Tropical Rainforest Dirt",
+    "icon_identifier": "tropical_rainforest_dirt",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_tropical_rainforest_seed_plants",
+    "name": "Tropical Rainforest Seed (Plants)",
+    "icon_identifier": "plant_seed_purple",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_tropical_rainforest_seed_trees",
+    "name": "Tropical Rainforest Seed (Trees)",
+    "icon_identifier": "plant_seed_blue",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_tundra_dirt",
+    "name": "Tundra Dirt",
+    "icon_identifier": "tundra_dirt",
+    "category": "",
+    "stackSize": 1000
+  },
+  {
+    "identifier": "_base_tundra_large_plant_01",
+    "name": "Tundra Large Plant 01",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_large_plant_02",
+    "name": "Tundra Large Plant 02",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_large_rock_01",
+    "name": "Tundra Large Rock 01",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_medium_rock_01",
+    "name": "Tundra Medium Rock 01",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_medium_rock_02",
+    "name": "Tundra Medium Rock 02",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_rock_pillar_01",
+    "name": "Tundra Rock Pillar 01",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_rock_pillar_02",
+    "name": "Tundra Rock Pillar 02",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_seed_plants",
+    "name": "Tundra Seed (Plants)",
+    "icon_identifier": "plant_seed_white",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_tundra_seed_trees",
+    "name": "Tundra Seed (Trees)",
+    "icon_identifier": "plant_seed_black",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_tundra_tree_01",
+    "name": "Tundra Tree 01",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_tree_02",
+    "name": "Tundra Tree 02",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_tundra_tree_03",
+    "name": "Tundra Tree 03",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_turbine_i",
+    "name": "Steam Turbine",
+    "icon_identifier": "steam_turbine",
+    "category": "",
+    "stackSize": 25
+  },
+  {
+    "identifier": "_base_underwater_chassis_i",
+    "name": "Nautical Chassis",
+    "icon_identifier": "underwater_chassis_i",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_walkway_platform",
+    "name": "Walkway",
+    "icon_identifier": "walkways_platform",
+    "category": "",
+    "stackSize": 500
+  },
+  {
+    "identifier": "_base_water_tool",
+    "name": "Irrigation Tool",
+    "icon_identifier": "water_tool",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_wd_ore_large_technum",
+    "name": "Technum Ore",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_wd_ore_large_xf",
+    "name": "Xenoferrite Ore",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_wd_ore_medium_technum",
+    "name": "Technum Ore",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_wd_ore_medium_xf",
+    "name": "Xenoferrite Ore",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_wd_ore_small_technum",
+    "name": "Technum Ore",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_wd_ore_small_xf",
+    "name": "Xenoferrite Ore",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 1
+  },
+  {
+    "identifier": "_base_weapon_components",
+    "name": "Weapon Components",
+    "icon_identifier": "weapon_components",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_base_wire_coil",
+    "name": "Wire Coil",
+    "icon_identifier": "wire_coil",
+    "category": "_base_components",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_workstation_i",
+    "name": "Robot Workstation I",
+    "icon_identifier": "workstation_i",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_workstation_ii",
+    "name": "Robot Workstation II",
+    "icon_identifier": "workstation_ii",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_workstation_iii",
+    "name": "Robot Workstation III",
+    "icon_identifier": "workstation_iii",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_base_xenoferrite_plates",
+    "name": "Xenoferrite Plates",
+    "icon_identifier": "xf_plate",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_base_xf_steel_beams",
+    "name": "Steel Beams",
+    "icon_identifier": "steel_beams",
+    "category": "_base_raw_materials",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_rail_tracks",
+    "name": "Train Tracks",
+    "icon_identifier": "rail_tracks",
+    "category": "",
+    "stackSize": 200
+  },
+  {
+    "identifier": "_trainSignal_chained",
+    "name": "Train Signal (Chained)",
+    "icon_identifier": "",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_trainSignal_simple",
+    "name": "Train Signal",
+    "icon_identifier": "trainSignal_simple",
+    "category": "",
+    "stackSize": 50
+  },
+  {
+    "identifier": "_train_engine_01",
+    "name": "Train Engine",
+    "icon_identifier": "train_engine_01",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_train_wagon_element_01",
+    "name": "Train Tanker Wagon",
+    "icon_identifier": "train_wagon_element_01",
+    "category": "",
+    "stackSize": 20
+  },
+  {
+    "identifier": "_train_wagon_solid_01",
+    "name": "Train Cargo Wagon",
+    "icon_identifier": "train_wagon_solid_01",
+    "category": "",
+    "stackSize": 20
+  }
+]
