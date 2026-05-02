@@ -6,7 +6,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -17,7 +17,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -28,7 +28,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -39,7 +39,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -50,7 +50,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -61,7 +61,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -72,7 +72,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -83,7 +83,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -94,7 +94,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -105,7 +105,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -116,7 +116,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -127,7 +127,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -138,7 +138,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -149,7 +149,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.CHARACTER]: { cycleTime: 20 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
@@ -263,7 +263,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -321,7 +321,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -340,7 +340,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -377,7 +377,7 @@ const RECIPES = {
     ingredients: [{ item: I.GRAVEL, amount: 5 }],
     output: { amount: 1 },
     machines: {
-      [M.ADVANCED_SMELTER]: { cycleTime: 3.333 },
+      [M.ADVANCED_SMELTER]: { cycleTime: 3.333333 },
       [M.SMELTER_SMALL]: { cycleTime: 5 },
     },
   },
@@ -482,7 +482,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2 },
-      [M.ASSEMBLER_II]: { cycleTime: 2.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 2.666667 },
       [M.CHARACTER]: { cycleTime: 4 },
       [M.ASSEMBLER_I]: { cycleTime: 4 },
     },
@@ -681,6 +681,14 @@ const RECIPES = {
       [M.DISTILLATION_COLUMN]: { cycleTime: 7.5 },
     },
   },
+  "Steam": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.WATER, amount: 20 }],
+    output: { amount: 60 },
+    machines: {
+      [M.BOILER]: { cycleTime: 60 },
+    },
+  },
 
   // ── Decor ──────────────────────────────────────────
   "Forest Seed (Plants)": {
@@ -705,7 +713,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -716,7 +724,7 @@ const RECIPES = {
     output: { amount: 4 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -727,7 +735,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -738,7 +746,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -749,7 +757,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -760,7 +768,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -771,7 +779,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -782,7 +790,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -793,7 +801,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -804,7 +812,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -815,7 +823,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -826,7 +834,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 0.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 0.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 0.666667 },
       [M.CHARACTER]: { cycleTime: 1 },
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
@@ -837,7 +845,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -848,7 +856,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -859,7 +867,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -870,7 +878,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -881,7 +889,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -903,7 +911,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -936,7 +944,7 @@ const RECIPES = {
     output: { amount: 4 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -947,7 +955,7 @@ const RECIPES = {
     output: { amount: 4 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -958,7 +966,7 @@ const RECIPES = {
     output: { amount: 4 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -969,7 +977,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -980,7 +988,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -991,7 +999,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -1002,7 +1010,7 @@ const RECIPES = {
     output: { amount: 5 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -1013,7 +1021,7 @@ const RECIPES = {
     output: { amount: 5 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -1293,7 +1301,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -1304,7 +1312,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -1323,7 +1331,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -1334,7 +1342,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2 },
-      [M.ASSEMBLER_II]: { cycleTime: 2.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 2.666667 },
       [M.CHARACTER]: { cycleTime: 4 },
       [M.ASSEMBLER_I]: { cycleTime: 4 },
     },
@@ -1345,7 +1353,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -1364,7 +1372,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -1375,7 +1383,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -1402,7 +1410,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2 },
-      [M.ASSEMBLER_II]: { cycleTime: 2.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 2.666667 },
       [M.CHARACTER]: { cycleTime: 4 },
       [M.ASSEMBLER_I]: { cycleTime: 4 },
     },
@@ -1413,7 +1421,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -1640,6 +1648,46 @@ const RECIPES = {
       [M.BLAST_FURNACE]: { cycleTime: 1 },
     },
   },
+  "Xenoferrite Ore Rubble": {
+    category: CAT.METALLURGY,
+    ingredients: [],
+    output: { amount: 1 },
+    machines: {
+      [M.ORE_VEIN_MINER]: { cycleTime: 0.375 },
+      [M.DRONE_MINER_II]: { cycleTime: 0.666667 },
+      [M.DRONE_MINER_I]: { cycleTime: 1 },
+    },
+  },
+  "Ignium Ore Rubble": {
+    category: CAT.METALLURGY,
+    ingredients: [],
+    output: { amount: 1 },
+    machines: {
+      [M.ORE_VEIN_MINER]: { cycleTime: 0.375 },
+      [M.DRONE_MINER_II]: { cycleTime: 0.666667 },
+      [M.DRONE_MINER_I]: { cycleTime: 1 },
+    },
+  },
+  "Technum Ore Rubble": {
+    category: CAT.METALLURGY,
+    ingredients: [],
+    output: { amount: 1 },
+    machines: {
+      [M.ORE_VEIN_MINER]: { cycleTime: 0.375 },
+      [M.DRONE_MINER_II]: { cycleTime: 0.666667 },
+      [M.DRONE_MINER_I]: { cycleTime: 1 },
+    },
+  },
+  "Telluxite Ore Rubble": {
+    category: CAT.METALLURGY,
+    ingredients: [],
+    output: { amount: 1 },
+    machines: {
+      [M.ORE_VEIN_MINER]: { cycleTime: 0.375 },
+      [M.DRONE_MINER_II]: { cycleTime: 0.666667 },
+      [M.DRONE_MINER_I]: { cycleTime: 1 },
+    },
+  },
 
   // ── Robots ──────────────────────────────────────────
   "Operator Bot": {
@@ -1648,7 +1696,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
   },
@@ -1698,7 +1746,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
   },
@@ -1888,7 +1936,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 10 },
-      [M.ASSEMBLER_II]: { cycleTime: 13.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 13.333333 },
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
   },
@@ -2108,7 +2156,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
   },
@@ -2128,7 +2176,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
   },
@@ -2148,7 +2196,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
   },
@@ -2190,7 +2238,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2201,7 +2249,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2212,7 +2260,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2223,7 +2271,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2245,7 +2293,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2256,7 +2304,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2267,7 +2315,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -2278,7 +2326,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2311,7 +2359,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -2322,7 +2370,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2344,7 +2392,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2 },
-      [M.ASSEMBLER_II]: { cycleTime: 2.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 2.666667 },
       [M.CHARACTER]: { cycleTime: 4 },
       [M.ASSEMBLER_I]: { cycleTime: 4 },
     },
@@ -2355,7 +2403,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2366,7 +2414,7 @@ const RECIPES = {
     output: { amount: 20 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2377,7 +2425,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2 },
-      [M.ASSEMBLER_II]: { cycleTime: 2.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 2.666667 },
       [M.CHARACTER]: { cycleTime: 4 },
       [M.ASSEMBLER_I]: { cycleTime: 4 },
     },
@@ -2388,7 +2436,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2399,7 +2447,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2410,7 +2458,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -2421,7 +2469,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -2432,7 +2480,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2498,7 +2546,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2542,7 +2590,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.25 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.666667 },
       [M.CHARACTER]: { cycleTime: 2.5 },
       [M.ASSEMBLER_I]: { cycleTime: 2.5 },
     },
@@ -2575,7 +2623,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -2586,7 +2634,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2608,7 +2656,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2619,7 +2667,7 @@ const RECIPES = {
     output: { amount: 5 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -2696,7 +2744,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -2718,7 +2766,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2795,7 +2843,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -2817,7 +2865,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2828,7 +2876,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2872,7 +2920,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -2883,7 +2931,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -2949,7 +2997,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -2960,7 +3008,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3026,7 +3074,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3048,7 +3096,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -3070,7 +3118,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -3092,7 +3140,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2 },
-      [M.ASSEMBLER_II]: { cycleTime: 2.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 2.666667 },
       [M.CHARACTER]: { cycleTime: 4 },
       [M.ASSEMBLER_I]: { cycleTime: 4 },
     },
@@ -3122,7 +3170,7 @@ const RECIPES = {
     output: { amount: 2 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2 },
-      [M.ASSEMBLER_II]: { cycleTime: 2.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 2.666667 },
       [M.CHARACTER]: { cycleTime: 4 },
       [M.ASSEMBLER_I]: { cycleTime: 4 },
     },
@@ -3155,7 +3203,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3210,7 +3258,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -3232,7 +3280,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3254,7 +3302,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -3265,7 +3313,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -3276,7 +3324,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2 },
-      [M.ASSEMBLER_II]: { cycleTime: 2.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 2.666667 },
       [M.CHARACTER]: { cycleTime: 4 },
       [M.ASSEMBLER_I]: { cycleTime: 4 },
     },
@@ -3320,7 +3368,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -3331,7 +3379,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -3353,7 +3401,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -3364,7 +3412,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -3375,7 +3423,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -3408,7 +3456,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3419,7 +3467,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1 },
-      [M.ASSEMBLER_II]: { cycleTime: 1.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 1.333333 },
       [M.CHARACTER]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
@@ -3430,7 +3478,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -3441,7 +3489,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3452,7 +3500,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3463,7 +3511,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3474,7 +3522,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3485,7 +3533,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3496,7 +3544,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 5 },
-      [M.ASSEMBLER_II]: { cycleTime: 6.667 },
+      [M.ASSEMBLER_II]: { cycleTime: 6.666667 },
       [M.CHARACTER]: { cycleTime: 10 },
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
@@ -3518,7 +3566,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
@@ -3551,7 +3599,7 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
-      [M.ASSEMBLER_II]: { cycleTime: 3.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
       [M.CHARACTER]: { cycleTime: 5 },
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
@@ -3562,9 +3610,25 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 4 },
-      [M.ASSEMBLER_II]: { cycleTime: 5.333 },
+      [M.ASSEMBLER_II]: { cycleTime: 5.333333 },
       [M.CHARACTER]: { cycleTime: 8 },
       [M.ASSEMBLER_I]: { cycleTime: 8 },
+    },
+  },
+  "Air": {
+    category: CAT.STRUCTURES,
+    ingredients: [],
+    output: { amount: 162000 },
+    machines: {
+      [M.AIR_INTAKE_BASE]: { cycleTime: 60 },
+    },
+  },
+  "Hot Air": {
+    category: CAT.STRUCTURES,
+    ingredients: [{ item: I.AIR, amount: 324000 }],
+    output: { amount: 324000 },
+    machines: {
+      [M.HOT_AIR_STOVE_BASE]: { cycleTime: 60 },
     },
   },
 };

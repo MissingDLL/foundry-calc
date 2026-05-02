@@ -6,11 +6,17 @@ const GAME_VERSION_ID = 'v0.6.0.26460'; // muss mit dem Verzeichnisnamen überei
 // ── Machine name constants ────────────────────────────────────
 const M = Object.freeze({
   ADVANCED_SMELTER: "Advanced Smelter",
+  AIR_INTAKE_BASE: "Air Intake Base",
   ASSEMBLER_I: "Assembler I",
   ASSEMBLER_II: "Assembler II",
   ASSEMBLER_III: "Assembler III",
+  ASSEMBLY_LINE: "Assembly Line",
+  ASSEMBLY_LINE_PAINTER: "Assembly Line Painter",
+  ASSEMBLY_LINE_PRODUCER: "Assembly Line Producer",
+  ASSEMBLY_LINE_START: "Assembly Line Start",
   BARREL_FILLER_I: "Barrel Filler I",
   BLAST_FURNACE: "Blast Furnace",
+  BOILER: "Boiler",
   CASTING_MACHINE: "Casting Machine",
   CHARACTER: "Character",
   CHEMICAL_PROCESSOR: "Chemical Processor",
@@ -18,16 +24,19 @@ const M = Object.freeze({
   CRUSHER_II: "Crusher II",
   CRYSTAL_REFINER: "Crystal Refiner",
   DISTILLATION_COLUMN: "Distillation Column",
+  DRONE_MINER_I: "Drone Miner I",
+  DRONE_MINER_II: "Drone Miner II",
   ELECTRIC_ARC_FURNACE: "Electric Arc Furnace",
   FLUID_ASSEMBLER_I: "Fluid Assembler I",
   GREENHOUSE: "Greenhouse",
+  HOT_AIR_STOVE_BASE: "Hot Air Stove Base",
   LAVA_SMELTER_I: "Lava-Smelter I",
   LAVA_SMELTER_II: "Lava-Smelter II",
+  ORE_VEIN_MINER: "Ore Vein Miner",
   SMELTER_SMALL: "Smelter (Small)",
 });
 
 // ── Assembly Line sub-machine composition ─────────────────────
-// TODO: review counts for this version
 const ASSEMBLY_LINE_COMPOSITION = Object.freeze({
   start:    { count: 1,  name: "Assembly Line Start"    },
   producer: { count: 10, name: "Assembly Line Producer" },
@@ -170,7 +179,6 @@ const I = Object.freeze({
   FIRMARLITE_SHEET: "Firmarlite Sheet",
   FLARE_STACK: "Flare Stack",
   FLUID_ASSEMBLER_I: "Fluid Assembler I",
-  FLUID_ASSEMBLER_I: "Fluid-Assembler I",
   FOREST_SEED_PLANTS: "Forest Seed (Plants)",
   FOREST_SEED_TREES: "Forest Seed (Trees)",
   FRACKING_LIQUID: "Fracking Liquid",
@@ -198,6 +206,7 @@ const I = Object.freeze({
   HIGH_TECH_CONSTRUCTION_MATERIAL: "High-Tech Construction Material",
   HIGH_TECH_MACHINERY_PARTS: "High-Tech Machinery Parts",
   HIGH_TECH_ROBOT_PARTS: "High-Tech Robot Parts",
+  HOT_AIR: "Hot Air",
   HOT_AIR_STOVE_BASE: "Hot Air Stove Base",
   HOVER_ENGINE: "Hover Engine",
   HYDRAULIC_PISTON: "Hydraulic Piston",
@@ -225,9 +234,7 @@ const I = Object.freeze({
   LIQUID_TELLUXITE: "Liquid Telluxite",
   LOADER: "Loader",
   LOADER_2ND_LANE: "Loader (2nd Lane)",
-  LOADER_2ND_LANE: "Loader, 2nd Lane",
   LOADER_3RD_LANE: "Loader (3rd Lane)",
-  LOADER_3RD_LANE: "Loader, 3rd Lane",
   LOGISTIC_CONTAINER_I: "Logistic Container I",
   LOGISTIC_CONTAINER_II: "Logistic Container II",
   LOGISTIC_CONTAINER_III: "Logistic Container III",
@@ -430,8 +437,72 @@ const CAT = Object.freeze({
 });
 
 // ── Recipe browser subcategory groupings ──────────────────────
-// TODO: fill from subgroups-template.csv
-const RECIPE_SUBGROUPS = {};
+const RECIPE_SUBGROUPS = {
+  "Buildings": [
+    { label: "Modular Buildings", rows: [["Long Range Scanner Base", "Radio Tower Base", "Modular Storage Tank Base", "Fracking Tower Base", "Air Intake Base", "Hot Air Stove Base", "Blast Furnace Base", "Heavy Caster Base", "Monument Base"]] },
+    { label: "Xeno Power Plant", rows: [["Reactor Fuel Mixer Base", "Xeno Reactor Base", "Steam Generator Base", "High-Pressure Turbine Base", "Cooling Tower Base"]] },
+  ],
+  "Components": [
+    { label: "Mechanical Components", rows: [["Machinery Parts", "Advanced Machinery Parts", "High-Tech Machinery Parts", "Hydraulic Piston", "Robot Parts", "High-Tech Robot Parts", "Construction Material", "High-Tech Construction Material", "Hover Engine", "Nautical Chassis", "Weapon Components"]] },
+    { label: "Electronic Components", rows: [["Wire Coil", "Electronic Components", "Circuit Board", "Telluxite Wafer", "CPU", "Energy Cell", "Charged Xeno-Crystal", "Xeno Power Core"]] },
+    { label: "Chemical", rows: [["Explosives (Primitive)", "Explosives", "Glass", "Olumite Refining: Low Density Olumite", "Olumite Refining: Olumite Gas", "Olumite Refining: Liquid Polymer", "Polymer Board", "Olumic Acid", "Impure High Density Olumite", "High Density Olumite", "Rubber", "Ignium-Enriched Water", "Paint", "Fracking Liquid"]] },
+    { label: "Concrete", rows: [["Gravel", "Cement", "Cement (Slag Reprocessing)", "Concrete", "Hazard Concrete"]] },
+    { label: "Fuel", rows: [["Ignium Powder", "Fuel Rod Casing", "Ignium Fuel Rod", "Liquid Fuel", "Space Ship Fuel Canister", "Portable Fuel", "Jetpack Fuel", "Xeno-Crystal Sludge", "Reactive Briquette"]] },
+    { label: "Barrels", rows: [["Barrel (Empty)", "Barrel (Olumite)", "Empty Barreled Olumite", "Xenoferrite Plates (Barrel Recycle)"]] },
+    { label: "Science", rows: [["Science Pack I", "Science Pack II", "Science Pack III", "Science Pack IV", "Science Pack V"]] },
+    { label: "Miscellaneous", rows: [["Biomass", "Coked Ignium"]] },
+  ],
+  "Decor": [
+    { label: "Miscellaneous", rows: [["Sign", "Railings", "Construction Site Decor"]] },
+    { label: "Lights", rows: [["Ceiling Light", "Ceiling Light (Large)", "Wall Light", "Portable Light", "Light Pole I", "Light Pole II"]] },
+    { label: "Doors", rows: [["Door (Single)", "Door (Double)", "Hangar Gate"]] },
+    { label: "Blocks", rows: [["Decor (Basic Shapes)", "Marble (Black)", "Marble (White)", "Wooden Blocks", "Wooden Decor Blocks"]] },
+    { label: "Structures", rows: [["Decor (Misc)", "Decor (Modular Windows Slope Edge)", "Decor (Modular Windows Slope)", "Decor (Modular Windows Wedge)", "Decor (Modular Windows)", "Decor (Struts)", "Decor (Support Truss)", "Decor (Support)", "Decor (Walls)", "Decor (Windows)"]] },
+    { label: "Neon Tubes", rows: [["Neon Decor", "Neon Decor (Slopes)", "Neon Decor (Slope Junctions)", "Neon Decor (Large)", "Neon Decor (Large Slopes)", "Neon Decor (Large Slope Junctions)"]] },
+    { label: "Office", rows: [["Office Chair", "Office Couch", "Office Desk", "Office File Cabinet", "Office Plant", "Office Table"]] },
+    { label: "Office (Deluxe)", rows: [["Executive Office Chair", "Executive Office Couch", "Executive Office Desk", "Executive Office File Cabinet", "Executive Office Plant", "Executive Office Table", "Office Nameplate", "Office Statue", "Office Wall Plaque"]] },
+    { label: "Seeds", rows: [["Forest Seed (Plants)", "Forest Seed (Trees)", "Rocky Desert Seed (Plants)", "Rocky Desert Seed (Trees)", "Sandy Desert Seed (Plants)", "Sandy Desert Seed (Trees)", "Tropical Rainforest Seed (Plants)", "Tropical Rainforest Seed (Trees)", "Tundra Seed (Plants)", "Tundra Seed (Trees)"]] },
+  ],
+  "Handhelds": [
+    { label: "General", rows: [["Mining Drill", "Mining Laser", "Excavation Drone Controller", "Ore Scanner (Handheld)", "Power Line", "Orbital Uplink", "Plumber Tool", "Modular Building Planner", "Paint Roller", "Irrigation Tool"]] },
+    { label: "Explosives", rows: [["Explosives Detonator", "Explosive Charge", "Heavy Explosive Charge", "Shaped Charge", "Shaped Charge (Heavy)"]] },
+  ],
+  "Metallurgy": [
+    { label: "Xenoferrite", rows: [["Xenoferrite Ore", "Xenoferrite Ore (Alternative)", "Xenoferrite Plates (Tier 1)", "Xenoferrite Plates (Tier 2)", "Xenoferrite Plates (Tier 3)"]] },
+    { label: "Technum", rows: [["Technum Ore", "Technum Ore (Alternative)", "Technum Rods (Tier 1)", "Technum Rods (Tier 2)", "Technum Rods (Tier 3)"]] },
+    { label: "Steel", rows: [["Ignium Ore", "Xenoferrite-Ignium Ore Blend", "Steel Beams (Tier 1)", "Advanced Xenoferrite-Ignium Ore Blend", "Steel Beams (Tier 2)"]] },
+    { label: "Telluxite", rows: [["Telluxite Ore", "Telluxite Ingot", "Liquid Telluxite"]] },
+    { label: "Firmarlite", rows: [["Firmarlite Sheet"]] },
+    { label: "Superalloy", rows: [["Molten Superalloy", "Superalloy"]] },
+  ],
+  "Robots": [
+    { label: "Bots", rows: [["Transport Bot", "Heavy Duty Transport Bot", "Transport Drone", "Vacuum Bot", "Cleaning Bot", "Snack Bot", "Light Bot", "Screen Bot", "Science Assistant Drone", "Mining Drone", "Operator Bot", "Planter Drone", "Maintenance Drone", "Combat Drone", "Aquatic Hauling Bot", "Marine Exploration Bot", "Hydro-Mining Bot", "Hydro-Farming Bot"]] },
+    { label: "Operator Robot", rows: [["Operator Robot Torso", "Operator Robot Head", "Operator Robot Arm", "Operator Robot Leg"]] },
+    { label: "Farmer Robot", rows: [["Farmer Robot Torso", "Farmer Robot Head", "Farmer Robot Arm", "Farmer Robot Leg"]] },
+    { label: "Combat Robot", rows: [["Combat Robot Torso", "Combat Robot Head", "Combat Robot Arm", "Combat Robot Leg"]] },
+    { label: "Assault Robot", rows: [["Assault Robot Torso", "Assault Robot Head", "Assault Robot Arm", "Assault Robot Leg"]] },
+    { label: "Mining Robot", rows: [["Miner Robot Torso", "Miner Robot Head", "Miner Robot Arm", "Miner Robot Leg"]] },
+    { label: "Personal Assistant Robot", rows: [["Personal Assistant Robot Torso", "Personal Assistant Robot Head", "Personal Assistant Robot Arm", "Personal Assistant Robot Leg"]] },
+    { label: "Hazard Robot", rows: [["Hazard Robot Torso", "Hazard Robot Head", "Hazard Robot Arm", "Hazard Robot Leg"]] },
+    { label: "Science Robot", rows: [["Science Robot Torso", "Science Robot Head", "Science Robot Arm", "Science Robot Leg"]] },
+    { label: "Scout Robot", rows: [["Scout Robot Torso", "Scout Robot Head", "Scout Robot Arm", "Scout Robot Leg"]] },
+  ],
+  "Structures": [
+    { label: "Infrastructure", rows: [["Building Block", "Emergency Beacon", "Space Station Terminal", "Research Server", "Omni-Analyzer", "Robot Workstation I", "Robot Workstation II", "Robot Workstation III"]] },
+    { label: "Solid Item Logistics", rows: [["Conveyor I", "Conveyor II", "Conveyor III", "Conveyor IV", "Conveyor Slope I", "Conveyor Slope II", "Conveyor Slope III", "Conveyor Slope IV", "Conveyor Balancer I", "Conveyor Balancer II", "Conveyor Balancer III", "Conveyor Balancer IV", "Freight Elevator I", "Freight Elevator II", "Freight Elevator III", "Freight Elevator IV", "Shipping Pad (Small)", "Shipping Pad (Medium)", "Shipping Pad (Medium, Assembly Line)", "Cargo Shuttle Start Pad", "Cargo Shuttle Target Pad"]] },
+    { label: "Liquid Handling", rows: [["Pipe", "Pipeline", "Pipe Adapter", "Liquid Intake", "Liquid Intake (Pipeline)", "Pump (Pipes)", "Pump (Pipelines)", "Pipe-to-Pipeline Pump", "Pipeline-to-Pipe Pump", "Cargo Shuttle Start Pad (Liquids)", "Cargo Shuttle Target Pad (Liquids)"]] },
+    { label: "Loaders", rows: [["Filter Loader", "Loader", "Loader, 2nd Lane", "Loader, 3rd Lane"]] },
+    { label: "Energy", rows: [["Biomass Burner", "Burner Generator", "Boiler", "Geothermal Boiler", "Steam Turbine", "Solar Panel (Small)", "Solar Panel (Large)", "Battery (Small)", "Battery (Large)", "Power Pole (Small)", "Power Pole (Large)", "Power Pole (Wall-Mounted)", "Transformer (Large)", "Transformer (Small)"]] },
+    { label: "Resource Gathering", rows: [["Drone Miner I", "Drone Miner II", "Pumpjack I", "Ore Vein Miner", "Xeno-Scrap-Extractor", "Xeno-Crystal-Extractor"]] },
+    { label: "Processing", rows: [["Assembler I", "Assembler II", "Assembler III", "Fluid-Assembler I", "Barrel Filler I", "Smelter (Small)", "Advanced Smelter", "Electric Arc Furnace", "Lava-Smelter I", "Lava-Smelter II", "Crusher I", "Crusher II", "Chemical Processor", "Distillation Column", "Casting Machine", "Crystal Refiner", "Incinerator", "Flare Stack", "Greenhouse", "Resource Separator", "Scrap Recycler"]] },
+    { label: "Assembly Lines", rows: [["Assembly Line Rail", "Assembly Line Splitter", "Assembly Line Merger", "Assembly Line Start", "Assembly Line Producer", "Assembly Line Painter", "Assembly Line Logistics Container"]] },
+    { label: "Storage", rows: [["Crate", "Container", "Logistic Container I", "Logistic Container II", "Logistic Container III", "Tank", "Xeno-Logistics Container", "Xeno-Logistics Tower"]] },
+    { label: "Mobility", rows: [["Elevator", "Walkway", "Escalator I", "Escalator II", "Escalator III", "Ladder", "Stairs"]] },
+    { label: "Construction Industry", rows: [["Transport Ship Port", "Construction Ship Port", "Construction Warehouse", "Quarry", "Drill Ship"]] },
+    { label: "Trains", rows: [["Train Tracks", "Train Signal", "Train Engine", "Train Cargo Wagon", "Train Tanker Wagon", "Train Station", "Train Loading Station"]] },
+    { label: "Data Cable System", rows: [["Data Cable", "Data Evaluator", "Data Memory Cell", "Data Processor", "Data Source", "Data Source (Button)", "Data Source (Lever)"]] },
+  ],
+};
 
 // ── Fluid / gas items (transported via pipes, not loaders) ───
 const FLUID_ITEMS = new Set([
@@ -466,17 +537,29 @@ const FLUID_ITEMS = new Set([
 ]);
 
 // ── Intermediate items (depth-mode 1 stop boundary) ──────────
-// TODO: review and fill for this version
-const INTERMEDIATE_ITEMS = new Set([]);
+const INTERMEDIATE_ITEMS = new Set([
+  "Advanced Xenoferrite-Ignium Ore Blend",
+  "Cement",
+  "Coked Ignium",
+  "Concrete",
+  "Glass",
+  "Gravel",
+  "Ignium Powder",
+  "Polymer Board",
+  "Steel Beams",
+  "Superalloy",
+  "Technum Rods",
+  "Telluxite Ingot",
+  "Xenoferrite Plates",
+  "Xenoferrite-Ignium Ore Blend",
+]);
 
 // ── Raw fluid sources ──────────────────────────────────────────
-// TODO: review for this version
 const FLUID_SOURCE_MACHINES = Object.freeze({
   'water': { machine: 'Pipe Intake', capacityPerMin: 30000 },
 });
 
 // ── Byproduct disposal ────────────────────────────────────────
-// TODO: review for this version
 const BYPRODUCT_DISPOSAL = Object.freeze({
   'Waste Gas': { machine: 'Flare Stack', capacityPerMin: 3000 },
   'Blast Furnace Slag': {
@@ -486,15 +569,78 @@ const BYPRODUCT_DISPOSAL = Object.freeze({
 });
 
 // ── Minimum fluid supply per machine instance ─────────────────
-// TODO: review for this version
 const MACHINE_FLUID_MINIMUMS = Object.freeze({
   'Blast Furnace': { 'Hot Air': 324000 },
 });
 
 // ── Machine power consumption (kW) ───────────────────────────
-// TODO: extract from BuildableObjectTemplate
-const MACHINE_POWER_KW = Object.freeze({});
+const MACHINE_POWER_KW = Object.freeze({
+  [M.ADVANCED_SMELTER]: 150,
+  [M.AIR_INTAKE_BASE]: 0,
+  [M.ASSEMBLER_I]: 50,
+  [M.ASSEMBLER_II]: 125,
+  [M.ASSEMBLER_III]: 250,
+  [M.ASSEMBLY_LINE_PAINTER]: 0,
+  [M.ASSEMBLY_LINE_PRODUCER]: 0,
+  [M.ASSEMBLY_LINE_START]: 0,
+  [M.BARREL_FILLER_I]: 100,
+  [M.BLAST_FURNACE]: 0,
+  [M.BOILER]: 0,
+  [M.CASTING_MACHINE]: 100,
+  [M.CHEMICAL_PROCESSOR]: 300,
+  [M.CRUSHER_I]: 75,
+  [M.CRUSHER_II]: 200,
+  [M.CRYSTAL_REFINER]: 500,
+  [M.DISTILLATION_COLUMN]: 1000,
+  [M.DRONE_MINER_I]: 50,
+  [M.DRONE_MINER_II]: 100,
+  [M.ELECTRIC_ARC_FURNACE]: 4000,
+  [M.FLUID_ASSEMBLER_I]: 300,
+  [M.GREENHOUSE]: 100,
+  [M.HOT_AIR_STOVE_BASE]: 0,
+  [M.LAVA_SMELTER_I]: 0,
+  [M.LAVA_SMELTER_II]: 0,
+  [M.ORE_VEIN_MINER]: 0,
+  [M.SMELTER_SMALL]: 100,
+});
 
 // ── Machine connection layout ─────────────────────────────────
-// TODO: extract from BuildableObjectTemplate
-const MACHINE_CONNECTIONS = Object.freeze({});
+const MACHINE_CONNECTIONS = Object.freeze({
+  [M.ADVANCED_SMELTER]: { sides: [3, 3, 3, 3], loader_needed: true },
+  [M.AIR_INTAKE_BASE]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.ASSEMBLER_I]: { sides: [3, 3, 3, 3], loader_needed: true },
+  [M.ASSEMBLER_II]: { sides: [3, 3, 3, 3], loader_needed: true },
+  [M.ASSEMBLER_III]: { sides: [3, 3, 3, 3], loader_needed: true },
+  [M.ASSEMBLY_LINE_PAINTER]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.ASSEMBLY_LINE_PRODUCER]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.ASSEMBLY_LINE_START]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.BARREL_FILLER_I]: { sides: [3, 3, 3, 3], loader_needed: true },
+  [M.BLAST_FURNACE]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.BOILER]: { sides: [5, 2, 4, 2], loader_needed: true },
+  [M.CASTING_MACHINE]: { sides: [6, 3, 6, 3], loader_needed: true },
+  [M.CHEMICAL_PROCESSOR]: { sides: [5, 3, 5, 3], loader_needed: true },
+  [M.CRUSHER_I]: { sides: [2, 2, 2, 2], loader_needed: true },
+  [M.CRUSHER_II]: { sides: [2, 2, 2, 2], loader_needed: true },
+  [M.CRYSTAL_REFINER]: { sides: [4, 4, 4, 4], loader_needed: true },
+  [M.DISTILLATION_COLUMN]: { sides: [3, 3, 3, 3], loader_needed: true },
+  [M.DRONE_MINER_I]: { sides: [2, 2, 2, 2], loader_needed: true },
+  [M.DRONE_MINER_II]: { sides: [2, 2, 2, 2], loader_needed: true },
+  [M.ELECTRIC_ARC_FURNACE]: { sides: [18, 9, 18, 9], loader_needed: true },
+  [M.FLUID_ASSEMBLER_I]: { sides: [3, 3, 3, 3], loader_needed: true },
+  [M.GREENHOUSE]: { sides: [3, 5, 3, 5], loader_needed: true },
+  [M.HOT_AIR_STOVE_BASE]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.LAVA_SMELTER_I]: { sides: [2, 0, 2, 4], loader_needed: true },
+  [M.LAVA_SMELTER_II]: { sides: [2, 0, 2, 4], loader_needed: true },
+  [M.ORE_VEIN_MINER]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.SMELTER_SMALL]: { sides: [2, 2, 2, 2], loader_needed: true },
+  "Burner Generator": { sides: [4, 4, 4, 4], loader_needed: true },
+  "Cargo Shuttle Start Pad": { sides: [5, 5, 5, 5], loader_needed: true },
+  "Cargo Shuttle Target Pad": { sides: [5, 5, 5, 5], loader_needed: true },
+  "Incinerator": { sides: [4, 3, 4, 3], loader_needed: true },
+  "Research Server": { sides: [3, 3, 3, 3], loader_needed: true },
+  "Resource Separator": { sides: [0, 0, 0, 0], loader_needed: false },
+  "Scrap Recycler": { sides: [0, 0, 0, 0], loader_needed: false },
+  "Shipping Pad (Medium)": { sides: [0, 0, 0, 0], loader_needed: false },
+  "Shipping Pad (Medium, Assembly Line)": { sides: [0, 0, 0, 0], loader_needed: false },
+  "Shipping Pad (Small)": { sides: [0, 0, 0, 0], loader_needed: false },
+});
