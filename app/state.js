@@ -458,7 +458,6 @@ const MINER_GROUPS = [
   { label: "Xenoferrite Ore Rubble", miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
   { label: "Ignium Ore Rubble",      miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
   { label: "Technum Ore Rubble",     miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
-  { label: "Mineral Rock",           miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
   { label: "Telluxite Ore Rubble",   miners: ["Ore Vein Miner"] },
 ];
 

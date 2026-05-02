@@ -88,7 +88,7 @@ const MACHINE_SIZES = {
   'Assembler I':            [3, 3],
   'Assembler II':           [5, 5],
   'Assembler III':          [7, 7],
-  'Fluid-Assembler I':      [5, 5],
+  'Fluid Assembler I':      [5, 5],
   'Barrel Filler I':        [5, 5],
   'Crusher I':              [5, 5],
   'Crusher II':             [7, 7],
