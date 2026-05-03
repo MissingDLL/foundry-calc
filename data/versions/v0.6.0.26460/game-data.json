@@ -10662,266 +10662,266 @@
   "items": {
     "Advanced Machinery Parts": {
       "name": "Advanced Machinery Parts",
-      "icon_id": "",
+      "icon_id": "_base_mic_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Advanced Smelter": {
       "name": "Advanced Smelter",
-      "icon_id": "",
+      "icon_id": "_base_smelter_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Advanced Xenoferrite-Ignium Ore Blend": {
       "name": "Advanced Xenoferrite-Ignium Ore Blend",
-      "icon_id": "",
+      "icon_id": "_base_advanced_steel_mixture",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
     },
     "Air": {
       "name": "Air",
-      "icon_id": "",
+      "icon_id": "_base_air",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Air Intake Base": {
       "name": "Air Intake Base",
-      "icon_id": "",
+      "icon_id": "_base_air_intake_1",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Aquatic Hauling Bot": {
       "name": "Aquatic Hauling Bot",
-      "icon_id": "",
+      "icon_id": "_base_transport_bot_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assault Robot Arm": {
       "name": "Assault Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_military_robot_02_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assault Robot Head": {
       "name": "Assault Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_military_robot_02_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assault Robot Leg": {
       "name": "Assault Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_military_robot_02_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assault Robot Torso": {
       "name": "Assault Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_military_robot_02_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembler I": {
       "name": "Assembler I",
-      "icon_id": "",
+      "icon_id": "_base_assembler_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembler II": {
       "name": "Assembler II",
-      "icon_id": "",
+      "icon_id": "_base_assembler_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembler III": {
       "name": "Assembler III",
-      "icon_id": "",
+      "icon_id": "_base_assembler_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembly Line Logistics Container": {
       "name": "Assembly Line Logistics Container",
-      "icon_id": "",
+      "icon_id": "_base_al_end_consumer_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembly Line Merger": {
       "name": "Assembly Line Merger",
-      "icon_id": "",
+      "icon_id": "_base_al_merger",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembly Line Painter": {
       "name": "Assembly Line Painter",
-      "icon_id": "",
+      "icon_id": "_base_al_painter_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembly Line Producer": {
       "name": "Assembly Line Producer",
-      "icon_id": "",
+      "icon_id": "_base_al_producer_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembly Line Rail": {
       "name": "Assembly Line Rail",
-      "icon_id": "",
+      "icon_id": "_base_al_rail_straight",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembly Line Splitter": {
       "name": "Assembly Line Splitter",
-      "icon_id": "",
+      "icon_id": "_base_al_splitter",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Assembly Line Start": {
       "name": "Assembly Line Start",
-      "icon_id": "",
+      "icon_id": "_base_al_start",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Barrel (Empty)": {
       "name": "Barrel (Empty)",
-      "icon_id": "",
+      "icon_id": "_base_barrel_empty",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Barrel (Olumite)": {
       "name": "Barrel (Olumite)",
-      "icon_id": "",
+      "icon_id": "_base_barrel_olumite",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Barrel Filler I": {
       "name": "Barrel Filler I",
-      "icon_id": "",
+      "icon_id": "_base_barrel_filler_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Battery (Large)": {
       "name": "Battery (Large)",
-      "icon_id": "",
+      "icon_id": "_base_battery_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Battery (Small)": {
       "name": "Battery (Small)",
-      "icon_id": "",
+      "icon_id": "_base_battery_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Biomass": {
       "name": "Biomass",
-      "icon_id": "",
+      "icon_id": "_base_biomass",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Biomass Burner": {
       "name": "Biomass Burner",
-      "icon_id": "",
+      "icon_id": "_base_biomass_burner",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Blast Furnace Base": {
       "name": "Blast Furnace Base",
-      "icon_id": "",
+      "icon_id": "_base_blast_furnace_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Blast Furnace Slag": {
       "name": "Blast Furnace Slag",
-      "icon_id": "",
+      "icon_id": "_base_bf_slag",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Boiler": {
       "name": "Boiler",
-      "icon_id": "",
+      "icon_id": "_base_boiler_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Building Block": {
       "name": "Building Block",
-      "icon_id": "",
+      "icon_id": "_base_building_part",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Burner Generator": {
       "name": "Burner Generator",
-      "icon_id": "",
+      "icon_id": "_base_burner_generator_lvg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "CPU": {
       "name": "CPU",
-      "icon_id": "",
+      "icon_id": "_base_cpu",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Cargo Shuttle Start Pad": {
       "name": "Cargo Shuttle Start Pad",
-      "icon_id": "",
+      "icon_id": "_base_drone_transport_startpad_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Cargo Shuttle Start Pad (Liquids)": {
       "name": "Cargo Shuttle Start Pad (Liquids)",
-      "icon_id": "",
+      "icon_id": "_base_drone_transport_startpad_liquid_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Cargo Shuttle Target Pad": {
       "name": "Cargo Shuttle Target Pad",
-      "icon_id": "",
+      "icon_id": "_base_drone_transport_targetpad_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Cargo Shuttle Target Pad (Liquids)": {
       "name": "Cargo Shuttle Target Pad (Liquids)",
-      "icon_id": "",
+      "icon_id": "_base_drone_transport_targetpad_liquid_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Casting Machine": {
       "name": "Casting Machine",
-      "icon_id": "",
+      "icon_id": "_base_casting_machine",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -10942,21 +10942,21 @@
     },
     "Ceiling Light I": {
       "name": "Ceiling Light I",
-      "icon_id": "",
+      "icon_id": "_base_light_ceiling_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Ceiling Light II": {
       "name": "Ceiling Light II",
-      "icon_id": "",
+      "icon_id": "_base_light_ceiling_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Cement": {
       "name": "Cement",
-      "icon_id": "",
+      "icon_id": "_base_cement",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
@@ -10970,301 +10970,301 @@
     },
     "Charged Xeno-Crystal": {
       "name": "Charged Xeno-Crystal",
-      "icon_id": "",
+      "icon_id": "_base_crystal_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Chemical Processor": {
       "name": "Chemical Processor",
-      "icon_id": "",
+      "icon_id": "_base_chemical_processor_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Circuit Board": {
       "name": "Circuit Board",
-      "icon_id": "",
+      "icon_id": "_base_eic_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Cleaning Bot": {
       "name": "Cleaning Bot",
-      "icon_id": "",
+      "icon_id": "_base_cleaning_bot_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Coked Ignium": {
       "name": "Coked Ignium",
-      "icon_id": "",
+      "icon_id": "_base_coked_ignium",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
     },
     "Combat Drone": {
       "name": "Combat Drone",
-      "icon_id": "",
+      "icon_id": "_base_military_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Combat Robot Arm": {
       "name": "Combat Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_military_robot_01_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Combat Robot Head": {
       "name": "Combat Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_military_robot_01_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Combat Robot Leg": {
       "name": "Combat Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_military_robot_01_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Combat Robot Torso": {
       "name": "Combat Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_military_robot_01_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Concrete": {
       "name": "Concrete",
-      "icon_id": "",
+      "icon_id": "_base_concrete",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
     },
     "Construction Material": {
       "name": "Construction Material",
-      "icon_id": "",
+      "icon_id": "_base_construction_material_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Construction Ship Port": {
       "name": "Construction Ship Port",
-      "icon_id": "",
+      "icon_id": "_base_construction_drone_port_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Construction Site Decor": {
       "name": "Construction Site Decor",
-      "icon_id": "",
+      "icon_id": "_base_construction_decor",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Construction Warehouse": {
       "name": "Construction Warehouse",
-      "icon_id": "",
+      "icon_id": "_base_construction_warehouse_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Container": {
       "name": "Container",
-      "icon_id": "",
+      "icon_id": "_base_container",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor Balancer I": {
       "name": "Conveyor Balancer I",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_balancer_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor Balancer II": {
       "name": "Conveyor Balancer II",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_balancer_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor Balancer III": {
       "name": "Conveyor Balancer III",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_balancer_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor Balancer IV": {
       "name": "Conveyor Balancer IV",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_balancer_iv",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor I": {
       "name": "Conveyor I",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor II": {
       "name": "Conveyor II",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor III": {
       "name": "Conveyor III",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor IV": {
       "name": "Conveyor IV",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_iv",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor Slope I": {
       "name": "Conveyor Slope I",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_slope_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor Slope II": {
       "name": "Conveyor Slope II",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_slope_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor Slope III": {
       "name": "Conveyor Slope III",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_slope_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Conveyor Slope IV": {
       "name": "Conveyor Slope IV",
-      "icon_id": "",
+      "icon_id": "_base_conveyor_slope_iv",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Cooling Tower Base": {
       "name": "Cooling Tower Base",
-      "icon_id": "",
+      "icon_id": "_base_npp_cooling_tower_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Crate": {
       "name": "Crate",
-      "icon_id": "",
+      "icon_id": "_base_chest",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Crude Olumite": {
       "name": "Crude Olumite",
-      "icon_id": "",
+      "icon_id": "_base_olumite",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Crusher I": {
       "name": "Crusher I",
-      "icon_id": "",
+      "icon_id": "_base_crusher_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Crusher II": {
       "name": "Crusher II",
-      "icon_id": "",
+      "icon_id": "_base_crusher_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Crystal Refiner": {
       "name": "Crystal Refiner",
-      "icon_id": "",
+      "icon_id": "_base_crystal_refiner_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Data Cable": {
       "name": "Data Cable",
-      "icon_id": "",
+      "icon_id": "_base_data_cable",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Data Evaluator": {
       "name": "Data Evaluator",
-      "icon_id": "",
+      "icon_id": "_base_data_comparer",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Data Memory Cell": {
       "name": "Data Memory Cell",
-      "icon_id": "",
+      "icon_id": "_base_data_memory",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Data Processor": {
       "name": "Data Processor",
-      "icon_id": "",
+      "icon_id": "_base_data_processor",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Data Source": {
       "name": "Data Source",
-      "icon_id": "",
+      "icon_id": "_base_data_source_static",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Data Source (Button)": {
       "name": "Data Source (Button)",
-      "icon_id": "",
+      "icon_id": "_base_data_source_button",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Data Source (Lever)": {
       "name": "Data Source (Lever)",
-      "icon_id": "",
+      "icon_id": "_base_data_source_lever",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Basic Shapes)": {
       "name": "Decor (Basic Shapes)",
-      "icon_id": "",
+      "icon_id": "_base_decor_base_cube_caution",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Misc)": {
       "name": "Decor (Misc)",
-      "icon_id": "",
+      "icon_id": "_base_decor_misc",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -11292,133 +11292,133 @@
     },
     "Decor (Modular Windows)": {
       "name": "Decor (Modular Windows)",
-      "icon_id": "",
+      "icon_id": "_base_decor_window_modular",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Struts)": {
       "name": "Decor (Struts)",
-      "icon_id": "",
+      "icon_id": "_base_decor_struts",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Support Truss)": {
       "name": "Decor (Support Truss)",
-      "icon_id": "",
+      "icon_id": "_base_decor_support_truss",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Support)": {
       "name": "Decor (Support)",
-      "icon_id": "",
+      "icon_id": "_base_decor_support",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Walls)": {
       "name": "Decor (Walls)",
-      "icon_id": "",
+      "icon_id": "_base_decor_wall",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Windows Modular Slope Edge)": {
       "name": "Decor (Windows Modular Slope Edge)",
-      "icon_id": "",
+      "icon_id": "_base_decor_window_modular_slope_edge",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Windows Modular Slope)": {
       "name": "Decor (Windows Modular Slope)",
-      "icon_id": "",
+      "icon_id": "_base_decor_window_modular_slope",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Windows Modular Wedge)": {
       "name": "Decor (Windows Modular Wedge)",
-      "icon_id": "",
+      "icon_id": "_base_decor_window_modular_wedge",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Decor (Windows)": {
       "name": "Decor (Windows)",
-      "icon_id": "",
+      "icon_id": "_base_decor_window",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Distillation Column": {
       "name": "Distillation Column",
-      "icon_id": "",
+      "icon_id": "_base_distillation_column_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Door (Double)": {
       "name": "Door (Double)",
-      "icon_id": "",
+      "icon_id": "_base_door_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Door (Single)": {
       "name": "Door (Single)",
-      "icon_id": "",
+      "icon_id": "_base_door_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Drill Ship": {
       "name": "Drill Ship",
-      "icon_id": "",
+      "icon_id": "_base_drill_bot",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Drone Miner I": {
       "name": "Drone Miner I",
-      "icon_id": "",
+      "icon_id": "_base_drone_miner_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Drone Miner II": {
       "name": "Drone Miner II",
-      "icon_id": "",
+      "icon_id": "_base_drone_miner_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Electric Arc Furnace": {
       "name": "Electric Arc Furnace",
-      "icon_id": "",
+      "icon_id": "_base_electric_arc_furnace",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Electronic Components": {
       "name": "Electronic Components",
-      "icon_id": "",
+      "icon_id": "_base_eic_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Elevator": {
       "name": "Elevator",
-      "icon_id": "",
+      "icon_id": "_base_elevator_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Emergency Beacon": {
       "name": "Emergency Beacon",
-      "icon_id": "",
+      "icon_id": "_base_emergency_beacon",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -11432,91 +11432,91 @@
     },
     "Energy Cell": {
       "name": "Energy Cell",
-      "icon_id": "",
+      "icon_id": "_base_energy_cell",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Escalator I": {
       "name": "Escalator I",
-      "icon_id": "",
+      "icon_id": "_base_escalator",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Escalator II": {
       "name": "Escalator II",
-      "icon_id": "",
+      "icon_id": "_base_escalator_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Escalator III": {
       "name": "Escalator III",
-      "icon_id": "",
+      "icon_id": "_base_escalator_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Excavation Drone Controller": {
       "name": "Excavation Drone Controller",
-      "icon_id": "",
+      "icon_id": "_base_drone_controller",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Executive Office Chair": {
       "name": "Executive Office Chair",
-      "icon_id": "",
+      "icon_id": "_base_office_chair_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Executive Office Couch": {
       "name": "Executive Office Couch",
-      "icon_id": "",
+      "icon_id": "_base_office_couch_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Executive Office Desk": {
       "name": "Executive Office Desk",
-      "icon_id": "",
+      "icon_id": "_base_office_desk_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Executive Office File Cabinet": {
       "name": "Executive Office File Cabinet",
-      "icon_id": "",
+      "icon_id": "_base_office_file_cabinet_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Executive Office Plant": {
       "name": "Executive Office Plant",
-      "icon_id": "",
+      "icon_id": "_base_office_plant_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Executive Office Table": {
       "name": "Executive Office Table",
-      "icon_id": "",
+      "icon_id": "_base_office_table_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Explosive Charge": {
       "name": "Explosive Charge",
-      "icon_id": "",
+      "icon_id": "_base_dynamite_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Explosives": {
       "name": "Explosives",
-      "icon_id": "",
+      "icon_id": "_base_explosives_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -11530,70 +11530,70 @@
     },
     "Explosives Detonator": {
       "name": "Explosives Detonator",
-      "icon_id": "",
+      "icon_id": "_base_dynamite_remote_control",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Farmer Robot Arm": {
       "name": "Farmer Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_agriculture_robot_01_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Farmer Robot Head": {
       "name": "Farmer Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_agriculture_robot_01_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Farmer Robot Leg": {
       "name": "Farmer Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_agriculture_robot_01_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Farmer Robot Torso": {
       "name": "Farmer Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_agriculture_robot_01_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Filter Loader": {
       "name": "Filter Loader",
-      "icon_id": "",
+      "icon_id": "_base_loader_1st_i_filter",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Firmarlite Bar": {
       "name": "Firmarlite Bar",
-      "icon_id": "",
+      "icon_id": "_base_firmarlite_bar",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Firmarlite Sheet": {
       "name": "Firmarlite Sheet",
-      "icon_id": "",
+      "icon_id": "_base_firmarlite_sheet",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Flare Stack": {
       "name": "Flare Stack",
-      "icon_id": "",
+      "icon_id": "_base_flare_stack",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Fluid Assembler I": {
       "name": "Fluid Assembler I",
-      "icon_id": "",
+      "icon_id": "_base_assembler_fluid_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -11607,392 +11607,392 @@
     },
     "Forest Seed (Plants)": {
       "name": "Forest Seed (Plants)",
-      "icon_id": "",
+      "icon_id": "_base_boreal_forest_seed_plants",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Forest Seed (Trees)": {
       "name": "Forest Seed (Trees)",
-      "icon_id": "",
+      "icon_id": "_base_boreal_forest_seed_trees",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Fracking Liquid": {
       "name": "Fracking Liquid",
-      "icon_id": "",
+      "icon_id": "_base_fracking_liquid_i",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Fracking Tower Base": {
       "name": "Fracking Tower Base",
-      "icon_id": "",
+      "icon_id": "_base_fracking_tower_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Freight Elevator I": {
       "name": "Freight Elevator I",
-      "icon_id": "",
+      "icon_id": "_base_freight_elevator_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Freight Elevator II": {
       "name": "Freight Elevator II",
-      "icon_id": "",
+      "icon_id": "_base_freight_elevator_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Freight Elevator III": {
       "name": "Freight Elevator III",
-      "icon_id": "",
+      "icon_id": "_base_freight_elevator_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Freight Elevator IV": {
       "name": "Freight Elevator IV",
-      "icon_id": "",
+      "icon_id": "_base_freight_elevator_iv",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Fuel Rod Casing": {
       "name": "Fuel Rod Casing",
-      "icon_id": "",
+      "icon_id": "_base_fuel_rod_casing",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Geothermal Boiler": {
       "name": "Geothermal Boiler",
-      "icon_id": "",
+      "icon_id": "_base_geothermal_generator_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Glass": {
       "name": "Glass",
-      "icon_id": "",
+      "icon_id": "_base_glass",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
     },
     "Gravel": {
       "name": "Gravel",
-      "icon_id": "",
+      "icon_id": "_base_gravel",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
     },
     "Greenhouse": {
       "name": "Greenhouse",
-      "icon_id": "",
+      "icon_id": "_base_greenhouse_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hangar Gate": {
       "name": "Hangar Gate",
-      "icon_id": "",
+      "icon_id": "_base_door_iii_station",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hazard Concrete": {
       "name": "Hazard Concrete",
-      "icon_id": "",
+      "icon_id": "_base_construction_hazard_block",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hazard Robot Arm": {
       "name": "Hazard Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_robot_hazard_01_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hazard Robot Head": {
       "name": "Hazard Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_robot_hazard_01_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hazard Robot Leg": {
       "name": "Hazard Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_robot_hazard_01_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hazard Robot Torso": {
       "name": "Hazard Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_robot_hazard_01_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Heavy Caster Base": {
       "name": "Heavy Caster Base",
-      "icon_id": "",
+      "icon_id": "_base_casting_building_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Heavy Duty Transport Bot": {
       "name": "Heavy Duty Transport Bot",
-      "icon_id": "",
+      "icon_id": "_base_transport_bot_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Heavy Explosive Charge": {
       "name": "Heavy Explosive Charge",
-      "icon_id": "",
+      "icon_id": "_base_dynamite_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "High Density Olumite": {
       "name": "High Density Olumite",
-      "icon_id": "",
+      "icon_id": "_base_hdo",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "High-Pressure Turbine Base": {
       "name": "High-Pressure Turbine Base",
-      "icon_id": "",
+      "icon_id": "_base_npp_steam_turbine_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "High-Tech Construction Material": {
       "name": "High-Tech Construction Material",
-      "icon_id": "",
+      "icon_id": "_base_construction_material_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "High-Tech Machinery Parts": {
       "name": "High-Tech Machinery Parts",
-      "icon_id": "",
+      "icon_id": "_base_mic_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "High-Tech Robot Parts": {
       "name": "High-Tech Robot Parts",
-      "icon_id": "",
+      "icon_id": "_base_robot_parts_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hot Air": {
       "name": "Hot Air",
-      "icon_id": "",
+      "icon_id": "_base_hot_air",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Hot Air Stove Base": {
       "name": "Hot Air Stove Base",
-      "icon_id": "",
+      "icon_id": "_base_hot_air_stove_base_energy_1",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hover Engine": {
       "name": "Hover Engine",
-      "icon_id": "",
+      "icon_id": "_base_hover_engine",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hydraulic Piston": {
       "name": "Hydraulic Piston",
-      "icon_id": "",
+      "icon_id": "_base_hydraulic_piston",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hydro-Farming Bot": {
       "name": "Hydro-Farming Bot",
-      "icon_id": "",
+      "icon_id": "_base_agriculture_bot_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Hydro-Mining Bot": {
       "name": "Hydro-Mining Bot",
-      "icon_id": "",
+      "icon_id": "_base_mining_bot_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Ignium Fuel Rod": {
       "name": "Ignium Fuel Rod",
-      "icon_id": "",
+      "icon_id": "_base_ignium_fuel_rod",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Ignium Ore": {
       "name": "Ignium Ore",
-      "icon_id": "",
+      "icon_id": "_base_ore_ignium",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Ignium Ore Rubble": {
       "name": "Ignium Ore Rubble",
-      "icon_id": "",
+      "icon_id": "_base_rubble_ignium",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Ignium Powder": {
       "name": "Ignium Powder",
-      "icon_id": "",
+      "icon_id": "_base_ignium_powder",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
     },
     "Ignium-Enriched Water": {
       "name": "Ignium-Enriched Water",
-      "icon_id": "",
+      "icon_id": "_base_ignium_enriched_water",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Impure High Density Olumite": {
       "name": "Impure High Density Olumite",
-      "icon_id": "",
+      "icon_id": "_base_impure_hdo",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Incinerator": {
       "name": "Incinerator",
-      "icon_id": "",
+      "icon_id": "_base_incinerator",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Irrigation Tool": {
       "name": "Irrigation Tool",
-      "icon_id": "",
+      "icon_id": "_base_water_tool",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Jetpack Fuel": {
       "name": "Jetpack Fuel",
-      "icon_id": "",
+      "icon_id": "_base_jetpack_fuel",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Ladder": {
       "name": "Ladder",
-      "icon_id": "",
+      "icon_id": "_base_ladder_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Lava-Smelter I": {
       "name": "Lava-Smelter I",
-      "icon_id": "",
+      "icon_id": "_base_smelter_lava_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Lava-Smelter II": {
       "name": "Lava-Smelter II",
-      "icon_id": "",
+      "icon_id": "_base_smelter_lava_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Light Bot": {
       "name": "Light Bot",
-      "icon_id": "",
+      "icon_id": "_base_light_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Light Pole I": {
       "name": "Light Pole I",
-      "icon_id": "",
+      "icon_id": "_base_lightpole_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Light Pole II": {
       "name": "Light Pole II",
-      "icon_id": "",
+      "icon_id": "_base_lightpole_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Liquid Fuel": {
       "name": "Liquid Fuel",
-      "icon_id": "",
+      "icon_id": "_base_liquid_fuel",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Liquid Intake": {
       "name": "Liquid Intake",
-      "icon_id": "",
+      "icon_id": "_base_pipe_intake_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Liquid Intake (Pipeline)": {
       "name": "Liquid Intake (Pipeline)",
-      "icon_id": "",
+      "icon_id": "_base_pipeline_intake_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Liquid Polymer": {
       "name": "Liquid Polymer",
-      "icon_id": "",
+      "icon_id": "_base_liquid_polymer",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Liquid Telluxite": {
       "name": "Liquid Telluxite",
-      "icon_id": "",
+      "icon_id": "_base_liquid_telluxite",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Loader": {
       "name": "Loader",
-      "icon_id": "",
+      "icon_id": "_base_loader_1st_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Loader (2nd Lane)": {
       "name": "Loader (2nd Lane)",
-      "icon_id": "",
+      "icon_id": "_base_loader_2nd_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Loader (3rd Lane)": {
       "name": "Loader (3rd Lane)",
-      "icon_id": "",
+      "icon_id": "_base_loader_3rd_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -12013,28 +12013,28 @@
     },
     "Logistic Container I": {
       "name": "Logistic Container I",
-      "icon_id": "",
+      "icon_id": "_base_logistic_container_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Logistic Container II": {
       "name": "Logistic Container II",
-      "icon_id": "",
+      "icon_id": "_base_logistic_container_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Logistic Container III": {
       "name": "Logistic Container III",
-      "icon_id": "",
+      "icon_id": "_base_logistic_container_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Long Range Scanner": {
       "name": "Long Range Scanner",
-      "icon_id": "",
+      "icon_id": "_base_scanning_entity_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -12048,266 +12048,266 @@
     },
     "Low Density Olumite": {
       "name": "Low Density Olumite",
-      "icon_id": "",
+      "icon_id": "_base_ldo",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Machinery Parts": {
       "name": "Machinery Parts",
-      "icon_id": "",
+      "icon_id": "_base_mic_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Maintenance Drone": {
       "name": "Maintenance Drone",
-      "icon_id": "",
+      "icon_id": "_base_maintenance_drone_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Marble (Black)": {
       "name": "Marble (Black)",
-      "icon_id": "",
+      "icon_id": "_base_office_marble_black_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Marble (White)": {
       "name": "Marble (White)",
-      "icon_id": "",
+      "icon_id": "_base_office_marble_white_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Marine Exploration Bot": {
       "name": "Marine Exploration Bot",
-      "icon_id": "",
+      "icon_id": "_base_science_bot_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Miner Robot Arm": {
       "name": "Miner Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_mining_robot_01_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Miner Robot Head": {
       "name": "Miner Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_mining_robot_01_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Miner Robot Leg": {
       "name": "Miner Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_mining_robot_01_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Miner Robot Torso": {
       "name": "Miner Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_mining_robot_01_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Mineral Rocks": {
       "name": "Mineral Rocks",
-      "icon_id": "",
+      "icon_id": "_base_ore_mineral_rock",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Mining Drill": {
       "name": "Mining Drill",
-      "icon_id": "",
+      "icon_id": "_base_mining_drill",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Mining Drone": {
       "name": "Mining Drone",
-      "icon_id": "",
+      "icon_id": "_base_mining_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Mining Laser": {
       "name": "Mining Laser",
-      "icon_id": "",
+      "icon_id": "_base_mining_laser",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Modular Building Planner": {
       "name": "Modular Building Planner",
-      "icon_id": "",
+      "icon_id": "_base_mb_planner",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Modular Storage Tank Base": {
       "name": "Modular Storage Tank Base",
-      "icon_id": "",
+      "icon_id": "_base_modular_fluid_tank_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Molten Superalloy": {
       "name": "Molten Superalloy",
-      "icon_id": "",
+      "icon_id": "_base_molten_super_alloy",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Molten Technum": {
       "name": "Molten Technum",
-      "icon_id": "",
+      "icon_id": "_base_molten_te",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Molten Xenoferrite": {
       "name": "Molten Xenoferrite",
-      "icon_id": "",
+      "icon_id": "_base_molten_xf",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Monument Base": {
       "name": "Monument Base",
-      "icon_id": "",
+      "icon_id": "_base_monument",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Nautical Chassis": {
       "name": "Nautical Chassis",
-      "icon_id": "",
+      "icon_id": "_base_underwater_chassis_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Neon Decor": {
       "name": "Neon Decor",
-      "icon_id": "",
+      "icon_id": "_base_neon_decor_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Neon Decor (Large Slope Junctions)": {
       "name": "Neon Decor (Large Slope Junctions)",
-      "icon_id": "",
+      "icon_id": "_base_neon_decor_slope_junctions",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Neon Decor (Large Slopes)": {
       "name": "Neon Decor (Large Slopes)",
-      "icon_id": "",
+      "icon_id": "_base_neon_decor_slope",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Neon Decor (Large)": {
       "name": "Neon Decor (Large)",
-      "icon_id": "",
+      "icon_id": "_base_neon_decor_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Neon Decor (Slope Junctions)": {
       "name": "Neon Decor (Slope Junctions)",
-      "icon_id": "",
+      "icon_id": "_base_neon_decor_i_slope_junctions",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Neon Decor (Slopes)": {
       "name": "Neon Decor (Slopes)",
-      "icon_id": "",
+      "icon_id": "_base_neon_decor_i_slope",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office Chair": {
       "name": "Office Chair",
-      "icon_id": "",
+      "icon_id": "_base_office_chair",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office Couch": {
       "name": "Office Couch",
-      "icon_id": "",
+      "icon_id": "_base_office_couch",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office Desk": {
       "name": "Office Desk",
-      "icon_id": "",
+      "icon_id": "_base_office_desk",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office File Cabinet": {
       "name": "Office File Cabinet",
-      "icon_id": "",
+      "icon_id": "_base_office_file_cabinet",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office Nameplate": {
       "name": "Office Nameplate",
-      "icon_id": "",
+      "icon_id": "_base_office_nameplate_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office Plant": {
       "name": "Office Plant",
-      "icon_id": "",
+      "icon_id": "_base_office_plant",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office Statue": {
       "name": "Office Statue",
-      "icon_id": "",
+      "icon_id": "_base_office_statue_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office Table": {
       "name": "Office Table",
-      "icon_id": "",
+      "icon_id": "_base_office_table",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Office Wall Plaque": {
       "name": "Office Wall Plaque",
-      "icon_id": "",
+      "icon_id": "_base_office_wall_plaque_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Olumic Acid": {
       "name": "Olumic Acid",
-      "icon_id": "",
+      "icon_id": "_base_olumic_acid",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Olumite Gas": {
       "name": "Olumite Gas",
-      "icon_id": "",
+      "icon_id": "_base_olumite_gas",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
@@ -12335,56 +12335,56 @@
     },
     "Omni-Analyzer": {
       "name": "Omni-Analyzer",
-      "icon_id": "",
+      "icon_id": "_base_exploration_analyzer",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Operator Bot": {
       "name": "Operator Bot",
-      "icon_id": "",
+      "icon_id": "_base_admin_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Operator Robot Arm": {
       "name": "Operator Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_admin_robot_01_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Operator Robot Head": {
       "name": "Operator Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_admin_robot_01_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Operator Robot Leg": {
       "name": "Operator Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_admin_robot_01_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Operator Robot Torso": {
       "name": "Operator Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_admin_robot_01_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Orbital Uplink": {
       "name": "Orbital Uplink",
-      "icon_id": "",
+      "icon_id": "_base_orbital_uplink",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Ore Scanner": {
       "name": "Ore Scanner",
-      "icon_id": "",
+      "icon_id": "_base_ore_vein_scanner",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -12398,511 +12398,511 @@
     },
     "Ore Vein Miner": {
       "name": "Ore Vein Miner",
-      "icon_id": "",
+      "icon_id": "_base_ore_vein_miner_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Paint": {
       "name": "Paint",
-      "icon_id": "",
+      "icon_id": "_base_paint",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Paint Roller": {
       "name": "Paint Roller",
-      "icon_id": "",
+      "icon_id": "_base_paint_roller",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Personal Assistant Robot Arm": {
       "name": "Personal Assistant Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_robot01_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Personal Assistant Robot Head": {
       "name": "Personal Assistant Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_robot01_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Personal Assistant Robot Leg": {
       "name": "Personal Assistant Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_robot01_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Personal Assistant Robot Torso": {
       "name": "Personal Assistant Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_robot01_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Pipe": {
       "name": "Pipe",
-      "icon_id": "",
+      "icon_id": "_base_pipe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Pipe Adapter": {
       "name": "Pipe Adapter",
-      "icon_id": "",
+      "icon_id": "_base_pipe_adapter",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Pipe-to-Pipeline Pump": {
       "name": "Pipe-to-Pipeline Pump",
-      "icon_id": "",
+      "icon_id": "_base_pump_pipe_to_pipeline_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Pipeline": {
       "name": "Pipeline",
-      "icon_id": "",
+      "icon_id": "_base_pipeline",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Pipeline-to-Pipe Pump": {
       "name": "Pipeline-to-Pipe Pump",
-      "icon_id": "",
+      "icon_id": "_base_pump_pipeline_to_pipe_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Planter Drone": {
       "name": "Planter Drone",
-      "icon_id": "",
+      "icon_id": "_base_agriculture_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Plumber Tool": {
       "name": "Plumber Tool",
-      "icon_id": "",
+      "icon_id": "_base_plumber_tool",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Polymer Board": {
       "name": "Polymer Board",
-      "icon_id": "",
+      "icon_id": "_base_polymer_board",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
     },
     "Portable Fuel": {
       "name": "Portable Fuel",
-      "icon_id": "",
+      "icon_id": "_base_portable_fuel",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Portable Light": {
       "name": "Portable Light",
-      "icon_id": "",
+      "icon_id": "_base_light_portable_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Power Line": {
       "name": "Power Line",
-      "icon_id": "",
+      "icon_id": "_base_power_line_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Power Pole (Large)": {
       "name": "Power Pole (Large)",
-      "icon_id": "",
+      "icon_id": "_base_power_pole_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Power Pole (Small)": {
       "name": "Power Pole (Small)",
-      "icon_id": "",
+      "icon_id": "_base_power_pole_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Power Pole (Wall-Mounted)": {
       "name": "Power Pole (Wall-Mounted)",
-      "icon_id": "",
+      "icon_id": "_base_power_pole_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Pump (Pipelines)": {
       "name": "Pump (Pipelines)",
-      "icon_id": "",
+      "icon_id": "_base_pump_pipelines_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Pump (Pipes)": {
       "name": "Pump (Pipes)",
-      "icon_id": "",
+      "icon_id": "_base_pump_pipes_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Pumpjack I": {
       "name": "Pumpjack I",
-      "icon_id": "",
+      "icon_id": "_base_pumpjack_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Quarry": {
       "name": "Quarry",
-      "icon_id": "",
+      "icon_id": "_base_quarry_building_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Radio Tower Base": {
       "name": "Radio Tower Base",
-      "icon_id": "",
+      "icon_id": "_base_radio_tower_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Railings": {
       "name": "Railings",
-      "icon_id": "",
+      "icon_id": "_base_railings",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Reactive Briquette": {
       "name": "Reactive Briquette",
-      "icon_id": "",
+      "icon_id": "_base_reactive_briquette_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Reactor Fuel Mixer Base": {
       "name": "Reactor Fuel Mixer Base",
-      "icon_id": "",
+      "icon_id": "_base_npp_pressurizer_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Research Server": {
       "name": "Research Server",
-      "icon_id": "",
+      "icon_id": "_base_research_entity",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Resource Separator": {
       "name": "Resource Separator",
-      "icon_id": "",
+      "icon_id": "_base_recycler_terrain",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Robot Parts": {
       "name": "Robot Parts",
-      "icon_id": "",
+      "icon_id": "_base_robot_parts_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Robot Workstation I": {
       "name": "Robot Workstation I",
-      "icon_id": "",
+      "icon_id": "_base_workstation_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Robot Workstation II": {
       "name": "Robot Workstation II",
-      "icon_id": "",
+      "icon_id": "_base_workstation_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Robot Workstation III": {
       "name": "Robot Workstation III",
-      "icon_id": "",
+      "icon_id": "_base_workstation_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Rocky Desert Seed (Plants)": {
       "name": "Rocky Desert Seed (Plants)",
-      "icon_id": "",
+      "icon_id": "_base_rocky_desert_seed_plants",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Rocky Desert Seed (Trees)": {
       "name": "Rocky Desert Seed (Trees)",
-      "icon_id": "",
+      "icon_id": "_base_rocky_desert_seed_trees",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Rubber": {
       "name": "Rubber",
-      "icon_id": "",
+      "icon_id": "_base_rubber_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Sandy Desert Seed (Plants)": {
       "name": "Sandy Desert Seed (Plants)",
-      "icon_id": "",
+      "icon_id": "_base_sandy_desert_seed_plants",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Sandy Desert Seed (Trees)": {
       "name": "Sandy Desert Seed (Trees)",
-      "icon_id": "",
+      "icon_id": "_base_sandy_desert_seed_trees",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Assistant Drone": {
       "name": "Science Assistant Drone",
-      "icon_id": "",
+      "icon_id": "_base_science_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Pack I": {
       "name": "Science Pack I",
-      "icon_id": "",
+      "icon_id": "_base_science_pack_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Pack II": {
       "name": "Science Pack II",
-      "icon_id": "",
+      "icon_id": "_base_science_pack_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Pack III": {
       "name": "Science Pack III",
-      "icon_id": "",
+      "icon_id": "_base_science_pack_iii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Pack IV": {
       "name": "Science Pack IV",
-      "icon_id": "",
+      "icon_id": "_base_science_pack_iv",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Pack V": {
       "name": "Science Pack V",
-      "icon_id": "",
+      "icon_id": "_base_science_pack_v",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Robot Arm": {
       "name": "Science Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_robot_science_01_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Robot Head": {
       "name": "Science Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_robot_science_01_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Robot Leg": {
       "name": "Science Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_robot_science_01_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Science Robot Torso": {
       "name": "Science Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_robot_science_01_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Scout Robot Arm": {
       "name": "Scout Robot Arm",
-      "icon_id": "",
+      "icon_id": "_base_robot_scout_01_arm",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Scout Robot Head": {
       "name": "Scout Robot Head",
-      "icon_id": "",
+      "icon_id": "_base_robot_scout_01_head",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Scout Robot Leg": {
       "name": "Scout Robot Leg",
-      "icon_id": "",
+      "icon_id": "_base_robot_scout_01_leg",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Scout Robot Torso": {
       "name": "Scout Robot Torso",
-      "icon_id": "",
+      "icon_id": "_base_robot_scout_01_torso",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Scrap Recycler": {
       "name": "Scrap Recycler",
-      "icon_id": "",
+      "icon_id": "_base_recycler_scrap",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Screen Bot": {
       "name": "Screen Bot",
-      "icon_id": "",
+      "icon_id": "_base_screen_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Shaped Charge": {
       "name": "Shaped Charge",
-      "icon_id": "",
+      "icon_id": "_base_shaped_charge_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Shaped Charge (Heavy)": {
       "name": "Shaped Charge (Heavy)",
-      "icon_id": "",
+      "icon_id": "_base_shaped_charge_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Shipping Pad (Medium)": {
       "name": "Shipping Pad (Medium)",
-      "icon_id": "",
+      "icon_id": "_base_shipping_pad_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Shipping Pad (Medium, Assembly Line)": {
       "name": "Shipping Pad (Medium, Assembly Line)",
-      "icon_id": "",
+      "icon_id": "_base_shipping_pad_ii_al",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Shipping Pad (Small)": {
       "name": "Shipping Pad (Small)",
-      "icon_id": "",
+      "icon_id": "_base_shipping_pad_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Sign": {
       "name": "Sign",
-      "icon_id": "",
+      "icon_id": "_base_sign",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Smelter (Small)": {
       "name": "Smelter (Small)",
-      "icon_id": "",
+      "icon_id": "_base_smelter_small_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Snack Bot": {
       "name": "Snack Bot",
-      "icon_id": "",
+      "icon_id": "_base_snack_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Solar Panel (Large)": {
       "name": "Solar Panel (Large)",
-      "icon_id": "",
+      "icon_id": "_base_solar_panel_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Solar Panel (Small)": {
       "name": "Solar Panel (Small)",
-      "icon_id": "",
+      "icon_id": "_base_solar_panel_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Space Ship Fuel Canister": {
       "name": "Space Ship Fuel Canister",
-      "icon_id": "",
+      "icon_id": "_base_space_ship_fuel",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Space Station Terminal": {
       "name": "Space Station Terminal",
-      "icon_id": "",
+      "icon_id": "_base_space_station_terminal",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Stairs": {
       "name": "Stairs",
-      "icon_id": "",
+      "icon_id": "_base_stairs_straight",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Steam": {
       "name": "Steam",
-      "icon_id": "",
+      "icon_id": "_base_steam",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Steam Generator Base": {
       "name": "Steam Generator Base",
-      "icon_id": "",
+      "icon_id": "_base_npp_steam_generator_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Steam Turbine": {
       "name": "Steam Turbine",
-      "icon_id": "",
+      "icon_id": "_base_turbine_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Steel Beams": {
       "name": "Steel Beams",
-      "icon_id": "",
+      "icon_id": "_base_xf_steel_beams",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
@@ -12923,7 +12923,7 @@
     },
     "Superalloy": {
       "name": "Superalloy",
-      "icon_id": "",
+      "icon_id": "_base_super_alloy_plate_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
@@ -12937,14 +12937,14 @@
     },
     "Tank I": {
       "name": "Tank I",
-      "icon_id": "",
+      "icon_id": "_base_tank_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Technum Ore": {
       "name": "Technum Ore",
-      "icon_id": "",
+      "icon_id": "_base_wd_ore_small_technum",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -12958,14 +12958,14 @@
     },
     "Technum Ore Rubble": {
       "name": "Technum Ore Rubble",
-      "icon_id": "",
+      "icon_id": "_base_rubble_technum",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Technum Rods": {
       "name": "Technum Rods",
-      "icon_id": "",
+      "icon_id": "_base_technum_rods",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
@@ -12993,154 +12993,154 @@
     },
     "Telluxite Ingot": {
       "name": "Telluxite Ingot",
-      "icon_id": "",
+      "icon_id": "_base_telluxite_ingot",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
     },
     "Telluxite Ore": {
       "name": "Telluxite Ore",
-      "icon_id": "",
+      "icon_id": "_base_ore_telluxite",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Telluxite Ore Rubble": {
       "name": "Telluxite Ore Rubble",
-      "icon_id": "",
+      "icon_id": "_base_rubble_telluxite",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Telluxite Wafer": {
       "name": "Telluxite Wafer",
-      "icon_id": "",
+      "icon_id": "_base_telluxite_wafer",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Train Cargo Wagon": {
       "name": "Train Cargo Wagon",
-      "icon_id": "",
+      "icon_id": "_train_wagon_solid_01",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Train Engine": {
       "name": "Train Engine",
-      "icon_id": "",
+      "icon_id": "_train_engine_01",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Train Loading Station": {
       "name": "Train Loading Station",
-      "icon_id": "",
+      "icon_id": "_base_train_loading_station",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Train Signal": {
       "name": "Train Signal",
-      "icon_id": "",
+      "icon_id": "_trainSignal_simple",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Train Station": {
       "name": "Train Station",
-      "icon_id": "",
+      "icon_id": "_base_train_station",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Train Tanker Wagon": {
       "name": "Train Tanker Wagon",
-      "icon_id": "",
+      "icon_id": "_train_wagon_element_01",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Train Tracks": {
       "name": "Train Tracks",
-      "icon_id": "",
+      "icon_id": "_rail_tracks",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Transformer (Large)": {
       "name": "Transformer (Large)",
-      "icon_id": "",
+      "icon_id": "_base_transformer_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Transformer (Small)": {
       "name": "Transformer (Small)",
-      "icon_id": "",
+      "icon_id": "_base_transformer_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Transport Bot": {
       "name": "Transport Bot",
-      "icon_id": "",
+      "icon_id": "_base_transport_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Transport Drone": {
       "name": "Transport Drone",
-      "icon_id": "",
+      "icon_id": "_base_transport_drone_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Transport Ship Port": {
       "name": "Transport Ship Port",
-      "icon_id": "",
+      "icon_id": "_base_transport_drone_port_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Tropical Rainforest Seed (Plants)": {
       "name": "Tropical Rainforest Seed (Plants)",
-      "icon_id": "",
+      "icon_id": "_base_tropical_rainforest_seed_plants",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Tropical Rainforest Seed (Trees)": {
       "name": "Tropical Rainforest Seed (Trees)",
-      "icon_id": "",
+      "icon_id": "_base_tropical_rainforest_seed_trees",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Tundra Seed (Plants)": {
       "name": "Tundra Seed (Plants)",
-      "icon_id": "",
+      "icon_id": "_base_tundra_seed_plants",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Tundra Seed (Trees)": {
       "name": "Tundra Seed (Trees)",
-      "icon_id": "",
+      "icon_id": "_base_tundra_seed_trees",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Vacuum Bot": {
       "name": "Vacuum Bot",
-      "icon_id": "",
+      "icon_id": "_base_cleaning_bot_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Walkway": {
       "name": "Walkway",
-      "icon_id": "",
+      "icon_id": "_base_walkway_platform",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -13154,119 +13154,119 @@
     },
     "Wall Light I": {
       "name": "Wall Light I",
-      "icon_id": "",
+      "icon_id": "_base_light_wall_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Waste Gas": {
       "name": "Waste Gas",
-      "icon_id": "",
+      "icon_id": "_base_waste_gas",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Water": {
       "name": "Water",
-      "icon_id": "",
+      "icon_id": "_base_lava",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Weapon Components": {
       "name": "Weapon Components",
-      "icon_id": "",
+      "icon_id": "_base_weapon_components",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Wire Coil": {
       "name": "Wire Coil",
-      "icon_id": "",
+      "icon_id": "_base_wire_coil",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Wooden Blocks": {
       "name": "Wooden Blocks",
-      "icon_id": "",
+      "icon_id": "_base_office_blocks",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Wooden Decor Blocks": {
       "name": "Wooden Decor Blocks",
-      "icon_id": "",
+      "icon_id": "_base_office_blocks_deluxe",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xeno Power Core": {
       "name": "Xeno Power Core",
-      "icon_id": "",
+      "icon_id": "_base_power_core_ii",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xeno Reactor Base": {
       "name": "Xeno Reactor Base",
-      "icon_id": "",
+      "icon_id": "_base_npp_reactor_base",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xeno-Crystal": {
       "name": "Xeno-Crystal",
-      "icon_id": "",
+      "icon_id": "_base_crystal_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xeno-Crystal Sludge": {
       "name": "Xeno-Crystal Sludge",
-      "icon_id": "",
+      "icon_id": "_base_xeno_crystal_sludge",
       "icon_path": "",
       "is_fluid": true,
       "is_intermediate": false
     },
     "Xeno-Crystal-Extractor": {
       "name": "Xeno-Crystal-Extractor",
-      "icon_id": "",
+      "icon_id": "_base_endless_miner_crystals_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xeno-Logistics Container": {
       "name": "Xeno-Logistics Container",
-      "icon_id": "",
+      "icon_id": "_base_personal_logistic_container",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xeno-Logistics Tower": {
       "name": "Xeno-Logistics Tower",
-      "icon_id": "",
+      "icon_id": "_base_logistics_tower_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xeno-Scrap": {
       "name": "Xeno-Scrap",
-      "icon_id": "",
+      "icon_id": "_base_alien_scrap_world_decor_iv",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xeno-Scrap-Extractor": {
       "name": "Xeno-Scrap-Extractor",
-      "icon_id": "",
+      "icon_id": "_base_endless_miner_scrap_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xenoferrite Ore": {
       "name": "Xenoferrite Ore",
-      "icon_id": "",
+      "icon_id": "_base_wd_ore_small_xf",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -13280,14 +13280,14 @@
     },
     "Xenoferrite Ore Rubble": {
       "name": "Xenoferrite Ore Rubble",
-      "icon_id": "",
+      "icon_id": "_base_rubble_xenoferrite",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
     },
     "Xenoferrite Plates": {
       "name": "Xenoferrite Plates",
-      "icon_id": "",
+      "icon_id": "_base_xenoferrite_plates",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
@@ -13322,7 +13322,7 @@
     },
     "Xenoferrite-Ignium Ore Blend": {
       "name": "Xenoferrite-Ignium Ore Blend",
-      "icon_id": "",
+      "icon_id": "_base_steel_mixture",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
