@@ -2071,6 +2071,14 @@ def main():
             with open(out_dir / "icon_map.json", "w", encoding="utf-8") as f:
                 json.dump(icon_map_relative, f, indent=2, ensure_ascii=False)
             print(f"  Wrote icon_map.json ({len(icon_map_relative)} entries)")
+    else:
+        # Load existing icon_map.json so icons.js can still be regenerated
+        icon_map_json = out_dir / "icon_map.json"
+        if icon_map_json.exists():
+            with open(icon_map_json, encoding="utf-8") as f:
+                raw = json.load(f)
+            # icon_map uses relative paths; strip the version prefix for internal use
+            icon_map = {k: Path(v).name for k, v in raw.items()}
 
     if args.icons_only:
         print("Done (icons only).")
