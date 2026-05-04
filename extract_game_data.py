@@ -94,18 +94,262 @@ def build_id_to_name(templates_dir: Path) -> dict:
         if bot_id and bot_id not in id_to_name:
             id_to_name[bot_id] = name
 
+    # Pass 3: AssemblyLineObjectTemplate — complete robot names (e.g. "Miner Robot")
+    for ident, v in load_yaml_templates(templates_dir, "AssemblyLineObjectTemplate").items():
+        name = v.get("name", "")
+        if name and ident not in id_to_name:
+            id_to_name[ident] = name
+
     return id_to_name
 
 
 def build_id_to_icon(templates_dir: Path) -> dict:
-    """Returns identifier → icon_identifier from ItemTemplate, ElementTemplate, LiquidTemplate."""
+    """Returns identifier → icon_identifier from ItemTemplate, ElementTemplate, LiquidTemplate,
+    and AssemblyLineObjectTemplate (for complete robot icons)."""
     result = {}
     for ttype in ["ItemTemplate", "ElementTemplate", "LiquidTemplate"]:
         for ident, v in load_yaml_templates(templates_dir, ttype).items():
             icon = v.get("icon_identifier", "")
             if icon and ident not in result:
                 result[ident] = icon
+    # Assembly Line robots have their own icons
+    for ident, v in load_yaml_templates(templates_dir, "AssemblyLineObjectTemplate").items():
+        icon = v.get("icon_identifier", "")
+        if icon and ident not in result:
+            result[ident] = icon
     return result
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Power data extraction — generators and fuels
+# ─────────────────────────────────────────────────────────────────────────────
+
+def extract_power_data(templates_dir: Path, id_to_name: dict) -> dict:
+    """
+    Extract POWER_SOURCES and POWER_FUEL_ITEMS from BuildableObjectTemplate,
+    ItemTemplate, and ElementTemplate.
+
+    Returns:
+      {
+        "sources": [ {...}, ... ],
+        "fuel_items": { name: {mj, type}, ... }
+      }
+    """
+    bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
+    item_ids = _build_item_bot_ids(templates_dir)
+
+    # ── Collect fuel items ────────────────────────────────────────────────────
+
+    fuel_items: dict[str, dict] = {}
+
+    # Solid fuels from ItemTemplate (burnable_fuelValueKJ_str > 0)
+    for ident, v in load_yaml_templates(templates_dir, "ItemTemplate").items():
+        kj_raw = v.get("burnable_fuelValueKJ_str", "")
+        if not kj_raw or str(kj_raw) == "":
+            continue
+        try:
+            kj = float(kj_raw)
+        except (ValueError, TypeError):
+            continue
+        if kj <= 0:
+            continue
+        name = v.get("name", "")
+        if not name:
+            continue
+        fuel_items[name] = {"mj": round(kj / 1000, 6), "type": "solid"}
+
+    # Elemental (liquid) fuels from ElementTemplate (fuel_fuelValueKJPerL_str)
+    for ident, v in load_yaml_templates(templates_dir, "ElementTemplate").items():
+        kj_raw = v.get("fuel_fuelValueKJPerL_str", "")
+        if not kj_raw or str(kj_raw) == "":
+            continue
+        try:
+            kj = float(kj_raw)
+        except (ValueError, TypeError):
+            continue
+        if kj <= 0:
+            continue
+        name = v.get("name", "")
+        if not name:
+            continue
+        fuel_items[name] = {"mj": round(kj / 1000, 6), "type": "elemental"}
+
+    # Reactor Fuel Mix has no fuel_kj — derive from NPP turbine power / reactor consumption
+    # nppSteamTurbine_powerGenerationRate = 36000 kW
+    # nppReactor_maxInputPerTick = 12 L/tick × 360 ticks/min = 4320 L/min = 72 L/s
+    # energy_density = power_kW / consumption_L_per_s = 36000 / 72 = 500 kJ/L = 0.5 MJ/L
+    # This is added below when we parse the NPP turbine entry.
+
+    # ── Collect generator sources ──────────────────────────────────────────────
+
+    sources: list[dict] = []
+
+    for ident, v in bots_raw.items():
+        bot_type = v.get("type", "")
+        name = id_to_name.get(ident, "")
+        # For NPP_Reactor, use nameOverride
+        if not name and v.get("hasNameOverride"):
+            name = v.get("nameOverride", "")
+        # Also check if the BOT is player-visible (item_ids)
+        if not name or ident not in item_ids:
+            # Allow named BOTs even if not in item_ids for NPP types
+            if not name:
+                name_override = v.get("nameOverride", "")
+                if name_override:
+                    name = name_override
+                else:
+                    continue
+            # For NPP reactor and turbine, they may use nameOverride
+            if ident not in item_ids and bot_type not in ("NPP_Reactor", "NPP_SteamTurbine",
+                                                           "LvgGenerator", "SolarPanel",
+                                                           "Boiler", "BurnerGenerator"):
+                continue
+
+        # ── Solar panels ──────────────────────────────────────────────────────
+        if bot_type == "SolarPanel":
+            out_max_raw = v.get("solarPanel_outputMax_str", "")
+            out_min_raw = v.get("solarPanel_outputMin_str", "")
+            if not out_max_raw or str(out_max_raw) == "":
+                continue
+            try:
+                power_kw = float(out_max_raw)
+                power_kw_min = float(out_min_raw) if out_min_raw and str(out_min_raw) != "" else 0.0
+            except (ValueError, TypeError):
+                continue
+            sources.append({
+                "id": ident,
+                "name": name,
+                "type": "solar",
+                "power_kw": power_kw,
+                "power_kw_min": power_kw_min,
+            })
+
+        # ── LVG Generators (Biomass Burner, Burner Generator) ─────────────────
+        elif bot_type == "LvgGenerator":
+            rate_raw = v.get("lvgGenerator_transmissionRate_kjPerS_str", "")
+            eff_raw = v.get("lvgGenerator_efficiency_str", "")
+            locked = v.get("lvgGenerator_lockedItemTemplate_identifier", "") or ""
+            if not rate_raw or str(rate_raw) == "":
+                continue
+            try:
+                power_kw = float(rate_raw)
+            except (ValueError, TypeError):
+                continue
+            try:
+                efficiency = float(eff_raw) if eff_raw and str(eff_raw) != "" else 1.0
+            except (ValueError, TypeError):
+                efficiency = 1.0
+            # Determine which solid fuels this accepts
+            locked_name = id_to_name.get(locked, "") if locked else ""
+            sources.append({
+                "id": ident,
+                "name": name,
+                "type": "solid_fuel",
+                "power_kw": power_kw,
+                "efficiency": efficiency,
+                "locked_fuel": locked_name,  # empty string = all solid fuels
+            })
+
+        # ── Classic Steam Turbine (BurnerGenerator with elemental fuel = steam) ─
+        elif bot_type == "BurnerGenerator" and v.get("hasFuelManagerElemental"):
+            rate_raw = v.get("burnerGenerator_powerGenertaionRate_kjPerS_str", "")
+            if not rate_raw or str(rate_raw) == "":
+                continue
+            try:
+                power_kw = float(rate_raw)
+            except (ValueError, TypeError):
+                continue
+            sources.append({
+                "id": ident,
+                "name": name,
+                "type": "steam_turbine",
+                "power_kw": power_kw,
+            })
+
+        # ── Boiler (and Geothermal which is type=Producer but has boiler fields) ─
+        elif bot_type in ("Boiler", "Producer") and v.get("boiler_outputPerSecond_str"):
+            out_raw = v.get("boiler_outputPerSecond_str", "")
+            energy_raw = v.get("boiler_energyConsumption_kjPerS_str", "")
+            req_vent = v.get("requiredResourceNodeIdentifier", "") or ""
+            if not out_raw or str(out_raw) == "":
+                continue
+            try:
+                steam_l_per_sec = float(out_raw)
+            except (ValueError, TypeError):
+                continue
+            try:
+                energy_kj_per_sec = float(energy_raw) if energy_raw and str(energy_raw) != "" else 0.0
+            except (ValueError, TypeError):
+                energy_kj_per_sec = 0.0
+            requires_vent = bool(req_vent and req_vent != "")
+            sources.append({
+                "id": ident,
+                "name": name,
+                "type": "steam_boiler",
+                "steam_lit_per_sec": steam_l_per_sec,
+                "energy_kj_per_sec": energy_kj_per_sec if not requires_vent else 0.0,
+                "requires_vent": requires_vent,
+            })
+
+        # ── NPP Steam Turbine ──────────────────────────────────────────────────
+        elif bot_type == "NPP_SteamTurbine":
+            rate_raw = v.get("nppSteamTurbine_powerGenerationRate_kjPerSec_str", "")
+            eff_raw = v.get("nppSteamTurbine_efficiency_str", "")
+            if not rate_raw or str(rate_raw) == "":
+                continue
+            try:
+                power_kw = float(rate_raw)
+            except (ValueError, TypeError):
+                continue
+            try:
+                efficiency = float(eff_raw) if eff_raw and str(eff_raw) != "" else 1.0
+            except (ValueError, TypeError):
+                efficiency = 1.0
+            sources.append({
+                "id": ident,
+                "name": name,
+                "type": "npp_turbine",
+                "power_kw": power_kw,
+                "efficiency": efficiency,
+            })
+
+        # ── NPP Reactor ────────────────────────────────────────────────────────
+        elif bot_type == "NPP_Reactor":
+            input_id = v.get("nppReactor_input_elementalTemplate_identifier", "") or ""
+            max_input_raw = v.get("nppReactor_maxInputPerTick_str", "")
+            if not input_id or not max_input_raw or str(max_input_raw) == "":
+                continue
+            try:
+                max_input_per_tick = float(max_input_raw)
+            except (ValueError, TypeError):
+                continue
+            fuel_name = id_to_name.get(input_id, input_id)
+            fuel_lit_per_min = max_input_per_tick * TICKS_PER_MIN
+            sources.append({
+                "id": ident,
+                "name": name,
+                "type": "npp_reactor",
+                "fuel_id": input_id,
+                "fuel_name": fuel_name,
+                "fuel_lit_per_min": fuel_lit_per_min,
+            })
+
+    # Post-process: add Reactor Fuel Mix to fuel_items using NPP turbine+reactor data
+    # Find the NPP turbine power and reactor fuel consumption
+    npp_turbine = next((s for s in sources if s["type"] == "npp_turbine"), None)
+    npp_reactor = next((s for s in sources if s["type"] == "npp_reactor"), None)
+    if npp_turbine and npp_reactor:
+        fuel_lit_per_min = npp_reactor["fuel_lit_per_min"]
+        power_kw = npp_turbine["power_kw"]
+        if fuel_lit_per_min > 0:
+            # energy density: kW / (L/min / 60s) = kW * 60 / L_per_min
+            kj_per_l = (power_kw * 60) / fuel_lit_per_min
+            mj_per_l = round(kj_per_l / 1000, 6)
+            rfm_name = npp_reactor["fuel_name"]
+            if rfm_name and rfm_name not in fuel_items:
+                fuel_items[rfm_name] = {"mj": mj_per_l, "type": "elemental"}
+
+    return {"sources": sources, "fuel_items": fuel_items}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -364,14 +608,61 @@ def build_ore_mining_map(templates_dir: Path) -> dict:
 # Assembly line composition — dynamic from templates
 # ─────────────────────────────────────────────────────────────────────────────
 
+def build_assembly_line_robots(templates_dir: Path, id_to_name: dict) -> dict:
+    """
+    Derives per-robot part quantities from AssemblyLineObjectTemplate and
+    AssemblyLineProducerActionTemplate.
+
+    Returns: { robot_name: { canonical_part_title: count }, ... }
+    e.g. { "Assault Robot": { "Torso": 1, "Arm": 2, "Leg": 2, "Head": 1 } }
+    """
+    al_objects = load_yaml_templates(templates_dir, "AssemblyLineObjectTemplate")
+    al_actions = load_yaml_templates(templates_dir, "AssemblyLineProducerActionTemplate")
+
+    # Build map: item_identifier → count of attach-actions across all robots
+    # (Left+Right separate actions each = 1 item needed each → 2 total)
+    # We count per robot by finding which item_ids belong to which robot.
+
+    # First: collect all item_identifiers used in attach actions
+    # Then: for each robot's objectParts, count how many times each canonical title appears
+    # (titles like "Arm (Right)" and "Arm (Left)" → canonical "Arm" → count = 2)
+
+    import re
+    def canonical(title: str) -> str:
+        """Strip (Right)/(Left)/trailing parenthetical from part title."""
+        return re.sub(r'\s*\([^)]*\)\s*$', '', title).strip()
+
+    result: dict[str, dict[str, int]] = {}
+    for robot_id, robot in al_objects.items():
+        name = robot.get("name", "") or id_to_name.get(robot_id, robot_id)
+        if not name:
+            continue
+        parts = robot.get("objectParts") or []
+        counts: dict[str, int] = {}
+        for part in parts:
+            canon = canonical(part.get("title", ""))
+            if canon:
+                counts[canon] = counts.get(canon, 0) + 1
+        if counts:
+            result[name] = counts
+
+    return result
+
+
 def build_assembly_line_composition(templates_dir: Path) -> dict:
     """
     Derives Assembly Line sub-machine composition from AssemblyLineObjectTemplate.
     Each robot type has 1 initial part (torso → AL Start) and N non-initial parts.
     Each non-initial part needs attach + weld = 2 producer stations.
-    Returns: {start: {count, name}, producer: {count, name}, painter: {count, name}}
+    Returns: {start, producer, painter} counts + cycle_time_sec for complete robot.
+
+    Cycle time derivation:
+      al_producer_speedInSlotsPerTick: N (from _base_al_producer_i.yaml)
+      Calibration: speed=10 → 1.875 s/robot (validated against v0.6.0.24342 recipe data)
+      Formula: cycle_time = 1.875 × 10 / speed
     """
     al_objects = load_yaml_templates(templates_dir, "AssemblyLineObjectTemplate")
+    bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
 
     max_non_initial = 0
     for obj_id, obj in al_objects.items():
@@ -382,10 +673,22 @@ def build_assembly_line_composition(templates_dir: Path) -> dict:
 
     producer_count = max_non_initial * 2  # attach + weld per part
 
+    # Derive cycle time from AL producer speed
+    al_speed = 10  # default, calibrated value
+    al_producer = bots_raw.get("_base_al_producer_i", {})
+    speed_raw = al_producer.get("al_producer_speedInSlotsPerTick")
+    if speed_raw:
+        try:
+            al_speed = float(speed_raw)
+        except (ValueError, TypeError):
+            pass
+    cycle_time_sec = round(1.875 * 10 / al_speed, 6) if al_speed else 1.875
+
     return {
-        "start":    {"count": 1,              "name": "Assembly Line Start"},
-        "producer": {"count": producer_count, "name": "Assembly Line Producer"},
-        "painter":  {"count": 1,              "name": "Assembly Line Painter"},
+        "start":      {"count": 1,              "name": "Assembly Line Start"},
+        "producer":   {"count": producer_count, "name": "Assembly Line Producer"},
+        "painter":    {"count": 1,              "name": "Assembly Line Painter"},
+        "cycle_time": cycle_time_sec,
     }
 
 
@@ -1143,9 +1446,11 @@ def generate_game_data_js(version: str, recipes: list[dict],
                           templates_dir: Path,
                           id_to_name: dict,
                           assembly_line_composition: dict,
+                          assembly_line_robots: dict,
                           fluid_sources: dict,
                           byproduct_disposal: dict,
-                          machine_fluid_minimums: dict) -> str:
+                          machine_fluid_minimums: dict,
+                          power_data: dict | None = None) -> str:
     """Generate game-data.js content."""
 
     # Collect all machine names used in recipes
@@ -1221,9 +1526,20 @@ def generate_game_data_js(version: str, recipes: list[dict],
     al = assembly_line_composition
     lines.append("// ── Assembly Line sub-machine composition ─────────────────────")
     lines.append("const ASSEMBLY_LINE_COMPOSITION = Object.freeze({")
-    lines.append(f'  start:    {{ count: {al["start"]["count"]},  name: "{al["start"]["name"]}"    }},')
-    lines.append(f'  producer: {{ count: {al["producer"]["count"]}, name: "{al["producer"]["name"]}" }},')
-    lines.append(f'  painter:  {{ count: {al["painter"]["count"]},  name: "{al["painter"]["name"]}"  }},')
+    lines.append(f'  start:      {{ count: {al["start"]["count"]},  name: "{al["start"]["name"]}"    }},')
+    lines.append(f'  producer:   {{ count: {al["producer"]["count"]}, name: "{al["producer"]["name"]}" }},')
+    lines.append(f'  painter:    {{ count: {al["painter"]["count"]},  name: "{al["painter"]["name"]}"  }},')
+    lines.append(f'  cycle_time: {al["cycle_time"]},  // seconds per complete robot')
+    lines.append("});")
+    lines.append("")
+
+    # ASSEMBLY_LINE_ROBOT_PARTS (part counts per robot, from AssemblyLineObjectTemplate)
+    lines.append("// ── Assembly Line robot part counts (canonical title → amount) ─")
+    lines.append("// Derived from AssemblyLineObjectTemplate objectParts (Left+Right each = 1).")
+    lines.append("const ASSEMBLY_LINE_ROBOT_PARTS = Object.freeze({")
+    for robot_name, counts in sorted(assembly_line_robots.items()):
+        parts_js = ", ".join(f'"{k}": {v}' for k, v in sorted(counts.items()))
+        lines.append(f'  "{robot_name}": {{ {parts_js} }},')
     lines.append("});")
     lines.append("")
 
@@ -1339,6 +1655,62 @@ def generate_game_data_js(version: str, recipes: list[dict],
         lines.append(f'  "{esc}": {{ sides: {sides}, loader_needed: {ln_str} }},')
     lines.append("});")
     lines.append("")
+
+    # POWER_SOURCES and POWER_FUEL_ITEMS (dynamically extracted from templates)
+    if power_data:
+        lines.append("// ── Power generator sources ───────────────────────────────────")
+        lines.append("const POWER_SOURCES = Object.freeze([")
+        for src in power_data.get("sources", []):
+            src_type = src["type"]
+            name_esc = src["name"].replace('"', '\\"')
+            id_esc = src["id"].replace('"', '\\"')
+            if src_type == "solar":
+                lines.append(
+                    f'  {{ id: "{id_esc}", name: "{name_esc}", type: "solar",'
+                    f' power_kw: {src["power_kw"]}, power_kw_min: {src["power_kw_min"]} }},'
+                )
+            elif src_type == "solid_fuel":
+                locked_esc = src.get("locked_fuel", "").replace('"', '\\"')
+                lines.append(
+                    f'  {{ id: "{id_esc}", name: "{name_esc}", type: "solid_fuel",'
+                    f' power_kw: {src["power_kw"]}, efficiency: {src["efficiency"]},'
+                    f' locked_fuel: "{locked_esc}" }},'
+                )
+            elif src_type == "steam_turbine":
+                lines.append(
+                    f'  {{ id: "{id_esc}", name: "{name_esc}", type: "steam_turbine",'
+                    f' power_kw: {src["power_kw"]} }},'
+                )
+            elif src_type == "steam_boiler":
+                vent_str = "true" if src["requires_vent"] else "false"
+                lines.append(
+                    f'  {{ id: "{id_esc}", name: "{name_esc}", type: "steam_boiler",'
+                    f' steam_lit_per_sec: {src["steam_lit_per_sec"]},'
+                    f' energy_kj_per_sec: {src["energy_kj_per_sec"]},'
+                    f' requires_vent: {vent_str} }},'
+                )
+            elif src_type == "npp_turbine":
+                lines.append(
+                    f'  {{ id: "{id_esc}", name: "{name_esc}", type: "npp_turbine",'
+                    f' power_kw: {src["power_kw"]}, efficiency: {src["efficiency"]} }},'
+                )
+            elif src_type == "npp_reactor":
+                fuel_esc = src.get("fuel_name", "").replace('"', '\\"')
+                lines.append(
+                    f'  {{ id: "{id_esc}", name: "{name_esc}", type: "npp_reactor",'
+                    f' fuel_name: "{fuel_esc}", fuel_lit_per_min: {src["fuel_lit_per_min"]} }},'
+                )
+        lines.append("]);")
+        lines.append("")
+
+        lines.append("// ── Power fuel items ──────────────────────────────────────────")
+        lines.append("const POWER_FUEL_ITEMS = Object.freeze({")
+        for fname, fdata in sorted(power_data.get("fuel_items", {}).items()):
+            fname_esc = fname.replace('"', '\\"')
+            mj_str = str(fdata["mj"]) if fdata["mj"] != int(fdata["mj"]) else str(int(fdata["mj"]))
+            lines.append(f'  "{fname_esc}": {{ mj: {mj_str}, type: "{fdata["type"]}" }},')
+        lines.append("});")
+        lines.append("")
 
     return "\n".join(lines)
 
@@ -1550,8 +1922,14 @@ def generate_icons_js(version: str, icon_map: dict,
                 if recipe_name not in name_to_path:
                     name_to_path[recipe_name] = icon_map[icon_id]
 
+    # Static aliases for virtual composite machines that have no single icon
+    # "Assembly Line" is a composite (Start+Producer+Painter) — use Producer icon
+    static_aliases: dict[str, str] = {}
+    if "Assembly Line Producer" in name_to_path:
+        static_aliases["Assembly Line"] = "Assembly Line Producer"
+
     # Build aliases: recipe names that have no icon_identifier → fall back to output item name
-    aliases: dict[str, str] = {}
+    aliases: dict[str, str] = {**static_aliases}
     if recipes:
         for r in recipes:
             recipe_name = r.get("name", "")
@@ -1712,8 +2090,10 @@ def main():
 
     # Dynamic detections
     assembly_line_composition = build_assembly_line_composition(templates_dir)
+    assembly_line_robots      = build_assembly_line_robots(templates_dir, id_to_name)
     fluid_sources = detect_fluid_sources(templates_dir, bots_raw, id_to_name)
     machine_fluid_minimums = detect_machine_fluid_minimums(bots_raw, id_to_name)
+    power_data = extract_power_data(templates_dir, id_to_name)
 
     print(f"  {len(id_to_name)} named identifiers, {len(tag_machines)} production tags, "
           f"{len(fluid_items)} fluid items, {len(intermediate_items)} intermediate items, "
@@ -1721,6 +2101,7 @@ def main():
     print(f"  Assembly line: {assembly_line_composition['producer']['count']} producer stations")
     print(f"  Fluid sources: {len(fluid_sources)}")
     print(f"  Machine fluid minimums: {len(machine_fluid_minimums)} machines")
+    print(f"  Power sources: {len(power_data['sources'])}, fuel items: {len(power_data['fuel_items'])}")
 
     # ── Parse recipes ─────────────────────────────────────────────────────────
     print("Parsing recipes...")
@@ -1792,8 +2173,9 @@ def main():
     game_data_content = generate_game_data_js(
         version_tag, recipes, fluid_items, intermediate_items,
         bot_data, subgroups, templates_dir, id_to_name,
-        assembly_line_composition, fluid_sources,
-        byproduct_disposal, machine_fluid_minimums)
+        assembly_line_composition, assembly_line_robots, fluid_sources,
+        byproduct_disposal, machine_fluid_minimums,
+        power_data)
     game_data_path = out_dir / "game-data.js"
     game_data_path.write_text(game_data_content, encoding="utf-8")
     print(f"  Wrote {game_data_path}")

@@ -900,3 +900,43 @@ const MACHINE_CONNECTIONS = Object.freeze({
   "Xeno-Scrap-Extractor": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xenoferrite Ore": { sides: [0, 0, 0, 0], loader_needed: false },
 });
+
+// ── Power generator sources ───────────────────────────────────
+const POWER_SOURCES = Object.freeze([
+  { id: "_base_biomass_burner", name: "Biomass Burner", type: "solid_fuel", power_kw: 600.0, efficiency: 0.7, locked_fuel: "Biomass" },
+  { id: "_base_boiler_i", name: "Boiler", type: "steam_boiler", steam_lit_per_sec: 60.0, energy_kj_per_sec: 3600.0, requires_vent: false },
+  { id: "_base_burner_generator_lvg", name: "Burner Generator", type: "solid_fuel", power_kw: 1800.0, efficiency: 0.8, locked_fuel: "" },
+  { id: "_base_geothermal_generator_i", name: "Geothermal Boiler", type: "steam_boiler", steam_lit_per_sec: 360.0, energy_kj_per_sec: 0.0, requires_vent: true },
+  { id: "_base_npp_reactor_base", name: "Xeno Reactor Base", type: "npp_reactor", fuel_name: "Reactor Fuel Mix", fuel_lit_per_min: 4320.0 },
+  { id: "_base_npp_steam_turbine_base", name: "High-Pressure Turbine Base", type: "npp_turbine", power_kw: 36000.0, efficiency: 1.0 },
+  { id: "_base_solar_panel_i", name: "Solar Panel (Small)", type: "solar", power_kw: 300.0, power_kw_min: 100.0 },
+  { id: "_base_solar_panel_ii", name: "Solar Panel (Large)", type: "solar", power_kw: 650.0, power_kw_min: 650.0 },
+  { id: "_base_turbine_i", name: "Steam Turbine", type: "steam_turbine", power_kw: 3600.0 },
+]);
+
+// ── Power fuel items ──────────────────────────────────────────
+const POWER_FUEL_ITEMS = Object.freeze({
+  "Biomass": { mj: 5, type: "solid" },
+  "Coked Ignium": { mj: 5.5, type: "solid" },
+  "Construction Material": { mj: 5, type: "solid" },
+  "Construction Site Rubble": { mj: 5, type: "solid" },
+  "Firmarlite Bar": { mj: 5, type: "solid" },
+  "High-Pressure Steam": { mj: 0.06, type: "elemental" },
+  "High-Tech Construction Material": { mj: 5, type: "solid" },
+  "High-Tech Construction Site Rubble": { mj: 5, type: "solid" },
+  "Ignium Fuel Rod": { mj: 400, type: "solid" },
+  "Ignium Ore": { mj: 12.5, type: "solid" },
+  "Ignium Ore Rubble": { mj: 10, type: "solid" },
+  "Ignium Powder": { mj: 20, type: "solid" },
+  "Jetpack Fuel": { mj: 25, type: "solid" },
+  "Liquid Fuel": { mj: 0.5, type: "elemental" },
+  "Maintenance Drone": { mj: 5, type: "solid" },
+  "Portable Fuel": { mj: 16, type: "solid" },
+  "Reactor Fuel Mix": { mj: 0.5, type: "elemental" },
+  "Space Ship Fuel Canister": { mj: 25, type: "solid" },
+  "Steam": { mj: 0.06, type: "elemental" },
+  "Technum Ore Rubble": { mj: 20, type: "solid" },
+  "Telluxite Ore": { mj: 10, type: "solid" },
+  "Telluxite Ore Rubble": { mj: 20, type: "solid" },
+  "Xenoferrite Ore Rubble": { mj: 20, type: "solid" },
+});

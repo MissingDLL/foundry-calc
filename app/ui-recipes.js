@@ -393,6 +393,7 @@ function addRecipeItem(canonicalName) {
   });
   renderSelectedRecipes();
   renderRecipeBrowser();
+  if (selectedRecipeList.length) calculateRecipes();
   const el = document.getElementById("recipeSearch");
   if (el) el.value = "";
   const ir = document.getElementById("recipeInlineResults");

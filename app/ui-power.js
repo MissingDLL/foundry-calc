@@ -2,72 +2,131 @@
 // app/ui-power.js
 // Power Planner: enter target power, add generator types,
 // pick fuel, get count + fuel consumption per minute.
+// Uses POWER_SOURCES and POWER_FUEL_ITEMS from game-data.js.
 // ============================================================
 
-const POWER_FUELS = {
-  'Biomass':         { valueMj: 5   },
-  'Portable Fuel':   { valueMj: 16  },
-  'Jetpack Fuel':    { valueMj: 25  },
-  'Coked Ignium':    { valueMj: 400 },
-  'Ignium Fuel Rod': { valueMj: 400 },
-};
+// Build the POWER_GENERATORS list dynamically from POWER_SOURCES and POWER_FUEL_ITEMS.
+// Called once at startup (after game-data.js is loaded).
+function _buildPowerGenerators() {
+  const generators = [];
 
-const POWER_GENERATORS = [
-  {
-    id: 'solar_small',
-    name: 'Solar Panel (Small)',
-    powerKw: 300,
-    requiresFuel: false,
-    grid: 'High Voltage',
-    note: null,
-  },
-  {
-    id: 'solar_large',
-    name: 'Solar Panel (Large)',
-    powerKw: 650,
-    requiresFuel: false,
-    grid: 'High Voltage',
-    note: null,
-  },
-  {
-    id: 'biomass_burner',
-    name: 'Biomass Burner',
-    powerKw: 600,
-    efficiency: 0.7,
-    requiresFuel: true,
-    fuels: ['Biomass'],
-    grid: 'Low Voltage',
-    note: null,
-  },
-  {
-    id: 'burner_generator',
-    name: 'Burner Generator',
-    powerKw: 1800,
-    efficiency: 0.8,
-    requiresFuel: true,
-    fuels: ['Biomass', 'Portable Fuel', 'Jetpack Fuel', 'Coked Ignium', 'Ignium Fuel Rod'],
-    grid: 'Low Voltage',
-    note: null,
-  },
-  {
-    id: 'boiler_turbine',
-    name: 'Boiler + Steam Turbine',
-    powerKw: 3600,
-    requiresFuel: true,
-    isSteam: true,
-    fuels: ['Portable Fuel', 'Jetpack Fuel', 'Coked Ignium', 'Ignium Fuel Rod'],
-    grid: 'High Voltage',
-    note: '1 Boiler + 1 Turbine per unit',
-  },
-  {
-    id: 'geothermal',
-    name: 'Geothermal + 2× Steam Turbine',
-    powerKw: 7200,
-    requiresFuel: false,
-    grid: 'High Voltage',
-    note: 'Requires Geothermal Vent',
-  },
-];
+  // Derive steam kJ/L from POWER_FUEL_ITEMS
+  const steamMj = (POWER_FUEL_ITEMS['Steam'] || {}).mj || 0.06;
+  const steamKjPerL = steamMj * 1000;
+
+  // Collect boilers and turbines for pairing
+  const boilers = POWER_SOURCES.filter(s => s.type === 'steam_boiler');
+  const turbines = POWER_SOURCES.filter(s => s.type === 'steam_turbine');
+
+  // Get all practical solid fuels (exclude rubble, construction, drone, canister etc.)
+  // "Practical" = items you'd realistically use in a generator
+  const _PRACTICAL_FUEL_BLACKLIST = new Set([
+    'Construction Material', 'High-Tech Construction Material',
+    'Construction Site Rubble', 'High-Tech Construction Site Rubble',
+    'Firmarlite Bar', 'Maintenance Drone', 'Space Ship Fuel Canister',
+    'Telluxite Ore', 'Ignium Ore', 'Ignium Ore Rubble',
+    'Technum Ore Rubble', 'Telluxite Ore Rubble', 'Xenoferrite Ore Rubble',
+    'Ignium Powder',
+  ]);
+  const allSolidFuels = Object.entries(POWER_FUEL_ITEMS)
+    .filter(([name, f]) => f.type === 'solid' && !_PRACTICAL_FUEL_BLACKLIST.has(name))
+    .map(([name]) => name)
+    .sort((a, b) => (POWER_FUEL_ITEMS[a].mj - POWER_FUEL_ITEMS[b].mj));
+
+  // ── Solar panels ──────────────────────────────────────────────────────────
+  for (const src of POWER_SOURCES) {
+    if (src.type !== 'solar') continue;
+    generators.push({
+      id: src.id,
+      name: src.name,
+      powerKw: src.power_kw,
+      requiresFuel: false,
+      note: null,
+    });
+  }
+
+  // ── Solid-fuel generators (LVG) ───────────────────────────────────────────
+  for (const src of POWER_SOURCES) {
+    if (src.type !== 'solid_fuel') continue;
+    // Determine accepted fuels
+    let fuels;
+    if (src.locked_fuel) {
+      // locked to a specific fuel (e.g. Biomass Burner → Biomass only)
+      fuels = [src.locked_fuel];
+    } else {
+      fuels = allSolidFuels;
+    }
+    generators.push({
+      id: src.id,
+      name: src.name,
+      powerKw: src.power_kw,
+      efficiency: src.efficiency,
+      requiresFuel: true,
+      fuels,
+      note: null,
+    });
+  }
+
+  // ── Classic Boiler + Steam Turbine combinations ───────────────────────────
+  if (turbines.length > 0 && boilers.length > 0) {
+    const turbine = turbines[0]; // Classic Steam Turbine
+    const turbineLitPerSec = steamKjPerL > 0 ? turbine.power_kw / steamKjPerL : 0;
+
+    // Determine which solid fuels work in the classic boiler
+    // (hasFuelManagerSolid, no lock → all practical fuels excluding Biomass)
+    const boilerFuels = allSolidFuels.filter(f => f !== 'Biomass');
+
+    for (const boiler of boilers) {
+      if (boiler.requires_vent) {
+        // Geothermal: compute turbine count
+        const turbineCount = turbineLitPerSec > 0
+          ? Math.round(boiler.steam_lit_per_sec / turbineLitPerSec)
+          : 6;
+        const combinedKw = turbineCount * turbine.power_kw;
+        generators.push({
+          id: boiler.id + '_geothermal',
+          name: `Geothermal + ${turbineCount}× Steam Turbine`,
+          powerKw: combinedKw,
+          requiresFuel: false,
+          note: 'Requires Geothermal Vent',
+        });
+      } else {
+        // Classic Boiler + Turbine (1:1 pairing)
+        generators.push({
+          id: boiler.id + '_turbine',
+          name: 'Boiler + Steam Turbine',
+          powerKw: turbine.power_kw,
+          requiresFuel: true,
+          isSteam: true,
+          fuels: boilerFuels,
+          note: '1 Boiler + 1 Turbine per unit',
+        });
+      }
+    }
+  }
+
+  // ── NPP: pair Xeno Reactor + High-Pressure Turbine ────────────────────────
+  const nppTurbine = POWER_SOURCES.find(s => s.type === 'npp_turbine');
+  const nppReactor = POWER_SOURCES.find(s => s.type === 'npp_reactor');
+  if (nppTurbine && nppReactor) {
+    const fuelName = nppReactor.fuel_name;
+    generators.push({
+      id: nppTurbine.id + '_npp',
+      name: `${nppTurbine.name} (NPP)`,
+      powerKw: nppTurbine.power_kw,
+      requiresFuel: true,
+      isNpp: true,
+      fuels: [fuelName],
+      nppFuelLitPerMin: nppReactor.fuel_lit_per_min,
+      note: 'Needs Xeno Reactor + Steam Generator + Cooling Tower + Fuel Mixer',
+    });
+  }
+
+  return generators;
+}
+
+// Build the generator list once on load
+const POWER_GENERATORS = _buildPowerGenerators();
 
 // ── State ────────────────────────────────────────────────────
 let _powerRows    = [];
@@ -84,11 +143,15 @@ function _getTargetKw() {
 // Fuel consumed per generator per minute.
 function _fuelPerUnitPerMin(gen, fuelName) {
   if (!gen.requiresFuel || !fuelName) return 0;
-  const fuel = POWER_FUELS[fuelName];
+  const fuel = POWER_FUEL_ITEMS[fuelName];
   if (!fuel) return 0;
+  if (gen.isNpp) {
+    // NPP: fuel consumption is fixed per reactor, not derived from power
+    return gen.nppFuelLitPerMin || 0;
+  }
   // power_kw * 60s / (efficiency * fuel_value_mj * 1000 kJ/MJ)
   const eff = gen.isSteam ? 1.0 : (gen.efficiency || 1.0);
-  return (gen.powerKw * 60) / (eff * fuel.valueMj * 1000);
+  return (gen.powerKw * 60) / (eff * fuel.mj * 1000);
 }
 
 function _fmtPower(kw) {
@@ -123,10 +186,6 @@ function _renderRows() {
     const fuelRateUnit = gen.requiresFuel ? _fuelPerUnitPerMin(gen, row.fuelName) : 0;
     const fuelRateTotal= fuelRateUnit * count;
 
-    const gridColor = gen.grid === 'High Voltage'
-      ? 'rgba(96,165,250,0.7)'   // blue
-      : 'rgba(251,191,36,0.7)';  // yellow
-
     const fuelSelect = gen.requiresFuel
       ? `<select onchange="onPowerFuelChange(${row.rowId}, this.value)" style="
            background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
@@ -160,8 +219,6 @@ function _renderRows() {
           <span style="font-weight:600; font-size:14px; color:var(--text)">${gen.name}</span>
           <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center">
             <span style="font-size:11px; color:rgba(255,255,255,0.35);">${_fmtPower(gen.powerKw)} each</span>
-            <span style="font-size:11px; color:${gridColor}; background:rgba(255,255,255,0.05);
-              border:1px solid rgba(255,255,255,0.08); border-radius:4px; padding:1px 6px;">${gen.grid} Grid</span>
             ${gen.note ? `<span style="font-size:11px; color:rgba(251,191,36,0.8); background:rgba(251,191,36,0.08);
               border:1px solid rgba(251,191,36,0.2); border-radius:4px; padding:1px 6px;">${gen.note}</span>` : ''}
           </div>
@@ -171,7 +228,7 @@ function _renderRows() {
           color:rgba(255,100,100,0.7); border-radius:6px; padding:4px 10px;
           font-size:11px; cursor:pointer; flex-shrink:0; transition:all 0.15s"
           onmouseover="this.style.background='rgba(255,60,60,0.18)'"
-          onmouseout="this.style.background='rgba(255,60,60,0.08)'">✕ Remove</button>
+          onmouseout="this.style.background='rgba(255,60,60,0.08)'">&#x2715; Remove</button>
       </div>
 
       <!-- Fuel + count row -->
@@ -187,7 +244,7 @@ function _renderRows() {
           </span>
           ${count > 0 ? `
             <span style="font-size:12px; color:rgba(255,255,255,0.35);">${count === 1 ? 'unit' : 'units'}</span>
-            <span style="font-size:12px; color:rgba(255,255,255,0.25);">→ ${_fmtPower(totalKw)}</span>
+            <span style="font-size:12px; color:rgba(255,255,255,0.25);">&#x2192; ${_fmtPower(totalKw)}</span>
             ${surplusLine}
           ` : ''}
         </div>

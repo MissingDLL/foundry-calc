@@ -138,68 +138,129 @@ function toggleRecipeCategoryAll() {
 
 
 // ── Bot subcategory detection ─────────────────────────────────────
-// Determines which sub-section of the bot sidebar a recipe belongs to,
-// based on simple name pattern matching.
-// The order of checks matters: more specific patterns come first.
-// Complete robot names (exact match) → own top-level group
-const COMPLETE_ROBOT_NAMES = new Set([
-  "Combat Robot", "Farmer Robot", "Miner Robot",
-  "Operator Robot", "Personal Assistant Robot", "Science Robot",
-]);
+// Derived entirely from RECIPE_SUBGROUPS["Robots"] — no hardcoded names.
 
-function getBotSubgroup(name) {
-  if (COMPLETE_ROBOT_NAMES.has(name)) return "Complete Robots";
-  const n = name.toLowerCase();
-  if (n.includes("drone")) return "Drones";
-  if (n.includes(" bot")) return "Bots";
-  if (n.startsWith("combat robot")) return "Combat Robot Parts";
-  if (n.startsWith("farmer robot")) return "Farmer Robot Parts";
-  if (n.startsWith("miner robot")) return "Miner Robot Parts";
-  if (n.startsWith("operator robot")) return "Operator Robot Parts";
-  if (n.startsWith("personal assistant robot")) return "Personal Assistant Robot Parts";
-  if (n.startsWith("science robot")) return "Science Robot Parts";
-  return "Robots (Other)";
+// Builds a map: recipe name → subgroup label, and a list of non-Bots labels
+// (robot types), in the order they appear in RECIPE_SUBGROUPS.
+let _robotSubgroupMap  = null;  // { "Assault Robot Arm" → "Assault Robot", ... }
+let _robotTypeLabels   = null;  // ["Assault Robot", "Hazard Robot", ...]
+
+function _ensureRobotData() {
+  if (_robotSubgroupMap) return;
+  _robotSubgroupMap = {};
+  _robotTypeLabels  = [];
+  const robotGroups = (typeof RECIPE_SUBGROUPS !== "undefined" && RECIPE_SUBGROUPS["Robots"]) || [];
+  for (const group of robotGroups) {
+    const label = group.label;
+    if (label !== "Bots") _robotTypeLabels.push(label);
+    // Map the label itself (complete robot) and all listed parts
+    _robotSubgroupMap[label] = label;
+    for (const row of (group.rows || [])) {
+      for (const recipeName of row) {
+        _robotSubgroupMap[recipeName] = label;
+      }
+    }
+  }
 }
 
-// Defines the display order of bot subgroups in the sidebar.
-// Parts subgroups are no longer top-level — they are rendered inline
-// below their parent robot in the "Complete Robots" section.
-const BOT_SUBGROUP_ORDER = [
-  "Complete Robots",
-  "Bots", "Drones",
-  "Personal Assistant Robot Parts", "Operator Robot Parts",
-  "Miner Robot Parts", "Farmer Robot Parts", "Combat Robot Parts", "Science Robot Parts",
-  "Robots (Other)",
-];
+function getBotSubgroup(name) {
+  _ensureRobotData();
+  return _robotSubgroupMap[name] || "Robots (Other)";
+}
 
-// Parts subgroups that are rendered inline below their parent robot.
-// They are excluded from the top-level subgroup rendering.
-const INLINE_PARTS_SUBGROUPS = new Set([
-  "Combat Robot Parts", "Farmer Robot Parts", "Miner Robot Parts",
-  "Operator Robot Parts", "Personal Assistant Robot Parts", "Science Robot Parts",
-]);
+function _getBotSubgroupOrder() {
+  _ensureRobotData();
+  // "Bots" first, then robot types in game-data order, then catch-all
+  return ["Bots", "Drones", ..._robotTypeLabels, "Robots (Other)"];
+}
 
-// Maps each complete robot to the subgroup key holding its parts.
-const ROBOT_TO_PARTS_SUBGROUP = {
-  "Combat Robot":            "Combat Robot Parts",
-  "Farmer Robot":            "Farmer Robot Parts",
-  "Miner Robot":             "Miner Robot Parts",
-  "Operator Robot":          "Operator Robot Parts",
-  "Personal Assistant Robot":"Personal Assistant Robot Parts",
-  "Science Robot":           "Science Robot Parts",
-};
+// Returns the robot-type prefix string for display shortening
+// e.g. "Assault Robot Arm" → "Assault Robot ", "Miner Robot Arm" → "Miner Robot "
+function _getRobotPrefix(name) {
+  _ensureRobotData();
+  // Try known subgroup labels first
+  for (const rt of _robotTypeLabels) {
+    if (name.startsWith(rt + " ")) return rt + " ";
+  }
+  // Fallback: strip known part-type suffix to derive the robot prefix
+  for (const suf of [" Arm", " Leg", " Head", " Torso"]) {
+    if (name.endsWith(suf)) return name.slice(0, -suf.length) + " ";
+  }
+  return null;
+}
+
+// Inject synthetic "complete robot" recipes for each robot type found in
+// RECIPE_SUBGROUPS["Robots"]. In the current game, complete robots are assembled
+// on the Assembly Line — no crafting recipe exists. We synthesize one so the
+// calc engine can expand "Assault Robot" → its 4 parts.
+let _syntheticRobotsInjected = false;
+function _injectSyntheticRobotRecipes() {
+  if (_syntheticRobotsInjected) return;
+  _syntheticRobotsInjected = true;
+  _ensureRobotData();  // also initialises _robotSubgroupMap
+
+  const robotGroups = (typeof RECIPE_SUBGROUPS !== "undefined" && RECIPE_SUBGROUPS["Robots"]) || [];
+  const alParts = (typeof ASSEMBLY_LINE_ROBOT_PARTS !== "undefined") ? ASSEMBLY_LINE_ROBOT_PARTS : {};
+
+  const _partTypeSuffixes = [" Torso", " Head", " Arm", " Leg"];
+
+  for (const group of robotGroups) {
+    const label = group.label;
+    if (label === "Bots") continue;
+    const partNames = (group.rows || []).flat();
+    if (!partNames.length) continue;
+
+    // Derive the actual robot name from the parts, because RECIPE_SUBGROUPS labels
+    // can differ from the robot's own name (e.g. label "Mining Robot" but parts
+    // are "Miner Robot Arm" → actual robot name = "Miner Robot").
+    let robotName = label;
+    for (const pn of partNames) {
+      for (const suf of _partTypeSuffixes) {
+        if (pn.endsWith(suf)) { robotName = pn.slice(0, -suf.length); break; }
+      }
+      if (robotName !== label) break;
+    }
+
+    if (RECIPES[robotName]) continue;             // already exists (older game version)
+
+    // Register the derived robot name in the subgroup map (group = label)
+    _robotSubgroupMap[robotName] = label;
+
+    // Build ingredients: look up ASSEMBLY_LINE_ROBOT_PARTS by derived robot name.
+    const partCounts = alParts[robotName] || {};  // { "Arm": 2, "Leg": 2, "Head": 1, "Torso": 1 }
+    const ingredients = partNames.map(partRecipeName => {
+      let suffix = partRecipeName;
+      for (const suf of _partTypeSuffixes) {
+        if (partRecipeName.endsWith(suf)) { suffix = suf.trim(); break; }
+      }
+      const amount = partCounts[suffix] ?? 1;
+      return { item: partRecipeName, amount };
+    });
+
+    const alCycleTime    = (typeof ASSEMBLY_LINE_COMPOSITION !== "undefined" && ASSEMBLY_LINE_COMPOSITION.cycle_time) ? ASSEMBLY_LINE_COMPOSITION.cycle_time : 1.875;
+    const alMachineName  = (typeof M !== "undefined") ? M.ASSEMBLY_LINE : "Assembly Line";
+    const paintName      = (typeof I !== "undefined") ? I.PAINT : "Paint";
+
+    RECIPES[robotName] = {
+      category:    "Robots",
+      ingredients: [...ingredients, { item: paintName, amount: 100 }],
+      output:      { amount: 1 },
+      machines:    { [alMachineName]: { cycleTime: alCycleTime } },
+      _synthetic:  true,
+    };
+  }
+}
 
 // Builds (or rebuilds) the entire bot sidebar list.
-// Called once on startup and again whenever recipe selection changes.
-// Groups Robot-category recipes by subgroup, renders subgroup headers
-// with "✓ All" buttons, and individual bot rows with checkboxes.
-// Parts for each complete robot are rendered inline directly below
-// that robot rather than in a separate section at the bottom.
 function buildRecipeCategoryList() {
+  _injectSyntheticRobotRecipes();
+
   const list = document.getElementById("botList");
   list.innerHTML = "";
 
-  // Collect all Robot-category recipes and group them by subgroup
+  // Group all Robot-category recipes by robot type.
+  // Parts (e.g. "Assault Robot Arm") go into the same group as the synthetic
+  // complete robot ("Assault Robot"), but are rendered read-only below it.
   const groups = {};
   Object.entries(RECIPES)
     .filter(([, r]) => r.category === "Robots")
@@ -209,23 +270,20 @@ function buildRecipeCategoryList() {
       groups[sg].push(name);
     });
 
-  // Top-level rendering skips parts subgroups — they appear inline below each robot
+  const subgroupOrder = _getBotSubgroupOrder();
   const orderedKeys = [
-    ...BOT_SUBGROUP_ORDER.filter(k => groups[k] && !INLINE_PARTS_SUBGROUPS.has(k)),
-    ...Object.keys(groups).filter(k => !BOT_SUBGROUP_ORDER.includes(k) && !INLINE_PARTS_SUBGROUPS.has(k)),
+    ...subgroupOrder.filter(k => groups[k]),
+    ...Object.keys(groups).filter(k => !subgroupOrder.includes(k)),
   ];
 
-  const prefixes = ["Combat Robot ", "Farmer Robot ", "Miner Robot ",
-    "Operator Robot ", "Personal Assistant Robot ", "Science Robot "];
-
-  // Helper: render a selectable bot-item row (with checkbox + efficiency tag).
+  // Render a selectable complete-robot or bot/drone row (checkbox).
   function renderBotItem(name) {
     const r    = RECIPES[name];
     const item = document.createElement("div");
     item.className = "bot-item";
     item.id = "botItem_" + name;
 
-    const prefix    = prefixes.find(p => name.startsWith(p));
+    const prefix    = _getRobotPrefix(name);
     const shortName = prefix ? name.slice(prefix.length) : name;
 
     const eff = botEfficiencyOverrides[name] != null ? botEfficiencyOverrides[name] : (r && r.efficiency);
@@ -246,22 +304,19 @@ function buildRecipeCategoryList() {
     list.appendChild(item);
   }
 
-  // Helper: render a read-only part row (no checkbox, shows required quantity).
+  // Render a read-only part row below the complete robot (no checkbox).
   function renderPartItem(partName, qty) {
     const item = document.createElement("div");
     item.className = "bot-item";
-    item.id = "botItem_" + partName;
     item.style.cssText = "margin-left:10px;padding:4px 8px;cursor:default;pointer-events:none;opacity:0.72";
 
-    const prefix    = prefixes.find(p => partName.startsWith(p));
+    const prefix    = _getRobotPrefix(partName);
     const shortName = prefix ? partName.slice(prefix.length) : partName;
-
-    const qtyBadge = `<span style="font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;color:rgba(255,255,255,0.45);white-space:nowrap;flex-shrink:0;min-width:18px;text-align:right">${qty}×</span>`;
 
     item.innerHTML = `
     ${getIcon(partName, 22, true)}
     <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:rgba(255,255,255,0.65)">${shortName}</span>
-    ${qtyBadge}
+    <span style="font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;color:rgba(255,255,255,0.45);white-space:nowrap;flex-shrink:0;min-width:18px;text-align:right">${qty}×</span>
   `;
     list.appendChild(item);
   }
@@ -269,7 +324,13 @@ function buildRecipeCategoryList() {
   orderedKeys.forEach((sg) => {
     const names = groups[sg];
 
-    // ── Subgroup header row ──────────────────────────────────
+    // Split: the complete robot (synthetic recipe) vs parts (real recipes)
+    const completeRobot = names.find(n => RECIPES[n] && RECIPES[n]._synthetic);
+    const parts = names.filter(n => n !== completeRobot).sort();
+
+    // Only names with checkboxes count for "✓ All" toggle
+    const toggleNames = completeRobot ? [completeRobot] : names.filter(n => !parts.includes(n));
+
     const catDiv = document.createElement("div");
     catDiv.className = "bot-category";
     catDiv.style.cssText = "display:flex;align-items:center;justify-content:space-between;margin-top:6px";
@@ -278,9 +339,6 @@ function buildRecipeCategoryList() {
     catSpan.textContent = sg;
     catDiv.appendChild(catSpan);
 
-    // Parts have no checkboxes, so "✓ All" only toggles the complete robots themselves
-    const allNamesToToggle = [...names];
-
     const allBtn = document.createElement("button");
     allBtn.id = "robotAllBtn_sg_" + sg.replace(/ /g, "_");
     allBtn.textContent = "✓ All";
@@ -288,11 +346,11 @@ function buildRecipeCategoryList() {
     allBtn.style.cssText =
       "padding:1px 7px;font-size:10px;background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.25);color:var(--accent);border-radius:5px;cursor:pointer;font-family:-apple-system,sans-serif";
     allBtn.onclick = function () {
-      const allChecked = allNamesToToggle.every(n => {
+      const allChecked = toggleNames.every(n => {
         const c = document.getElementById("chk_" + n); return c && c.checked;
       });
       const newState = !allChecked;
-      allNamesToToggle.forEach(n => {
+      toggleNames.forEach(n => {
         const c = document.getElementById("chk_" + n);
         if (c) c.checked = newState;
         toggleRecipeFromGrid(n, newState);
@@ -302,36 +360,30 @@ function buildRecipeCategoryList() {
     catDiv.appendChild(allBtn);
     list.appendChild(catDiv);
 
-    // ── Bot item rows ────────────────────────────────────────
-    names.sort().forEach((name) => {
-      renderBotItem(name);
-
-      // For complete robots, render their parts inline below (read-only, with qty)
-      if (sg === "Complete Robots") {
-        const partsSg = ROBOT_TO_PARTS_SUBGROUP[name];
-        const partsNames = (partsSg && groups[partsSg]) ? groups[partsSg].slice().sort() : [];
-        if (partsNames.length) {
-          // Build a qty map from the robot's own ingredient list
-          const qtyMap = {};
-          (RECIPES[name].ingredients || []).forEach(ing => { qtyMap[ing.item] = ing.amount; });
-
-          // Subtle "Parts" divider
-          const partsLabel = document.createElement("div");
-          partsLabel.style.cssText =
-            "font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:0.06em;text-transform:uppercase;" +
-            "padding:2px 4px 1px 16px;margin-top:1px";
-          partsLabel.textContent = "Parts";
-          list.appendChild(partsLabel);
-
-          partsNames.forEach(partName => renderPartItem(partName, qtyMap[partName] || 1));
-
-          // Small spacer between robot groups
-          const spacer = document.createElement("div");
-          spacer.style.cssText = "height:4px";
-          list.appendChild(spacer);
-        }
+    if (completeRobot) {
+      // Show complete robot (selectable) then parts (read-only) below
+      renderBotItem(completeRobot);
+      if (parts.length) {
+        // Build qty map from the synthetic recipe's ingredients
+        const qtyMap = {};
+        (RECIPES[completeRobot]?.ingredients || []).forEach(ing => {
+          qtyMap[ing.item] = ing.amount;
+        });
+        const partsLabel = document.createElement("div");
+        partsLabel.style.cssText =
+          "font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:0.06em;text-transform:uppercase;" +
+          "padding:2px 4px 1px 16px;margin-top:1px";
+        partsLabel.textContent = "Parts";
+        list.appendChild(partsLabel);
+        parts.forEach(p => renderPartItem(p, qtyMap[p] ?? 1));
+        const spacer = document.createElement("div");
+        spacer.style.cssText = "height:4px";
+        list.appendChild(spacer);
       }
-    });
+    } else {
+      // No complete robot (Bots, Drones, Robots (Other)) — show all as selectable
+      names.sort().forEach(renderBotItem);
+    }
   });
 }
 

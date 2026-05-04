@@ -191,7 +191,9 @@ function calculateRecipes() {
   const lines = selectedRecipeList
     .map((item) => {
       const r = RECIPES[item.recipeName || item.name]; // support both old and new format
-      if (!r || !r.machines[item.machineName]) return null;
+      if (!r) return null;
+
+      if (!r.machines[item.machineName]) return null;
 
       const ct = r.machines[item.machineName].cycleTime; // seconds per cycle
 
