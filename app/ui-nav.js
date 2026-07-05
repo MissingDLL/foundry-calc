@@ -65,9 +65,6 @@ function switchSidebarView(mode) {
   document.getElementById('sidebar-recipes').style.display = isRecipes ? 'flex'  : 'none';
   document.getElementById('sidebar-power').style.display   = isPower   ? 'flex'  : 'none';
 
-  const activeStyle   = { bg: 'rgba(10,132,255,0.18)', color: '#0a84ff' };
-  const inactiveStyle = { bg: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.40)' };
-
   [
     { id: 'toggleBotBtn',    active: isBots    },
     { id: 'toggleRecipeBtn', active: isRecipes },
@@ -75,8 +72,8 @@ function switchSidebarView(mode) {
   ].forEach(function (item) {
     const el = document.getElementById(item.id);
     if (!el) return;
-    el.style.background = item.active ? activeStyle.bg : inactiveStyle.bg;
-    el.style.color      = item.active ? activeStyle.color : inactiveStyle.color;
+    el.classList.toggle('nav-btn--active',   item.active);
+    el.classList.toggle('nav-btn--inactive', !item.active);
   });
 
   if (isPower) {
@@ -128,11 +125,9 @@ function switchVizMode(mode) {
     blob.style.transform = `translate(${bR.left - pR.left}px, ${bR.top - pR.top}px)`;
   }
 
-  // Update icon colours + active class
+  // Update active class (colours are CSS-driven via .active-viz svg)
   const btnSankey = document.getElementById('vizBtnSankey');
   const btnBoxes  = document.getElementById('vizBtnBoxes');
-  btnSankey.style.color = isSankey  ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.40)';
-  btnBoxes.style.color  = !isSankey ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.40)';
   btnSankey.classList.toggle('active-viz', isSankey);
   btnBoxes.classList.toggle('active-viz', !isSankey);
 
@@ -184,12 +179,12 @@ function switchMainTab(tab) {
   incoming.offsetHeight;
   incoming.style.animation = 'tabContentIn 0.32s cubic-bezier(0.22,1,0.36,1) both';
 
-  const isLight = document.documentElement.style.getPropertyValue('--text').trim() === '#1d1d1f';
-  const inactiveColor = isLight ? '#6e6e73' : 'rgba(255,255,255,0.40)';
-  const ab = { borderBottomColor: 'var(--accent)', color: 'var(--accent)'  };
-  const ib = { borderBottomColor: 'transparent',   color: inactiveColor    };
-  Object.assign(document.getElementById('mainTabBtnRecipes').style,   isRecipes   ? ab : ib);
-  Object.assign(document.getElementById('mainTabBtnVisualize').style, isVisualize ? ab : ib);
+  const btnR = document.getElementById('mainTabBtnRecipes');
+  const btnS = document.getElementById('mainTabBtnVisualize');
+  btnR.classList.toggle('main-tab-btn--active',   isRecipes);
+  btnR.classList.toggle('main-tab-btn--inactive', !isRecipes);
+  btnS.classList.toggle('main-tab-btn--active',   isVisualize);
+  btnS.classList.toggle('main-tab-btn--inactive', !isVisualize);
 
   if (isVisualize) {
     requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -402,7 +397,8 @@ function sharePlan() {
   }
 
   navigator.clipboard.writeText(url)
-    .then(() => _flashBtn('✓ Copied!', 'var(--accent3)', 'rgba(48,209,88,0.4)'))
+    // ponytail: translucent success border has no token yet (only solid --accent3 exists)
+    .then(() => _flashBtn('✓ Copied!', 'var(--accent3)', 'var(--color-success-border)'))
     .catch(() => {
       // Fallback for environments without clipboard API (e.g. plain file://)
       prompt('Link kopieren:', url);

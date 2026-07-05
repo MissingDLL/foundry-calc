@@ -57,7 +57,7 @@ function renderSettingsContent(targetId) {
   // ── Section: Spielversion ─────────────────────────────────
   const verTitle = document.createElement("div");
   verTitle.style.cssText =
-    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
+    "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
   verTitle.textContent = "Spielversion";
   el.appendChild(verTitle);
 
@@ -70,8 +70,8 @@ function renderSettingsContent(targetId) {
     btn.style.cssText =
       "padding:6px 16px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;transition:all 0.18s;" +
       (isActive
-        ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
-        : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);cursor:pointer;");
+        ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
+        : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);cursor:pointer;");
     btn.textContent = v.label;
     btn.onclick = function () { switchGameVersion(v.id); };
     verRow.appendChild(btn);
@@ -79,13 +79,13 @@ function renderSettingsContent(targetId) {
   el.appendChild(verRow);
 
   const verSep = document.createElement("div");
-  verSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  verSep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
   el.appendChild(verSep);
 
   // ── Section: Machine family defaults ─────────────────────
   const machTitle = document.createElement("div");
   machTitle.style.cssText =
-    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
+    "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
   machTitle.textContent = "Default Machines";
   el.appendChild(machTitle);
 
@@ -107,8 +107,8 @@ function renderSettingsContent(targetId) {
       btn.style.cssText =
         "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
         (isActive
-          ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
-          : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
+          ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
+          : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);");
       btn.innerHTML =
         getIcon(machine, 20) +
         "<span>" +
@@ -122,11 +122,11 @@ function renderSettingsContent(targetId) {
         // Update visuals
         row.querySelectorAll("button").forEach((b) => {
           const active = b.dataset.machine === machine;
-          b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
+          b.style.background = active ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)";
           b.style.border = active
-            ? "1px solid rgba(10,132,255,0.5)"
-            : "1px solid rgba(255,255,255,0.10)";
-          b.style.color = active ? "#f5f5f7" : "rgba(255,255,255,0.45)";
+            ? "1px solid var(--color-border-focus)"
+            : "1px solid var(--color-border)";
+          b.style.color = active ? "var(--color-text-primary)" : "var(--color-interactive)";
         });
       };
       row.appendChild(btn);
@@ -138,12 +138,12 @@ function renderSettingsContent(targetId) {
 
   // ── Section: Recipe variant defaults ─────────────────────
   const sep = document.createElement("div");
-  sep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  sep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
   el.appendChild(sep);
 
   const varTitle = document.createElement("div");
   varTitle.style.cssText =
-    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
+    "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px";
   varTitle.textContent = "Recipe Variants (Default)";
   el.appendChild(varTitle);
 
@@ -171,8 +171,8 @@ function renderSettingsContent(targetId) {
       btn.style.cssText =
         "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
         (isActive
-          ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
-          : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
+          ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
+          : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);");
       btn.innerHTML =
         getIcon(variant, 20) +
         "<span>" +
@@ -185,11 +185,11 @@ function renderSettingsContent(targetId) {
         saveSettings();
         row.querySelectorAll("button").forEach((b) => {
           const active = b.dataset.variant === variant;
-          b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
+          b.style.background = active ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)";
           b.style.border = active
-            ? "1px solid rgba(10,132,255,0.5)"
-            : "1px solid rgba(255,255,255,0.10)";
-          b.style.color = active ? "#f5f5f7" : "rgba(255,255,255,0.45)";
+            ? "1px solid var(--color-border-focus)"
+            : "1px solid var(--color-border)";
+          b.style.color = active ? "var(--color-text-primary)" : "var(--color-interactive)";
         });
       };
       row.appendChild(btn);
@@ -201,17 +201,17 @@ function renderSettingsContent(targetId) {
 
   // ── Section: Burnable Items (Fuel choices) ────────────────
   const burnSep = document.createElement("div");
-  burnSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  burnSep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
   el.appendChild(burnSep);
 
   const burnTitle = document.createElement("div");
   burnTitle.style.cssText =
-    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
+    "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
   burnTitle.textContent = "Burnable Items (Fuel)";
   el.appendChild(burnTitle);
 
   const burnDesc = document.createElement("div");
-  burnDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
+  burnDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
   burnDesc.textContent = "Which fuel should be used for each burnable recipe (e.g. Boiler → Steam)?";
   el.appendChild(burnDesc);
 
@@ -236,8 +236,8 @@ function renderSettingsContent(targetId) {
       btn.style.cssText =
         "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
         (isActive
-          ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
-          : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
+          ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
+          : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);");
       btn.innerHTML = getIcon(variant, 20) + "<span>" + shortName + "</span>";
       btn.dataset.group = group.label;
       btn.dataset.variant = variant;
@@ -246,9 +246,9 @@ function renderSettingsContent(targetId) {
         saveSettings();
         row.querySelectorAll("button").forEach((b) => {
           const active = b.dataset.variant === variant;
-          b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
-          b.style.border = active ? "1px solid rgba(10,132,255,0.5)" : "1px solid rgba(255,255,255,0.10)";
-          b.style.color = active ? "#f5f5f7" : "rgba(255,255,255,0.45)";
+          b.style.background = active ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)";
+          b.style.border = active ? "1px solid var(--color-border-focus)" : "1px solid var(--color-border)";
+          b.style.color = active ? "var(--color-text-primary)" : "var(--color-interactive)";
         });
       };
       row.appendChild(btn);
@@ -260,17 +260,17 @@ function renderSettingsContent(targetId) {
 
   // ── Section: Miner preferences ───────────────────────────────
   const minerSep = document.createElement("div");
-  minerSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  minerSep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
   el.appendChild(minerSep);
 
   const minerTitle = document.createElement("div");
   minerTitle.style.cssText =
-    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
+    "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
   minerTitle.textContent = "Mining Machines (Raw Materials)";
   el.appendChild(minerTitle);
 
   const minerDesc = document.createElement("div");
-  minerDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
+  minerDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
   minerDesc.textContent =
     "Which machine should be used for each raw material in the ingredient resolution?";
   el.appendChild(minerDesc);
@@ -296,8 +296,8 @@ function renderSettingsContent(targetId) {
       btn.style.cssText =
         "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
         (isActive
-          ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
-          : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
+          ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
+          : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);");
       btn.innerHTML = getIcon(miner, 20) + "<span>" + miner + "</span>";
       btn.dataset.ore = group.label;
       btn.dataset.miner = miner;
@@ -306,8 +306,8 @@ function renderSettingsContent(targetId) {
         saveSettings();
         row.querySelectorAll("button").forEach((b) => {
           const active = b.dataset.miner === miner;
-          b.style.background = active ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)";
-          b.style.border = active ? "1px solid rgba(10,132,255,0.5)" : "1px solid rgba(255,255,255,0.10)";
+          b.style.background = active ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)";
+          b.style.border = active ? "1px solid var(--color-border-focus)" : "1px solid var(--color-border)";
           b.style.color = active ? "var(--text)" : "var(--text-dim)";
         });
       };
@@ -321,17 +321,17 @@ function renderSettingsContent(targetId) {
   // ── Section: Bot efficiency overrides ────────────────────────
   // ── Section: Global Research Productivity ────────────────────
   const resSep = document.createElement("div");
-  resSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  resSep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
   el.appendChild(resSep);
 
   const resTitle = document.createElement("div");
   resTitle.style.cssText =
-    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
+    "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
   resTitle.textContent = "Global Research Productivity";
   el.appendChild(resTitle);
 
   const resDesc = document.createElement("div");
-  resDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
+  resDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
   resDesc.textContent =
     "Mining: applies to Crusher I/II · Fluid: applies to Fluid Assembler, Chemical Processor, Barrel Filler, Greenhouse";
   el.appendChild(resDesc);
@@ -353,7 +353,7 @@ function renderSettingsContent(targetId) {
   ].forEach(({ label, icon, getter, setter }) => {
     const cell = document.createElement("div");
     cell.style.cssText =
-      "display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:6px 10px";
+      "display:flex;align-items:center;gap:8px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:10px;padding:6px 10px";
 
     const iconEl = document.createElement("div");
     iconEl.style.cssText = "flex-shrink:0;color:var(--text-dim)";
@@ -373,7 +373,7 @@ function renderSettingsContent(targetId) {
     inp.step = "10";
     inp.value = getter();
     inp.style.cssText =
-      "width:52px;padding:3px 6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:13px;border-radius:8px;text-align:right";
+      "width:52px;padding:3px 6px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:13px;border-radius:8px;text-align:right";
     inp.oninput = function () {
       const val = parseFloat(this.value);
       setter(isNaN(val) || val < 0 ? 0 : val);
@@ -387,7 +387,7 @@ function renderSettingsContent(targetId) {
     const resetBtn = document.createElement("button");
     resetBtn.title = "Reset";
     resetBtn.style.cssText =
-      "padding:2px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.40);" +
+      "padding:2px 6px;background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);" +
       "border-radius:3px;cursor:pointer;font-size:11px;line-height:1;flex-shrink:0";
     resetBtn.textContent = "↺";
     resetBtn.onclick = function () {
@@ -408,17 +408,17 @@ function renderSettingsContent(targetId) {
   el.appendChild(resGrid);
 
   const effSep = document.createElement("div");
-  effSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  effSep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
   el.appendChild(effSep);
 
   const effTitle = document.createElement("div");
   effTitle.style.cssText =
-    "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
+    "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
   effTitle.textContent = "Bot Efficiency Bonuses";
   el.appendChild(effTitle);
 
   const effDesc = document.createElement("div");
-  effDesc.style.cssText = "font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:12px";
+  effDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
   effDesc.textContent = "Adjust the displayed efficiency percentages per bot (e.g. via in-game upgrades).";
   el.appendChild(effDesc);
 
@@ -442,7 +442,7 @@ function renderSettingsContent(targetId) {
 
     const cell = document.createElement("div");
     cell.style.cssText =
-      "display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px;padding:6px 10px";
+      "display:flex;align-items:center;gap:8px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:10px;padding:6px 10px";
 
     const icon = document.createElement("div");
     icon.style.cssText = "flex-shrink:0";
@@ -462,7 +462,7 @@ function renderSettingsContent(targetId) {
     inp.step = "1";
     inp.value = current;
     inp.style.cssText =
-      "width:52px;padding:3px 6px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:13px;border-radius:8px;text-align:right";
+      "width:52px;padding:3px 6px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:13px;border-radius:8px;text-align:right";
     inp.oninput = function () {
       const val = parseFloat(this.value);
       if (!isNaN(val) && val >= 0) {
@@ -482,7 +482,7 @@ function renderSettingsContent(targetId) {
     const resetBtn = document.createElement("button");
     resetBtn.title = "Reset to default";
     resetBtn.style.cssText =
-      "padding:2px 6px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.40);" +
+      "padding:2px 6px;background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);" +
       "border-radius:3px;cursor:pointer;font-size:11px;line-height:1;flex-shrink:0";
     resetBtn.textContent = "↺";
     resetBtn.onclick = function () {
@@ -505,11 +505,11 @@ function renderSettingsContent(targetId) {
 
   // ── Section: Workstations ─────────────────────────────────────
   const wsSep = document.createElement("div");
-  wsSep.style.cssText = "border-top:1px solid rgba(255,255,255,0.08);margin:18px 0";
+  wsSep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
   el.appendChild(wsSep);
 
   const wsTitle = document.createElement("div");
-  wsTitle.style.cssText = "font-size:11px;font-weight:600;color:rgba(255,255,255,0.50);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
+  wsTitle.style.cssText = "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
   wsTitle.textContent = "Workstations (Global)";
   el.appendChild(wsTitle);
 
@@ -520,7 +520,7 @@ function renderSettingsContent(targetId) {
 
   const wsSummary = document.createElement("div");
   wsSummary.id = "wsBonusSummary";
-  wsSummary.style.cssText = "margin-bottom:10px;padding:8px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);border-radius:10px";
+  wsSummary.style.cssText = "margin-bottom:10px;padding:8px 10px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:10px";
   el.appendChild(wsSummary);
 
   const wsContainer = document.createElement("div");
@@ -563,7 +563,7 @@ function renderWorkstations() {
     // Grau ausblenden wenn keine kompatiblen Bots existieren
     const hasNoBots = compatibleBots.length === 0;
     const card = document.createElement("div");
-    card.style.cssText = "background:" + (ws ? "rgba(10,132,255,0.08)" : "rgba(255,255,255,0.04)") + ";border:1px solid " + (ws ? "rgba(10,132,255,0.4)" : "rgba(255,255,255,0.09)") + ";border-radius:12px;padding:10px 12px" + (hasNoBots ? ";opacity:0.5" : "");
+    card.style.cssText = "background:" + (ws ? "var(--color-accent-active-bg)" : "var(--color-bg-elevated)") + ";border:1px solid " + (ws ? "var(--color-border-focus)" : "var(--color-border)") + ";border-radius:12px;padding:10px 12px" + (hasNoBots ? ";opacity:0.5" : "");
 
     // Header: category name + enable toggle
     const header = document.createElement("div");
@@ -614,8 +614,8 @@ function renderWorkstations() {
         btn.textContent = "WS " + t + " (" + t + " Slot" + (t > 1 ? "s" : "") + ")";
         btn.style.cssText = "padding:4px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;transition:all 0.15s;" +
           (ws.tier === t
-            ? "background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;"
-            : "background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);");
+            ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
+            : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);");
         btn.onclick = function () {
           ws.tier = t;
           while (ws.robots.length < t) ws.robots.push(null);
@@ -660,10 +660,10 @@ function renderWorkstations() {
 
         const iconWrap = document.createElement("div");
         iconWrap.style.cssText = "width:22px;height:22px;flex-shrink:0;display:flex;align-items:center;justify-content:center";
-        iconWrap.innerHTML = botName ? getIcon(botName, 20, true) : "<span style='color:rgba(255,255,255,0.20);font-size:16px'>○</span>";
+        iconWrap.innerHTML = botName ? getIcon(botName, 20, true) : "<span style='color:var(--color-text-disabled);font-size:16px'>○</span>";
 
         const sel = document.createElement("select");
-        sel.style.cssText = "flex:1;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none";
+        sel.style.cssText = "flex:1;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none";
         const emptyOpt = document.createElement("option");
         emptyOpt.value = "";
         emptyOpt.textContent = "— no bot —";
@@ -687,7 +687,7 @@ function renderWorkstations() {
           ws.robots[slotIdx] = this.value || null;
           iconWrap.innerHTML = ws.robots[slotIdx]
             ? getIcon(ws.robots[slotIdx], 20, true)
-            : "<span style='color:rgba(255,255,255,0.20);font-size:16px'>○</span>";
+            : "<span style='color:var(--color-text-disabled);font-size:16px'>○</span>";
           updateEffSpan(effSpan, ws.robots[slotIdx]);
           renderWorkstationBonusSummary();
           saveSettings();
@@ -700,13 +700,15 @@ function renderWorkstations() {
           if (name && RECIPES[name] && RECIPES[name].workstation_effect) {
             const we = RECIPES[name].workstation_effect;
             const parts = [];
-            if (we.machine_efficiency) parts.push('<span style="background:#0d2a14;border:1px solid #1a4a28;border-radius:3px;padding:1px 5px;color:var(--accent3)">+' + we.machine_efficiency + '% Eff</span>');
-            if (we.machine_speed) parts.push('<span style="background:#0d1a2a;border:1px solid #1a2a4a;border-radius:3px;padding:1px 5px;color:var(--accent)">+' + we.machine_speed + '% Speed</span>');
+            // ponytail: fixed dark chip background regardless of theme (matches .badge
+            // pattern in styles.css, also untokenized) — no token for stat-badge surfaces yet
+            if (we.machine_efficiency) parts.push('<span style="background:var(--color-success-bg);border:1px solid var(--color-success-border);border-radius:3px;padding:1px 5px;color:var(--accent3)">+' + we.machine_efficiency + '% Eff</span>');
+            if (we.machine_speed) parts.push('<span style="background:var(--color-accent-active-bg);border:1px solid var(--color-border);border-radius:3px;padding:1px 5px;color:var(--accent)">+' + we.machine_speed + '% Speed</span>');
             el.innerHTML = parts.join(" ");
           } else {
             el.innerHTML = compatibleBots.length === 0
-              ? '<span style="color:#444">keine Bots</span>'
-              : '<span style="color:#444">—</span>';
+              ? '<span style="color:var(--color-text-disabled)">keine Bots</span>'
+              : '<span style="color:var(--color-text-disabled)">—</span>';
           }
         }
         updateEffSpan(effSpan, botName);
@@ -750,7 +752,7 @@ function renderWorkstationBonusSummary() {
     '<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Active global bonuses</div>' +
     '<div style="display:flex;flex-wrap:wrap;gap:5px">' +
     lines.map(({ machine, bonus }) =>
-      `<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(48,209,88,0.10);border:1px solid rgba(48,209,88,0.20);border-radius:6px;padding:3px 8px;font-size:11px;font-family:-apple-system,sans-serif">` +
+      `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--color-success-bg);border:1px solid var(--color-success-border);border-radius:6px;padding:3px 8px;font-size:11px;font-family:-apple-system,sans-serif">` +
       `<span style="color:var(--text-dim)">${machine}</span>` +
       `<span style="color:var(--accent3)">+${Math.round(bonus * 1000) / 10}%</span></span>`
     ).join("") + "</div>";

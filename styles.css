@@ -1,16 +1,8 @@
+    /* Color tokens (--bg, --accent, --text, etc.) now live entirely in
+       app/tokens.css scoped per [data-theme] — defining them again here
+       as plain :root values would win the cascade (same specificity,
+       later source order) and silently override every non-default theme. */
     :root {
-      --bg: #05000f;
-      --bg2: rgba(140,50,220,0.06);
-      --bg3: rgba(140,50,220,0.10);
-      --panel: rgba(40,10,80,0.45);
-      --border: rgba(160,60,255,0.20);
-      --accent: #a855f7;
-      --accent2: #ff453a;
-      --accent3: #30d158;
-      --text: #f5f5f7;
-      --text-dim: #98989f;
-      --highlight: rgba(140,50,220,0.14);
-      --warn: #ffd60a;
       --glass-bg: rgba(40,10,80,0.45);
       --glass-border: rgba(160,60,255,0.18);
       --glass-highlight: rgba(200,100,255,0.15);
@@ -27,14 +19,6 @@
     }
 
     body {
-      background:
-        radial-gradient(ellipse 120% 90% at 70% 40%,   rgba(130,40,200,0.55) 0%, transparent 55%),
-        radial-gradient(ellipse 80%  70% at 20% 80%,   rgba(80,20,160,0.45) 0%, transparent 50%),
-        radial-gradient(ellipse 60%  50% at 90% 10%,   rgba(180,60,220,0.35) 0%, transparent 45%),
-        radial-gradient(ellipse 90%  80% at 50% 60%,   rgba(100,0,180,0.30) 0%, transparent 60%),
-        radial-gradient(ellipse 50%  40% at 30% 20%,   rgba(60,10,120,0.40) 0%, transparent 45%),
-        radial-gradient(ellipse 40%  60% at 80% 80%,   rgba(200,80,255,0.20) 0%, transparent 40%),
-        #05000f;
       color: var(--text);
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
       font-size: 14px;
@@ -43,8 +27,32 @@
       letter-spacing: -0.01em;
     }
 
-    /* Nebula overlay effect */
-    body::before {
+    [data-theme="default"] body {
+      background:
+        radial-gradient(ellipse 120% 90% at 70% 40%,   rgba(130,40,200,0.55) 0%, transparent 55%),
+        radial-gradient(ellipse 80%  70% at 20% 80%,   rgba(80,20,160,0.45) 0%, transparent 50%),
+        radial-gradient(ellipse 60%  50% at 90% 10%,   rgba(180,60,220,0.35) 0%, transparent 45%),
+        radial-gradient(ellipse 90%  80% at 50% 60%,   rgba(100,0,180,0.30) 0%, transparent 60%),
+        radial-gradient(ellipse 50%  40% at 30% 20%,   rgba(60,10,120,0.40) 0%, transparent 45%),
+        radial-gradient(ellipse 40%  60% at 80% 80%,   rgba(200,80,255,0.20) 0%, transparent 40%),
+        #05000f;
+    }
+
+    [data-theme="dark"] body {
+      background: #000000;
+    }
+
+    [data-theme="light"] body {
+      background:
+        radial-gradient(ellipse 120% 90% at 70% 40%,   rgba(80,140,255,0.35) 0%, transparent 55%),
+        radial-gradient(ellipse 80%  70% at 20% 80%,   rgba(60,100,220,0.25) 0%, transparent 50%),
+        radial-gradient(ellipse 60%  50% at 90% 10%,   rgba(100,160,255,0.20) 0%, transparent 45%),
+        radial-gradient(ellipse 90%  80% at 50% 60%,   rgba(40,80,200,0.15) 0%, transparent 60%),
+        #dce8ff;
+    }
+
+    /* Nebula overlay — default theme only */
+    [data-theme="default"] body::before {
       content: '';
       position: fixed;
       inset: 0;
@@ -65,25 +73,31 @@
       margin: 16px;
       border-radius: 24px;
       overflow: hidden;
-      border: 1px solid rgba(160,60,255,0.20);
+      border: 1px solid var(--color-border);
       box-shadow:
-        0 0 80px rgba(120,40,200,0.25),
-        0 0 200px rgba(100,20,180,0.15),
+        0 0 80px rgba(0,0,0,0.25),
         0 30px 80px rgba(0,0,0,0.6),
         inset 0 1px 0 rgba(255,255,255,0.10);
       height: calc(100vh - 32px);
       display: flex;
       flex-direction: column;
     }
+    [data-theme="default"] .app-wrapper {
+      box-shadow:
+        0 0 80px rgba(120,40,200,0.25),
+        0 0 200px rgba(100,20,180,0.15),
+        0 30px 80px rgba(0,0,0,0.6),
+        inset 0 1px 0 rgba(255,255,255,0.10);
+    }
 
     /* Header */
     header {
-      background: rgba(30,5,60,0.75);
+      background: var(--color-bg-overlay);
       backdrop-filter: blur(60px) saturate(200%);
       -webkit-backdrop-filter: blur(60px) saturate(200%);
-      border-bottom: 1px solid rgba(160,60,255,0.20);
+      border-bottom: 1px solid var(--color-border);
       box-shadow:
-        0 1px 0 rgba(200,100,255,0.10),
+        0 1px 0 rgba(0,0,0,0.10),
         inset 0 1px 0 rgba(255,255,255,0.08);
       padding: 14px 28px;
       display: flex;
@@ -96,17 +110,17 @@
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       font-size: 18px;
       font-weight: 700;
-      color: #ffffff;
+      color: var(--color-text-primary);
       letter-spacing: 0.08em;
       text-shadow: none;
     }
 
     .logo span {
-      color: rgba(255,255,255,0.45);
+      color: var(--color-text-secondary);
     }
 
     .subtitle {
-      color: rgba(255,255,255,0.35);
+      color: var(--color-text-disabled);
       font-size: 11px;
       letter-spacing: 0.04em;
       text-transform: none;
@@ -128,10 +142,10 @@
 
     /* Sidebar */
     .sidebar {
-      background: rgba(20,5,45,0.65);
+      background: var(--color-bg-overlay);
       backdrop-filter: blur(60px) saturate(180%);
       -webkit-backdrop-filter: blur(60px) saturate(180%);
-      border-right: 1px solid rgba(140,50,220,0.18);
+      border-right: 1px solid var(--color-border);
       padding: 16px 14px;
       display: flex;
       flex-direction: column;
@@ -162,9 +176,9 @@
     .hamburger-btn {
       width: 40px;
       height: 40px;
-      background: rgba(255,255,255,0.10);
-      border: 1px solid rgba(160,60,255,0.20);
-      color: rgba(255,255,255,0.65);
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       border-radius: 50%;
       cursor: pointer;
       display: flex;
@@ -175,9 +189,9 @@
       flex-shrink: 0;
     }
     .hamburger-btn:hover {
-      background: rgba(140,50,220,0.30);
-      border-color: rgba(160,60,255,0.45);
-      color: #c088ff;
+      background: var(--color-accent-active-bg);
+      border-color: var(--color-border-focus);
+      color: var(--color-accent-hover);
     }
 
     /* Main */
@@ -191,38 +205,52 @@
     .section-title {
       font-size: 10px;
       font-weight: 600;
-      color: rgba(255,255,255,0.30);
+      color: var(--color-text-disabled);
       letter-spacing: 0.06em;
       text-transform: uppercase;
       margin-bottom: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid var(--color-border);
       padding-bottom: 6px;
     }
 
     /* Panels */
     .panel {
+      background: var(--color-bg-elevated);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        inset 0 -1px 0 rgba(0,0,0,0.10),
+        0 12px 40px rgba(0,0,0,0.15),
+        0 2px 8px rgba(0,0,0,0.2);
+      transition: box-shadow 0.2s ease;
+    }
+    [data-theme="default"] .panel {
       background:
         linear-gradient(150deg, rgba(180,80,255,0.10) 0%, rgba(255,255,255,0.03) 100%),
         rgba(30,10,60,0.45);
-      backdrop-filter: blur(40px) saturate(180%);
-      -webkit-backdrop-filter: blur(40px) saturate(180%);
-      border: 1px solid rgba(160,60,255,0.18);
-      border-radius: var(--radius-lg);
-      padding: 16px;
       box-shadow:
         inset 0 1px 0 rgba(200,100,255,0.15),
         inset 0 -1px 0 rgba(0,0,0,0.20),
         0 12px 40px rgba(80,0,160,0.25),
         0 2px 8px rgba(0,0,0,0.3);
-      transition: box-shadow 0.2s ease;
     }
 
     .sidebar .panel {
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
-      background: rgba(40,10,80,0.50);
-      border-color: rgba(140,50,220,0.20);
+      background: var(--color-bg-overlay);
+      border-color: var(--color-border);
       border-radius: var(--radius-md);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.06),
+        0 4px 16px rgba(0,0,0,0.15);
+    }
+    [data-theme="default"] .sidebar .panel {
+      background: rgba(40,10,80,0.50);
       box-shadow:
         inset 0 1px 0 rgba(180,80,255,0.12),
         0 4px 16px rgba(60,0,120,0.25);
@@ -244,7 +272,7 @@
 
     .input-group label {
       font-size: 11px;
-      color: rgba(255,255,255,0.35);
+      color: var(--color-text-disabled);
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
@@ -252,9 +280,9 @@
     input[type="number"],
     input[type="text"],
     select {
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: var(--text);
+      background: var(--color-surface-input);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-primary);
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       font-size: 14px;
       padding: 8px 12px;
@@ -263,12 +291,18 @@
       outline: none;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
     }
+    /* Native dropdown popup: options don't inherit translucent theme surfaces —
+       they need solid colors or the OS renders light-bg + inherited white text. */
+    select option {
+      background: var(--color-bg-base);
+      color: var(--color-text-primary);
+    }
 
     input[type="number"]:focus,
     input[type="text"]:focus,
     select:focus {
-      border-color: rgba(10,132,255,0.6);
-      box-shadow: 0 0 0 3px rgba(10,132,255,0.22);
+      border-color: var(--color-border-focus);
+      box-shadow: 0 0 0 3px var(--color-accent-active-bg);
     }
 
     /* Bot selector */
@@ -290,7 +324,7 @@
     }
 
     .bot-list::-webkit-scrollbar-thumb {
-      background: rgba(255,255,255,0.12);
+      background: var(--color-border);
       border-radius: 99px;
     }
 
@@ -303,12 +337,12 @@
       border: 1px solid transparent;
       cursor: pointer;
       transition: all 0.18s ease;
-      background: rgba(255,255,255,0.05);
+      background: var(--color-accent-inactive-bg);
     }
 
     .bot-item:hover {
-      border-color: rgba(10,132,255,0.4);
-      background: rgba(10,132,255,0.10);
+      border-color: var(--color-border-focus);
+      background: var(--color-accent-active-bg);
       transform: scale(1.01);
     }
 
@@ -320,8 +354,8 @@
     }
 
     .bot-item.selected {
-      border-color: rgba(10,132,255,0.5);
-      background: rgba(10,132,255,0.12);
+      border-color: var(--color-border-focus);
+      background: var(--color-accent-active-bg);
     }
 
     .bot-name {
@@ -342,7 +376,7 @@
       display: flex;
       gap: 0;
       margin-bottom: 20px;
-      border-bottom: 1px solid rgba(255,255,255,0.10);
+      border-bottom: 1px solid var(--color-border);
     }
 
     .tab {
@@ -375,8 +409,8 @@
     }
 
     .results-table th {
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.45);
+      background: var(--color-bg-elevated);
+      color: var(--color-text-secondary);
       font-family: 'Rajdhani', sans-serif;
       font-size: 11px;
       font-weight: 700;
@@ -384,19 +418,19 @@
       text-transform: uppercase;
       padding: 8px 12px;
       text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.08);
+      border-bottom: 1px solid var(--color-border);
       position: sticky;
       top: 0;
     }
 
     .results-table td {
       padding: 7px 12px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid var(--color-border);
       font-size: 13px;
     }
 
     .results-table tr:hover td {
-      background: rgba(10,132,255,0.10);
+      background: var(--color-accent-active-bg);
     }
 
     .results-table td.num {
@@ -431,24 +465,29 @@
     }
 
     .summary-box {
-      background:
-        linear-gradient(150deg, rgba(160,60,255,0.12) 0%, rgba(30,10,60,0.40) 100%);
-      border: 1px solid rgba(160,60,255,0.20);
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
       padding: 14px;
       position: relative;
       overflow: hidden;
       box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.08),
+        0 4px 20px rgba(0,0,0,0.15);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    [data-theme="default"] .summary-box {
+      background: linear-gradient(150deg, rgba(160,60,255,0.12) 0%, rgba(30,10,60,0.40) 100%);
+      box-shadow:
         inset 0 1px 0 rgba(200,100,255,0.15),
         0 4px 20px rgba(80,0,160,0.20);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .summary-box:hover {
       transform: translateY(-1px);
       box-shadow:
-        inset 0 1px 0 rgba(200,100,255,0.22),
-        0 8px 28px rgba(100,0,200,0.30);
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        0 8px 28px rgba(0,0,0,0.20);
     }
 
     .summary-box::before {
@@ -474,7 +513,7 @@
       font-size: 11px;
       font-family: 'Rajdhani', sans-serif;
       font-weight: 700;
-      color: rgba(255,255,255,0.45);
+      color: var(--color-text-secondary);
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 6px;
@@ -501,7 +540,7 @@
       font-size: 11px;
       font-family: 'Rajdhani', sans-serif;
       font-weight: 600;
-      color: rgba(255,255,255,0.35);
+      color: var(--color-text-disabled);
       letter-spacing: 0.04em;
       margin-top: 2px;
     }
@@ -512,9 +551,9 @@
       padding: 2px 8px;
       border-radius: 6px;
       font-size: 11px;
-      background: rgba(10,132,255,0.15);
+      background: var(--color-accent-active-bg);
       color: var(--accent);
-      border: 1px solid rgba(10,132,255,0.25);
+      border: 1px solid var(--color-border-focus);
     }
 
     /* Science packs */
@@ -526,8 +565,8 @@
     }
 
     .sci-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.09);
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
       border-radius: var(--radius-sm);
       padding: 12px;
     }
@@ -535,7 +574,7 @@
     .sci-card h4 {
       font-size: 12px;
       font-weight: 600;
-      color: rgba(255,255,255,0.50);
+      color: var(--color-text-secondary);
       margin-bottom: 8px;
       letter-spacing: 0.04em;
       text-transform: uppercase;
@@ -546,7 +585,7 @@
       justify-content: space-between;
       font-size: 13px;
       padding: 2px 0;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid var(--color-border);
     }
 
     .sci-row:last-child {
@@ -560,8 +599,8 @@
 
     /* Calc button */
     .calc-btn {
-      background: linear-gradient(135deg, #8a2be2, #6a0dad);
-      border: 1px solid rgba(180,80,255,0.50);
+      background: linear-gradient(135deg, var(--color-accent), var(--color-accent-hover));
+      border: 1px solid var(--color-border-focus);
       color: #fff;
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       font-size: 14px;
@@ -573,12 +612,12 @@
       cursor: pointer;
       width: 100%;
       transition: all 0.2s ease;
-      box-shadow: 0 4px 16px rgba(120,30,220,0.45);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
     }
 
     .calc-btn:hover {
-      background: linear-gradient(135deg, #a040ff, #8020d0);
-      box-shadow: 0 6px 20px rgba(140,40,240,0.55);
+      background: linear-gradient(135deg, var(--color-accent-hover), var(--color-accent));
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
       transform: translateY(-1px);
     }
 
@@ -587,9 +626,9 @@
     }
 
     .reset-btn {
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(140,50,220,0.22);
-      color: rgba(255,255,255,0.55);
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
       font-size: 13px;
       font-weight: 500;
@@ -604,9 +643,9 @@
     }
 
     .reset-btn:hover {
-      border-color: rgba(255,69,58,0.5);
-      color: #ff453a;
-      background: rgba(255,69,58,0.08);
+      border-color: var(--color-danger);
+      color: var(--color-danger);
+      background: var(--color-danger-bg);
     }
 
     /* Tab content */
@@ -639,16 +678,16 @@
     /* Category separators in bot list */
     .bot-category {
       font-size: 10px;
-      color: rgba(255,255,255,0.30);
+      color: var(--color-text-disabled);
       letter-spacing: 0.06em;
       text-transform: uppercase;
       padding: 6px 4px 2px;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid var(--color-border);
       margin-top: 6px;
     }
 
     .highlight-row td {
-      background: rgba(10,132,255,0.06);
+      background: var(--color-accent-active-bg);
     }
 
     /* Recipe picker modal */
@@ -670,11 +709,11 @@
       cursor: pointer;
       font-size: 12px;
       font-weight: 600;
-      color: rgba(255,255,255,0.55);
+      color: var(--color-text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.05em;
       padding: 6px 2px 4px;
-      border-top: 1px solid rgba(255,255,255,0.07);
+      border-top: 1px solid var(--color-border);
       user-select: none;
     }
 
@@ -710,14 +749,14 @@
     }
 
     #recipeCatTabs::-webkit-scrollbar-thumb {
-      background: rgba(10,132,255,0.5);
+      background: var(--color-accent);
       border-radius: 2px;
     }
 
     /* ── Collapsible sections (Rezeptrechner) ──────────────── */
     .collapsible-section {
       margin-bottom: 20px;
-      border: 1px solid rgba(255,255,255,0.09);
+      border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
       overflow: hidden;
     }
@@ -727,22 +766,22 @@
       align-items: center;
       justify-content: space-between;
       padding: 10px 14px;
-      background: rgba(255,255,255,0.04);
+      background: var(--color-bg-elevated);
       cursor: pointer;
       user-select: none;
-      border-bottom: 1px solid rgba(255,255,255,0.07);
+      border-bottom: 1px solid var(--color-border);
       transition: background 0.18s ease;
     }
 
     .collapsible-header:hover {
-      background: rgba(255,255,255,0.07);
+      background: var(--color-surface-input);
     }
 
     .collapsible-header .ch-title {
       font-family: 'Rajdhani', sans-serif;
       font-size: 12px;
       font-weight: 700;
-      color: rgba(255,255,255,0.60);
+      color: var(--color-text-secondary);
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
@@ -751,13 +790,13 @@
       font-family: 'Rajdhani', sans-serif;
       font-size: 11px;
       font-weight: 600;
-      color: rgba(255,255,255,0.35);
+      color: var(--color-text-disabled);
       letter-spacing: 0.03em;
     }
 
     .collapsible-header .ch-arrow {
       font-size: 13px;
-      color: rgba(255,255,255,0.35);
+      color: var(--color-text-disabled);
       transition: transform 0.2s ease;
       margin-left: 10px;
     }
@@ -782,11 +821,11 @@
     }
 
     .recipe-main-row:hover td {
-      background: rgba(10,132,255,0.08);
+      background: var(--color-accent-active-bg);
     }
 
     .recipe-detail-row td {
-      background: rgba(0,0,0,0.25);
+      background: var(--color-bg-elevated);
     }
 
     .recipe-detail-row.collapsed {
@@ -795,7 +834,7 @@
 
     .row-expand-arrow {
       font-size: 10px;
-      color: rgba(255,255,255,0.40);
+      color: var(--color-text-disabled);
       transition: transform 0.2s ease;
       margin-right: 6px;
       display: inline-block;
@@ -808,7 +847,7 @@
     /* Global scrollbar */
     ::-webkit-scrollbar { width: 4px; height: 4px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 99px; }
+    ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 99px; }
 
     /* =============================================
        APPLE-LIKE ANIMATIONS
@@ -882,7 +921,7 @@
     /* --- Reset flash: results area flashes and content drops away --- */
     @keyframes resetFlash {
       0%   { opacity: 1; transform: scale(1); }
-      15%  { opacity: 0.6; transform: scale(0.99); background: rgba(255,69,58,0.08); }
+      15%  { opacity: 0.6; transform: scale(0.99); background: var(--color-danger-bg); }
       100% { opacity: 0; transform: scale(0.97) translateY(8px); }
     }
     .reset-flash {
@@ -897,7 +936,7 @@
     }
     .calc-btn:hover {
       transform: translateY(-2px) scale(1.01) !important;
-      box-shadow: 0 8px 28px rgba(140,40,240,0.60) !important;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.4) !important;
     }
     .calc-btn:active {
       transform: scale(0.96) !important;
@@ -967,6 +1006,13 @@
     }
     .panel:hover {
       transform: translateY(-2px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.12),
+        inset 0 -1px 0 rgba(0,0,0,0.15),
+        0 18px 50px rgba(0,0,0,0.25),
+        0 4px 12px rgba(0,0,0,0.25) !important;
+    }
+    [data-theme="default"] .panel:hover {
       box-shadow:
         inset 0 1px 0 rgba(200,100,255,0.20),
         inset 0 -1px 0 rgba(0,0,0,0.20),
@@ -1067,13 +1113,16 @@
     }
     .__theme-icon-btn:hover svg {
       transform: scale(1.28) !important;
-      color: #60a5fa !important;
-      stroke: #60a5fa !important;
-      filter: drop-shadow(0 0 5px rgba(96,165,250,0.65)) !important;
+      color: var(--color-accent-hover) !important;
+      stroke: var(--color-accent-hover) !important;
+      filter: drop-shadow(0 0 5px var(--color-accent-hover)) !important;
     }
     .__theme-icon-btn.active-theme svg {
       color: rgba(255,255,255,0.92) !important;
       filter: none !important;
+    }
+    .__theme-icon-btn:not(.active-theme):not(:hover) svg {
+      color: rgba(255,255,255,0.45) !important;
     }
     /* ── Viz pill hover + active ── */
     .__viz-btn svg {
@@ -1081,13 +1130,62 @@
     }
     .__viz-btn:hover svg {
       transform: scale(1.28) !important;
-      color: #60a5fa !important;
-      stroke: #60a5fa !important;
-      filter: drop-shadow(0 0 5px rgba(96,165,250,0.65)) !important;
+      color: var(--color-accent-hover) !important;
+      stroke: var(--color-accent-hover) !important;
+      filter: drop-shadow(0 0 5px var(--color-accent-hover)) !important;
     }
     .__viz-btn.active-viz svg {
       color: rgba(255,255,255,0.92) !important;
       filter: none !important;
+    }
+    .__viz-btn:not(.active-viz):not(:hover) svg {
+      color: rgba(255,255,255,0.40) !important;
+    }
+    [data-theme="light"] .__viz-btn.active-viz svg {
+      color: var(--color-text-primary) !important;
+    }
+    [data-theme="light"] .__viz-btn:not(.active-viz):not(:hover) svg {
+      color: rgba(0,0,0,0.45) !important;
+    }
+    [data-theme="light"] .__theme-icon-btn.active-theme svg {
+      color: var(--color-text-primary) !important;
+    }
+    [data-theme="light"] .__theme-icon-btn:not(.active-theme):not(:hover) svg {
+      color: rgba(20,20,60,0.50) !important;
+    }
+
+    /* ── Light-mode: glass pills need visible bg/border override ── */
+    [data-theme="light"] #themePill,
+    [data-theme="light"] #vizModePill {
+      background: rgba(255,255,255,0.65) !important;
+      border-color: rgba(0,0,0,0.10) !important;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.90), 0 2px 8px rgba(0,0,0,0.08) !important;
+    }
+    [data-theme="light"] #themeBlobIndicator,
+    [data-theme="light"] #vizBlobIndicator {
+      background: rgba(0,122,255,0.12) !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.80) !important;
+    }
+
+    /* ── Nav/tab state classes (token-driven) ── */
+    .nav-btn--active   { background: var(--color-accent-active-bg); color: var(--color-accent); }
+    .nav-btn--inactive { background: var(--color-accent-inactive-bg); color: var(--color-interactive); }
+    .main-tab-btn--active   { color: var(--color-accent); border-bottom-color: var(--color-accent); }
+    .main-tab-btn--inactive { color: var(--color-interactive); border-bottom-color: transparent; }
+
+    /* ── Modals: theme-reactive via tokens (replaces old JS inline-style patch) ── */
+    #recipeSettingsModal,
+    #recipePickerModal {
+      background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%), var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.20);
+      color: var(--color-text-primary);
+    }
+    [data-theme="light"] #recipeSettingsModal,
+    [data-theme="light"] #recipePickerModal {
+      background: rgba(225,225,235,0.72);
+      border-color: rgba(255,255,255,0.75);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.14), inset 0 1.5px 0 rgba(255,255,255,0.90);
     }
 
     /* Blob must always have its transform-transition, never let theme-switching kill it */
@@ -1179,7 +1277,7 @@
         overflow-y: auto;
         padding: 16px 14px !important;
         opacity: 1 !important;
-        border-right: 1px solid rgba(140, 50, 220, 0.35) !important;
+        border-right: 1px solid var(--color-border) !important;
         transform: translateX(-100%) !important;
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         animation: none !important;
@@ -1245,9 +1343,9 @@
       justify-content: center;
       gap: 5px;
       padding: 6px 10px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.50);
+      background: var(--color-bg-elevated);
+      border: 1px solid var(--color-border);
+      color: var(--color-text-secondary);
       border-radius: 8px;
       cursor: pointer;
       font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
@@ -1255,9 +1353,9 @@
       transition: all 0.18s;
     }
     .plan-io-btn:hover {
-      background: rgba(255,255,255,0.10);
-      border-color: rgba(255,255,255,0.22);
-      color: rgba(255,255,255,0.80);
+      background: var(--color-surface-input);
+      border-color: var(--color-border-focus);
+      color: var(--color-text-primary);
     }
 
     /* ── Navigation & toggle buttons: theme-picker-style hover ─── */
@@ -1267,13 +1365,13 @@
       transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), color 0.2s ease, filter 0.2s ease;
     }
     #toggleSettingsBtn:hover {
-      background: rgba(140,50,220,0.30) !important;
-      border-color: rgba(160,60,255,0.50) !important;
-      color: #c088ff !important;
+      background: var(--color-accent-active-bg) !important;
+      border-color: var(--color-border-focus) !important;
+      color: var(--color-accent-hover) !important;
     }
     #toggleSettingsBtn:hover svg {
       transform: scale(1.20) rotate(22deg);
-      filter: drop-shadow(0 0 6px rgba(168,85,247,0.70));
+      filter: drop-shadow(0 0 6px var(--color-accent-hover));
     }
 
     /* Main tab bar buttons (Results / Visualize) */
@@ -1288,7 +1386,7 @@
     #mainTabBtnRecipes:hover svg,
     #mainTabBtnVisualize:hover svg {
       transform: scale(1.25);
-      filter: drop-shadow(0 0 5px rgba(168,85,247,0.60));
+      filter: drop-shadow(0 0 5px var(--color-accent-hover));
     }
     #mainTabBtnRecipes:hover,
     #mainTabBtnVisualize:hover {
@@ -1309,15 +1407,15 @@
       transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), filter 0.2s ease;
     }
     .btn-picker:hover {
-      background: rgba(140,50,220,0.20) !important;
-      border-color: rgba(160,60,255,0.50) !important;
-      color: #c088ff !important;
+      background: var(--color-accent-active-bg) !important;
+      border-color: var(--color-border-focus) !important;
+      color: var(--color-accent-hover) !important;
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(120,40,200,0.30) !important;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.2) !important;
     }
     .btn-picker:hover svg {
       transform: scale(1.25);
-      filter: drop-shadow(0 0 5px rgba(168,85,247,0.60));
+      filter: drop-shadow(0 0 5px var(--color-accent-hover));
     }
     .btn-picker:active {
       transform: scale(0.95) !important;
@@ -1336,5 +1434,5 @@
     #toggleRecipeBtn:hover svg,
     #toggleBotBtn:hover svg {
       transform: scale(1.25);
-      filter: drop-shadow(0 0 5px rgba(192,136,255,0.65));
+      filter: drop-shadow(0 0 5px var(--color-accent-hover));
     }

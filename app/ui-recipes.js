@@ -4,7 +4,7 @@ function initRecipeCalc() {
     const btn = document.createElement("button");
     btn.textContent = cat;
     btn.style.cssText =
-      "padding:7px 14px;background:transparent;border:none;border-right:1px solid rgba(255,255,255,0.07);border-bottom:2px solid transparent;color:rgba(255,255,255,0.40);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;white-space:nowrap;transition:all 0.18s;flex-shrink:0";
+      "padding:7px 14px;background:transparent;border:none;border-right:1px solid var(--color-border);border-bottom:2px solid transparent;color:var(--color-interactive);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;white-space:nowrap;transition:all 0.18s;flex-shrink:0";
     btn.onclick = function () {
       activeBrowserCat = cat;
       document.querySelectorAll("#recipeCatTabs button").forEach((b) => {
@@ -14,13 +14,13 @@ function initRecipeCalc() {
       });
       btn.style.color = "var(--accent)";
       btn.style.borderBottom = "3px solid var(--accent)";
-      btn.style.background = "rgba(10,132,255,0.10)";
+      btn.style.background = "var(--color-accent-active-bg)";
       renderRecipeBrowser();
     };
     if (cat === "Alle") {
       btn.style.color = "var(--accent)";
       btn.style.borderBottom = "3px solid var(--accent)";
-      btn.style.background = "rgba(10,132,255,0.10)";
+      btn.style.background = "var(--color-accent-active-bg)";
     }
     tabsEl.appendChild(btn);
   });
@@ -91,9 +91,9 @@ function renderRecipeBrowser() {
       "width:64px",
       "height:64px",
       "flex-shrink:0",
-      "background:" + (isSelected ? "rgba(10,132,255,0.18)" : "rgba(255,255,255,0.05)"),
+      "background:" + (isSelected ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)"),
       "border:" +
-      (isSelected ? "2px solid rgba(10,132,255,0.85)" : "1px solid rgba(255,255,255,0.09)"),
+      (isSelected ? "2px solid var(--color-border-focus)" : "1px solid var(--color-border)"),
       "border-radius:7px",
       "cursor:" + (hasMachines ? "pointer" : "default"),
       "display:flex",
@@ -116,17 +116,17 @@ function renderRecipeBrowser() {
 
     const label = document.createElement("div");
     label.style.cssText =
-      "position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);background:rgba(20,18,40,0.92);border:1px solid rgba(255,255,255,0.12);color:var(--text);font-size:10px;padding:3px 7px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:20;max-width:160px;overflow:hidden;text-overflow:ellipsis;backdrop-filter:blur(20px)";
+      "position:absolute;bottom:-26px;left:50%;transform:translateX(-50%);background:var(--color-viz-tooltip-bg);border:1px solid var(--color-border);color:var(--color-text-primary);font-size:10px;padding:3px 7px;border-radius:6px;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.15s;z-index:20;max-width:160px;overflow:hidden;text-overflow:ellipsis;backdrop-filter:blur(20px)";
     label.textContent = canonicalName;
     cell.appendChild(label);
 
     if (hasMachines) {
       cell.onmouseenter = function () {
-        this.style.border = "2px solid rgba(10,132,255,1)";
+        this.style.border = "2px solid var(--color-border-focus)";
         label.style.opacity = "1";
       };
       cell.onmouseleave = function () {
-        this.style.border = isSelected ? "2px solid rgba(10,132,255,0.85)" : "1px solid rgba(255,255,255,0.09)";
+        this.style.border = isSelected ? "2px solid var(--color-border-focus)" : "1px solid var(--color-border)";
         label.style.opacity = "0";
       };
       cell.onclick = function () {
@@ -259,12 +259,12 @@ function filterRecipesInline(query) {
 
     const row = document.createElement("div");
     row.style.cssText =
-      "padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,0.06);transition:background 0.12s;opacity:" +
+      "padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--color-border);transition:background 0.12s;opacity:" +
       (hasMachines ? "1" : "0.4");
     if (hasMachines) {
       row.style.cursor = "pointer";
       row.onmouseenter = function () {
-        this.style.background = "rgba(10,132,255,0.08)";
+        this.style.background = "var(--color-accent-active-bg)";
       };
       row.onmouseleave = function () {
         this.style.background = "transparent";
@@ -438,8 +438,9 @@ function updateRecipeGoal(idx, val) {
     const inp = document.querySelector('#selectedRecipes input[type="number"][data-idx="' + idx + '"]');
     if (inp) {
       inp.style.transition  = 'border-color 0.15s, background 0.15s';
-      inp.style.borderColor = 'rgba(255,69,58,0.8)';
-      inp.style.background  = 'rgba(255,69,58,0.12)';
+      inp.style.borderColor = 'var(--color-danger)';
+      // ponytail: translucent danger tint has no token yet (only solid --color-danger exists)
+      inp.style.background  = 'var(--color-danger-bg)';
       inp.value = selectedRecipeList[idx].goal;
       setTimeout(() => {
         inp.style.borderColor = '';
@@ -458,7 +459,7 @@ function updateRecipeGoal(idx, val) {
 function renderSelectedRecipes() {
   const el = document.getElementById("selectedRecipes");
   if (!selectedRecipeList.length) {
-    el.innerHTML = `<div style="color:rgba(255,255,255,0.30);font-size:13px;padding:20px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;text-align:center">
+    el.innerHTML = `<div style="color:var(--color-text-disabled);font-size:13px;padding:20px 16px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:12px;text-align:center">
       No item selected yet. Add via search or ⊞.
     </div>`;
     return;
@@ -506,10 +507,10 @@ function renderSelectedRecipes() {
           const ipm = (60 / ct) * ing.amount * machinesNeeded;
           return `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(ing.item, 14)}${ing.item}: <span style="color:var(--accent3)">${fmt(ipm)}</span></span>`;
         })
-        .join(" <span style='color:rgba(255,255,255,0.20)'>·</span> ");
+        .join(" <span style='color:var(--color-text-disabled)'>·</span> ");
 
       return `
-      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.10);border-radius:12px;padding:9px 10px">
+      <div style="background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:12px;padding:9px 10px">
         <!-- Row 1: icon + name + machines badge + remove -->
         <div style="display:flex;align-items:center;gap:8px">
           ${getIcon(item.itemName, 28)}
@@ -522,18 +523,18 @@ function renderSelectedRecipes() {
             <div style="font-size:10px;color:var(--text-dim)">${fmt(actualOpm)}/min</div>
           </div>
           <button data-idx="${idx}" onclick="removeRecipeItem(this.dataset.idx)"
-            style="padding:3px 7px;background:transparent;border:1px solid #3a1a1a;color:#f66;border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
+            style="padding:3px 7px;background:transparent;border:1px solid var(--color-danger-border);color:var(--color-danger);border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
         </div>
         <!-- Row 2: selects + goal -->
         <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;align-items:center">
           ${hasVariants ? `<select data-idx="${idx}" onchange="updateRecipeVariant(this.dataset.idx, this.value)"
-            style="flex:1;min-width:80px;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
+            style="flex:1;min-width:80px;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
             ${variantOptions}
           </select>` : ''}
           <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:100px">
             ${getIcon(item.machineName, 18)}
             <select data-idx="${idx}" onchange="updateRecipeMachine(this.dataset.idx, this.value)"
-              style="flex:1;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
+              style="flex:1;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
               ${machineOptions}
             </select>
           </div>
@@ -541,37 +542,37 @@ function renderSelectedRecipes() {
             <span style="font-size:10px;color:var(--text-dim)">Goal</span>
             <input type="number" value="${item.goal}" min="0.01" max="999999" step="any" data-idx="${idx}"
               onchange="updateRecipeGoal(this.dataset.idx, this.value)"
-              style="width:64px;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;text-align:right;outline:none">
+              style="width:64px;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;text-align:right;outline:none">
           </div>
         </div>
         ${Array.isArray(r.output) && r.output.length > 1
-          ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-wrap:wrap;gap:5px">
+          ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:5px">
           <span style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">By-products:</span>
           ${r.output.slice(1).map(op => {
             const byOpm = (60 / r.machines[item.machineName].cycleTime) * op.amount * machinesNeeded;
             return `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(op.item, 14)}${op.item}: <span style="color:var(--warn)">${fmt(byOpm)}</span></span>`;
-          }).join(' <span style="color:rgba(255,255,255,0.20)">·</span> ')}
+          }).join(' <span style="color:var(--color-text-disabled)">·</span> ')}
         </div>`
           : ""
         }
         ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
-          ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:5px">
-          <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance output:</span>
+          ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;align-items:center;gap:5px">
+          <span style="font-size:10px;color:var(--color-warning);letter-spacing:1px;text-transform:uppercase">⚡ Chance output:</span>
           <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} per cycle</span>
           <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(avg ${(r.output.amount * r.output.chance).toFixed(1)}/cycle)</span>
         </div>`
           : ""
         }
         ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
-          ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,0.07);display:flex;align-items:center;gap:5px">
-          <span style="font-size:10px;color:#f5a623;letter-spacing:1px;text-transform:uppercase">⚡ Chance output:</span>
+          ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;align-items:center;gap:5px">
+          <span style="font-size:10px;color:var(--color-warning);letter-spacing:1px;text-transform:uppercase">⚡ Chance output:</span>
           <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} per cycle</span>
           <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(avg ${(r.output.amount * r.output.chance).toFixed(1)}/cycle)</span>
         </div>`
           : ""
         }
         ${r.ingredients.length
-          ? `<div style="margin-top:7px;padding-top:7px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-wrap:wrap;gap:5px">
+          ? `<div style="margin-top:7px;padding-top:7px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:5px">
           ${ingLines}
         </div>`
           : ""
@@ -587,7 +588,7 @@ function renderSelectedRecipes() {
             const metaParts = [];
             if (r.weight) metaParts.push(`⚖ ${r.weight} kg`);
             if (r.sales_price) metaParts.push(`💰 ${r.sales_price} F`);
-            return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.07);display:flex;flex-wrap:wrap;align-items:center;gap:14px">
+            return `<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;align-items:center;gap:14px">
                   <span style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Workstation effect: </span>
                   <span style="display:flex;gap:10px;flex-wrap:wrap">${bonuses.join(" · ")}</span>
                   <span style="font-size:12px;color:var(--text-dim)">→ ${targets}${exempt}</span>
@@ -597,7 +598,7 @@ function renderSelectedRecipes() {
           : ""
         }
       </div>
-        <div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.07)">
+        <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--color-border)">
           ${buildItemWsRow(item, idx)}
         </div>
       </div>`;
@@ -646,7 +647,7 @@ function buildItemWsRow(item, idx) {
       return `<div style="display:flex;align-items:center;gap:6px;margin-top:5px">
           <span style="font-size:10px;color:var(--text-dim);width:38px;flex-shrink:0">Slot ${si + 1}</span>
           <select data-idx="${idx}" data-slot="${si}" onchange="updateItemWsBot(this)"
-            style="flex:1;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
+            style="flex:1;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
             ${opts}
           </select>
         </div>`;
@@ -663,7 +664,7 @@ function buildItemWsRow(item, idx) {
           </label>`
       : "";
 
-    return `<div style="margin-top:6px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:8px">
+    return `<div style="margin-top:6px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:10px;padding:8px">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Mode:</span>
           ${["none", "global", "custom"].map(mode => {
@@ -673,14 +674,14 @@ function buildItemWsRow(item, idx) {
       const label = mode === "none" ? "No WS" : mode === "global" ? "Global WS" : "Custom WS";
       return `<button data-action="wsmode" data-idx="${idx}" data-mode="${mode}"
               style="padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;transition:all 0.15s;${isActive
-          ? 'background:rgba(10,132,255,0.18);border:1px solid rgba(10,132,255,0.5);color:#f5f5f7;font-weight:600;'
-          : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.10);color:rgba(255,255,255,0.45);'
+          ? 'background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);font-weight:600;'
+          : 'background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);'
         }">${label}</button>`;
     }).join("")}
           ${useOverride ? `
           <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Tier:</span>
           <select data-idx="${idx}" onchange="updateItemWsTier(this)"
-            style="padding:4px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
+            style="padding:4px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;outline:none">
             ${tierOpts}
           </select>
           ${coreCheck}
@@ -690,7 +691,7 @@ function buildItemWsRow(item, idx) {
         ? slotsHtml
         : globalConfig && !useOverride
           ? `<div style="font-size:11px;color:var(--text-dim);margin-top:5px">Using global WS for: <span style="color:var(--accent)">${cat || "—"}</span></div>`
-          : `<div style="font-size:11px;color:#444;margin-top:5px">No WS bonus active.</div>`
+          : `<div style="font-size:11px;color:var(--color-text-disabled);margin-top:5px">No WS bonus active.</div>`
       }
       </div>`;
   })();
@@ -698,7 +699,7 @@ function buildItemWsRow(item, idx) {
   return `<div style="display:flex;align-items:center;gap:6px">
       <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Workstation:</span>
       <button data-action="wstoggle" data-idx="${idx}"
-        style="padding:2px 8px;background:${item.wsExpanded ? "rgba(10,132,255,0.15)" : "rgba(255,255,255,0.06)"};border:1px solid ${item.wsExpanded ? "rgba(10,132,255,0.4)" : "rgba(255,255,255,0.10)"};color:rgba(255,255,255,0.55);border-radius:6px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px">
+        style="padding:2px 8px;background:${item.wsExpanded ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)"};border:1px solid ${item.wsExpanded ? "var(--color-border-focus)" : "var(--color-border)"};color:var(--color-interactive);border-radius:6px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px">
         ${modeLabel} ${bonusLabel} <span style="font-size:9px">${item.wsExpanded ? "▲" : "▼"}</span>
       </button>
     </div>

@@ -315,8 +315,8 @@ function buildRecipeCategoryList() {
 
     item.innerHTML = `
     ${getIcon(partName, 22, true)}
-    <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:rgba(255,255,255,0.65)">${shortName}</span>
-    <span style="font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;color:rgba(255,255,255,0.45);white-space:nowrap;flex-shrink:0;min-width:18px;text-align:right">${qty}×</span>
+    <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px;color:var(--color-text-secondary)">${shortName}</span>
+    <span style="font-size:11px;font-family:'Rajdhani',sans-serif;font-weight:700;color:var(--color-text-disabled);white-space:nowrap;flex-shrink:0;min-width:18px;text-align:right">${qty}×</span>
   `;
     list.appendChild(item);
   }
@@ -344,7 +344,7 @@ function buildRecipeCategoryList() {
     allBtn.textContent = "✓ All";
     allBtn.title = "Select all / deselect all";
     allBtn.style.cssText =
-      "padding:1px 7px;font-size:10px;background:rgba(10,132,255,0.12);border:1px solid rgba(10,132,255,0.25);color:var(--accent);border-radius:5px;cursor:pointer;font-family:-apple-system,sans-serif";
+      "padding:1px 7px;font-size:10px;background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--accent);border-radius:5px;cursor:pointer;font-family:-apple-system,sans-serif";
     allBtn.onclick = function () {
       const allChecked = toggleNames.every(n => {
         const c = document.getElementById("chk_" + n); return c && c.checked;
@@ -371,7 +371,7 @@ function buildRecipeCategoryList() {
         });
         const partsLabel = document.createElement("div");
         partsLabel.style.cssText =
-          "font-size:9px;color:rgba(255,255,255,0.22);letter-spacing:0.06em;text-transform:uppercase;" +
+          "font-size:9px;color:var(--color-text-disabled);letter-spacing:0.06em;text-transform:uppercase;" +
           "padding:2px 4px 1px 16px;margin-top:1px";
         partsLabel.textContent = "Parts";
         list.appendChild(partsLabel);

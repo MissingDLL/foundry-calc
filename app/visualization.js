@@ -273,6 +273,9 @@ function buildSankeyGraph() {
 // Dirty flag: set to true when data changes but the tab is hidden.
 // renderSankey() checks this on entry and skips the draw if not visible,
 // then redraws on the next call (e.g. when the tab is opened).
+// Confirmed working via switchMainTab()'s call path in ui-nav.js: opening
+// the Visualize tab calls renderSankey()/renderBoxes() directly, which
+// clears the flag and draws — no separate dirty-check-on-show needed.
 let _sankeyDirty = false;
 
 // Entry point for the Sankey view.
@@ -600,7 +603,7 @@ function _drawBoxes(svgEl, data) {
         showTooltip(event,
           `<div style="color:var(--accent);font-weight:700;margin-bottom:3px">${srcLabel} → ${tgtLabel}</div>
            <div style="color:var(--accent3);font-family:monospace;font-size:11px">${rateText}</div>
-           <div style="color:#555;font-size:10px;margin-top:2px">Klicken zum Hervorheben</div>`);
+           <div style="color:var(--color-text-secondary);font-size:10px;margin-top:2px">Klicken zum Hervorheben</div>`);
       })
       .on('mousemove', moveTooltip)
       .on('mouseleave', function() {
@@ -751,6 +754,10 @@ function _drawSankey(svgEl, data) {
 
   // Color palette — overridden by __applyTheme() for the light theme
   const COLOR = window.__sankeyColors || VIZ_COLORS_DARK;
+  // Theme-reactive read for the link-label pill background (no dedicated
+  // palette field for it) — SVG fill attrs don't resolve CSS var(), so read
+  // the computed value once per draw instead.
+  const LABEL_BG = getComputedStyle(document.documentElement).getPropertyValue('--color-viz-tooltip-bg').trim();
 
   const svg = d3.select(svgEl);
   svg.selectAll('*').remove();
@@ -793,7 +800,7 @@ function _drawSankey(svgEl, data) {
         _showTooltip(event,
           `<div style="color:var(--accent);font-weight:700;margin-bottom:3px">${d.source.label} → ${d.target.label}</div>
            <div style="color:var(--accent3)">${fmt(Math.round(d.value))} / min</div>
-           <div style="color:#666;font-size:10px;margin-top:3px">Klicken zum Hervorheben</div>`);
+           <div style="color:var(--color-text-secondary);font-size:10px;margin-top:3px">Klicken zum Hervorheben</div>`);
       })
       .on('mousemove', _moveTooltip)
       .on('mouseleave', function(event, d) {
@@ -821,7 +828,7 @@ function _drawSankey(svgEl, data) {
       .attr('x', mx - pw / 2).attr('y', my - 8)
       .attr('width', pw).attr('height', 14)
       .attr('rx', 3)
-      .attr('fill', 'rgba(8,8,24,0.72)')
+      .attr('fill', LABEL_BG)
       .attr('stroke', COLOR.link).attr('stroke-opacity', 0.25).attr('stroke-width', 0.7);
 
     linkLabelG.append('text')
@@ -882,7 +889,7 @@ function _drawSankey(svgEl, data) {
         ? Math.ceil(cntRaw)
         : cntRaw < 10 ? (Math.round(cntRaw * 10) / 10) : Math.ceil(cntRaw);
       const machineText = d.machineName && d.machineCount > 0
-        ? `<div style="color:#777;font-size:8.5px;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+        ? `<div style="color:var(--color-text-secondary);font-size:8.5px;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
              ${d.machineName.length > 15 ? d.machineName.slice(0, 14) + '…' : d.machineName} ×${cntFmt}
            </div>`
         : '';
@@ -895,7 +902,7 @@ function _drawSankey(svgEl, data) {
             ${d.label}
           </div>
           <div style="color:var(--accent3);font-family:monospace;font-size:10px;white-space:nowrap">
-            ${fmt(Math.round(d.rate))}<span style="color:#555;font-size:8px">/min</span>
+            ${fmt(Math.round(d.rate))}<span style="color:var(--color-text-secondary);font-size:8px">/min</span>
           </div>
           ${machineText}
         </div>`;

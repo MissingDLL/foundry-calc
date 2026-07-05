@@ -385,9 +385,9 @@ function calculateRecipes() {
       <span style="font-size:12px;color:var(--text-dim);flex-shrink:0">Material depth:</span>
       ${depthLabels.map((lbl, i) => `
         <button onclick="setCalcDepthMode(${i})" title="${depthDesc[i]}"
-          style="padding:5px 14px;border-radius:6px;border:1px solid ${i === calcDepthMode ? 'var(--accent)' : 'rgba(255,255,255,0.15)'};
-                 background:${i === calcDepthMode ? 'rgba(10,132,255,0.18)' : 'transparent'};
-                 color:${i === calcDepthMode ? 'var(--accent)' : 'rgba(255,255,255,0.5)'};
+          style="padding:5px 14px;border-radius:6px;border:1px solid ${i === calcDepthMode ? 'var(--accent)' : 'var(--color-border)'};
+                 background:${i === calcDepthMode ? 'var(--color-accent-active-bg)' : 'transparent'};
+                 color:${i === calcDepthMode ? 'var(--accent)' : 'var(--color-text-secondary)'};
                  cursor:pointer;font-size:12px;font-family:-apple-system,sans-serif;transition:all 0.15s">
           ${lbl}
         </button>`).join('')}
@@ -420,16 +420,16 @@ function calculateRecipes() {
         <div class="summary-value">${fmtPwr(totalMachPwrKw)}</div>
         <div class="summary-unit">excl. loaders</div>
       </div>
-      <div class="summary-box" style="border-color:rgba(255,149,0,.35);background:rgba(255,149,0,.08)">
-        <div class="summary-label" style="color:rgba(255,149,0,.8)">Total power</div>
-        <div class="summary-value" style="color:#ff9500">${fmtPwr(totalPwrKw)}</div>
+      <div class="summary-box" style="border-color:var(--color-power-border);background:var(--color-power-bg)">
+        <div class="summary-label" style="color:var(--color-power)">Total power</div>
+        <div class="summary-value" style="color:var(--color-power)">${fmtPwr(totalPwrKw)}</div>
         <div class="summary-unit">machines + loaders</div>
       </div>
     </div>`;
 
   // ── Icon box helper (full-bleed image with rounded container) ─
   const iconBox = (name, size) =>
-    `<div style="width:${size}px;height:${size}px;border-radius:${Math.round(size / 5)}px;overflow:hidden;flex-shrink:0;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;">${getIcon(name, size)}</div>`;
+    `<div style="width:${size}px;height:${size}px;border-radius:${Math.round(size / 5)}px;overflow:hidden;flex-shrink:0;background:var(--color-bg-elevated);display:flex;align-items:center;justify-content:center;">${getIcon(name, size)}</div>`;
 
   // ── Production overview table rows ───────────────────────
   let rowIdx = 0;
@@ -444,8 +444,8 @@ function calculateRecipes() {
         const ipm  = (60 / ct) * ing.amount * r.machines;
         const warn = ipm > 100; // highlight high-throughput ingredients
         return `<span style="display:inline-flex;align-items:center;gap:5px;
-            background:${warn ? '#1a1100' : '#0d1a0d'};
-            border:1px solid ${warn ? '#554400' : '#1a3a1a'};
+            background:${warn ? 'var(--color-warning-bg)' : 'var(--color-success-bg)'};
+            border:1px solid ${warn ? 'var(--color-warning-border)' : 'var(--color-success-border)'};
             border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
             ${iconBox(ing.item, 64)}
             <span style="color:var(--text-dim)">${ing.item}</span>
@@ -460,14 +460,14 @@ function calculateRecipes() {
         const byproductPills = recipe.output.slice(1).map(sec => {
           const apm = (60 / ct) * sec.amount * r.machines;
           return `<span style="display:inline-flex;align-items:center;gap:5px;
-              background:#1a1000;border:1px solid #7a5000;
+              background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);
               border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
               ${iconBox(sec.item, 64)}
-              <span style="color:#d4a020">${sec.item}</span>
-              <span style="font-family:'Share Tech Mono',monospace;color:#d4a020">
+              <span style="color:var(--color-byproduct)">${sec.item}</span>
+              <span style="font-family:'Share Tech Mono',monospace;color:var(--color-byproduct)">
                 ${fmt(apm)}<span style="color:var(--text-dim);font-size:10px">/min</span>
               </span>
-              <span style="font-size:10px;color:#cc7700;background:rgba(255,160,0,0.15);border:1px solid rgba(255,160,0,0.3);border-radius:3px;padding:1px 4px">Nebenprodukt</span>
+              <span style="font-size:10px;color:var(--color-byproduct);background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);border-radius:3px;padding:1px 4px">Nebenprodukt</span>
             </span>`;
         }).join('');
         ingPills += byproductPills;
@@ -476,7 +476,7 @@ function calculateRecipes() {
       // Show a badge when output is probabilistic (e.g. Crystal Refiner outputs)
       const hasChance = !Array.isArray(recipe.output) && recipe.output && recipe.output.chance != null && recipe.output.chance < 1;
       const chanceBadge = hasChance
-        ? `<span title="${recipe.output.amount} per cycle at ${Math.round(recipe.output.chance * 100)}% chance (avg ${(recipe.output.amount * recipe.output.chance).toFixed(1)}/cycle)" style="display:inline-flex;align-items:center;gap:3px;background:#1a1000;border:1px solid #554400;border-radius:3px;padding:1px 5px;font-size:10px;color:#f5a623;cursor:help;flex-shrink:0">⚡ ${Math.round(recipe.output.chance * 100)}%</span>`
+        ? `<span title="${recipe.output.amount} per cycle at ${Math.round(recipe.output.chance * 100)}% chance (avg ${(recipe.output.amount * recipe.output.chance).toFixed(1)}/cycle)" style="display:inline-flex;align-items:center;gap:3px;background:var(--color-byproduct-bg);border:1px solid var(--color-warning-border);border-radius:3px;padding:1px 5px;font-size:10px;color:var(--color-warning-text);cursor:help;flex-shrink:0">⚡ ${Math.round(recipe.output.chance * 100)}%</span>`
         : '';
 
       return `
@@ -488,7 +488,7 @@ function calculateRecipes() {
       </div></td>
       <td style="padding:7px 12px">
         <div style="display:flex;align-items:center;gap:8px">${iconBox(r.machineName, 64)}<span style="color:var(--text-dim);font-size:13px">${r.machineName}</span></div>
-        ${r.machineName === M.ASSEMBLY_LINE ? `<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;padding-left:2px;line-height:1.7">
+        ${r.machineName === M.ASSEMBLY_LINE ? `<div style="font-size:10px;color:var(--color-text-disabled);margin-top:3px;padding-left:2px;line-height:1.7">
           └&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.start.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.start.name}
           &nbsp;·&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.producer.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.producer.name}
           &nbsp;·&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.painter.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.painter.name}
@@ -750,7 +750,7 @@ function calculateRecipes() {
               <td class="num">${count}</td>
               <td class="num">${fmtPwr(machPwrKw)}</td>
               <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${loaderDesc}</td>
-              <td class="num" style="color:#ff9500">${fmtPwr(machPwrKw + loaderPwrKw)}</td>`;
+              <td class="num" style="color:var(--color-power)">${fmtPwr(machPwrKw + loaderPwrKw)}</td>`;
           } else {
             // Check for capacity-based machines (fluid sources with throughput_l_per_min)
             const machineRec = RECIPES[machine];
@@ -766,7 +766,7 @@ function calculateRecipes() {
                 <td class="num">${count}</td>
                 <td class="num">${fmtPwr(machPwrKw)}</td>
                 <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">—</td>
-                <td class="num" style="color:#ff9500">${fmtPwr(machPwrKw)}</td>`;
+                <td class="num" style="color:var(--color-power)">${fmtPwr(machPwrKw)}</td>`;
             } else {
               machineTd = `<td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span></div></td><td class="num">—</td><td class="num">—</td><td></td><td class="num">—</td>`;
             }
@@ -788,12 +788,12 @@ function calculateRecipes() {
     ].filter(Boolean).join(' · ') || '—';
 
     const footer = `
-      <tr style="border-top:1px solid rgba(255,255,255,0.12);font-weight:600">
+      <tr style="border-top:1px solid var(--color-border);font-weight:600">
         <td style="padding:6px 12px;color:var(--text-dim)" colspan="3">Total</td>
         <td colspan="2"></td>
         <td class="num">${fmtPwr(totMachPwr)}</td>
         <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${loaderDesc}</td>
-        <td class="num" style="color:#ff9500">${fmtPwr(totMachPwr + totLoaderPwr)}</td>
+        <td class="num" style="color:var(--color-power)">${fmtPwr(totMachPwr + totLoaderPwr)}</td>
       </tr>`;
 
     return { rows, footer, count: Object.keys(totalsMap).length };
@@ -849,14 +849,14 @@ function calculateRecipes() {
             // Reprocessing: e.g. Chemical Processor for Blast Furnace Slag → Cement
             const machPwrKw = rp.count * getMachinePowerKw(rp.machine);
             totMachPwr += machPwrKw;
-            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(rp.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${rp.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${rp.count}</span><span style="font-size:10px;color:#7ec87e;margin-left:4px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span></div>`;
-            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:#ff9500">${fmtPwr(machPwrKw)}</span>`;
+            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(rp.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${rp.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${rp.count}</span><span style="font-size:10px;color:var(--color-success-text);margin-left:4px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span></div>`;
+            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
           } else {
             const count     = Math.ceil(val / disposal.capacityPerMin);
             const machPwrKw = count * getMachinePowerKw(disposal.machine);
             totMachPwr += machPwrKw;
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
-            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:#ff9500">${fmtPwr(machPwrKw)}</span>`;
+            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
           }
         } else if (machine) {
           const rec = RECIPES[info.recipeName || name];
@@ -872,7 +872,7 @@ function calculateRecipes() {
             const machPwrKw = count * getMachinePowerKw(machine);
             totMachPwr += machPwrKw;
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
-            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:#ff9500">${fmtPwr(machPwrKw)}</span>`;
+            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
           } else if (!md) {
             // No capacity data — show machine name only (e.g. Air Intake Base)
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span></div>`;
@@ -901,7 +901,7 @@ function calculateRecipes() {
               loaderCell = `<span style="font-size:11px;color:var(--text-dim)">${parts}</span>`;
             }
 
-            pwrCell = `<span style="font-size:12px;color:#ff9500">${fmtPwr(machPwrKw + loaderPwrKw)}</span>`;
+            pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw + loaderPwrKw)}</span>`;
 
             // Build ingredient pills for expanded detail row
             if (rec.ingredients && rec.ingredients.length) {
@@ -911,8 +911,8 @@ function calculateRecipes() {
                 const ipm  = (val / opm) * (60 / md.cycleTime) * ing.amount;
                 const warn = ipm > 100;
                 return `<span style="display:inline-flex;align-items:center;gap:5px;
-                    background:${warn ? '#1a1100' : '#0d1a0d'};
-                    border:1px solid ${warn ? '#554400' : '#1a3a1a'};
+                    background:${warn ? 'var(--color-warning-bg)' : 'var(--color-success-bg)'};
+                    border:1px solid ${warn ? 'var(--color-warning-border)' : 'var(--color-success-border)'};
                     border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
                     ${iconBox(ing.item, 48)}
                     <span style="color:var(--text-dim)">${ing.item}</span>
@@ -928,14 +928,14 @@ function calculateRecipes() {
               ingPills += rec.output.slice(1).map(sec => {
                 const bpm = (val / opm) * (60 / md.cycleTime) * sec.amount * (sec.chance ?? 1);
                 return `<span style="display:inline-flex;align-items:center;gap:5px;
-                    background:#1a1000;border:1px solid #7a5000;
+                    background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);
                     border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
                     ${iconBox(sec.item, 48)}
-                    <span style="color:#d4a020">${sec.item}</span>
-                    <span style="font-family:'Share Tech Mono',monospace;color:#d4a020">
+                    <span style="color:var(--color-byproduct)">${sec.item}</span>
+                    <span style="font-family:'Share Tech Mono',monospace;color:var(--color-byproduct)">
                       ${fmt(bpm)}<span style="color:var(--text-dim);font-size:10px">/min</span>
                     </span>
-                    <span style="font-size:10px;color:#cc7700;background:rgba(255,160,0,0.15);border:1px solid rgba(255,160,0,0.3);border-radius:3px;padding:1px 4px">↗</span>
+                    <span style="font-size:10px;color:var(--color-byproduct);background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);border-radius:3px;padding:1px 4px">↗</span>
                   </span>`;
               }).join('');
             }
@@ -945,12 +945,12 @@ function calculateRecipes() {
         const cls = val > 100 ? 'num-warn' : 'num';
         const hasDetail = ingPills.length > 0;
         const isByproduct = !!info.byproduct;
-        const rowBg = isByproduct ? 'background:rgba(255,160,0,0.06);' : '';
+        const rowBg = isByproduct ? 'background:var(--color-byproduct-bg);' : '';
         const byproductBadge = isByproduct
-          ? `<span style="font-size:10px;color:#cc7700;background:rgba(255,160,0,0.15);border:1px solid rgba(255,160,0,0.3);border-radius:3px;padding:1px 5px;margin-left:4px">Nebenprodukt</span>`
+          ? `<span style="font-size:10px;color:var(--color-byproduct);background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);border-radius:3px;padding:1px 5px;margin-left:4px">Nebenprodukt</span>`
           : '';
         return `
-      <tr class="recipe-main-row" onclick="${hasDetail ? `toggleRecipeRow('${rid}')` : ''}" style="border-bottom:1px solid rgba(255,255,255,0.05);${hasDetail ? 'cursor:pointer' : ''}${rowBg}">
+      <tr class="recipe-main-row" onclick="${hasDetail ? `toggleRecipeRow('${rid}')` : ''}" style="border-bottom:1px solid var(--color-border);${hasDetail ? 'cursor:pointer' : ''}${rowBg}">
         <td style="padding:5px 12px"><div style="display:flex;align-items:center;gap:6px">
           ${hasDetail ? `<span class="row-expand-arrow" id="arr_${rid}">▶</span>` : '<span style="display:inline-block;width:14px"></span>'}
           ${iconBox(name, 48)}<span class="label" style="font-size:13px">${name}</span>${byproductBadge}
@@ -969,10 +969,10 @@ function calculateRecipes() {
       }).join('');
 
     const footer = `
-      <tr style="border-top:1px solid rgba(255,255,255,0.12);font-weight:600">
+      <tr style="border-top:1px solid var(--color-border);font-weight:600">
         <td colspan="2" style="padding:6px 12px;color:var(--text-dim)">Total</td>
         <td colspan="3"></td>
-        <td style="padding:6px 12px;text-align:right;color:#ff9500">${fmtPwr(totMachPwr + totLoaderPwr)}</td>
+        <td style="padding:6px 12px;text-align:right;color:var(--color-power)">${fmtPwr(totMachPwr + totLoaderPwr)}</td>
       </tr>`;
 
     return { rows, footer, count: Object.keys(totalsMap).length };
@@ -999,19 +999,19 @@ function calculateRecipes() {
       <td class="num">${fmtPwr(e.totalMachPwrKw)}</td>
       <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${loaderDesc}</td>
       <td class="num">${e.totalLoaderPwrKw ? fmtPwr(e.totalLoaderPwrKw) : '—'}</td>
-      <td class="num" style="color:#ff9500">${fmtPwr(e.totalMachPwrKw + e.totalLoaderPwrKw)}</td>
+      <td class="num" style="color:var(--color-power)">${fmtPwr(e.totalMachPwrKw + e.totalLoaderPwrKw)}</td>
     </tr>`;
     }).join('');
 
   const infraFooter = `
-    <tr style="border-top:1px solid rgba(255,255,255,0.12);font-weight:600">
+    <tr style="border-top:1px solid var(--color-border);font-weight:600">
       <td style="padding:6px 12px;color:var(--text-dim)">Total</td>
       <td class="num">${fmt(totalMachines)}</td>
       <td class="num">—</td>
       <td class="num">${fmtPwr(totalMachPwrKw)}</td>
       <td></td>
       <td class="num">${fmtPwr(totalLoaderPwrKw)}</td>
-      <td class="num" style="color:#ff9500">${fmtPwr(totalPwrKw)}</td>
+      <td class="num" style="color:var(--color-power)">${fmtPwr(totalPwrKw)}</td>
     </tr>`;
 
   // ── Machine totals (aggregated by machine type) ──────────
@@ -1027,7 +1027,7 @@ function calculateRecipes() {
     .sort((a, b) => b[1] - a[1])
     .map(([name, count]) => {
       const alBreakdown = name === M.ASSEMBLY_LINE
-        ? `<div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:3px;padding-left:2px;line-height:1.7">
+        ? `<div style="font-size:10px;color:var(--color-text-disabled);margin-top:3px;padding-left:2px;line-height:1.7">
             └&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.start.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.start.name}
             &nbsp;·&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.producer.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.producer.name}
             &nbsp;·&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.painter.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.painter.name}
@@ -1098,7 +1098,7 @@ function calculateRecipes() {
     ${Object.keys(byproductTotals).length > 0 ? `
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleSection(this)">
-        <span class="ch-title" style="color:#d4a020">Byproducts</span>
+        <span class="ch-title" style="color:var(--color-byproduct)">Byproducts</span>
         <span style="display:flex;align-items:center;gap:12px">
           <span class="ch-meta">${Object.keys(byproductTotals).length} item type(s) — must be handled</span>
           <span class="ch-arrow">▼</span>
@@ -1112,16 +1112,16 @@ function calculateRecipes() {
             if (info.reprocessed) {
               const rp = info.reprocessed;
               machineHtml = `<span style="display:flex;align-items:center;gap:4px;margin-top:3px">${iconBox(rp.machine, 48)}<span style="font-size:10px;color:var(--text-dim)">${rp.machine} ×${rp.count}</span></span>`
-                + `<span style="font-size:10px;color:#7ec87e;margin-top:2px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span>`;
+                + `<span style="font-size:10px;color:var(--color-success-text);margin-top:2px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span>`;
             } else if (disposal) {
               machineHtml = `<span style="display:flex;align-items:center;gap:4px;margin-top:3px">${iconBox(disposal.machine, 48)}<span style="font-size:10px;color:var(--text-dim)">${disposal.machine} ×${Math.ceil(info.amount / disposal.capacityPerMin)}</span></span>`;
             }
             return `<span style="display:inline-flex;flex-direction:column;gap:2px;
-                background:rgba(255,160,0,0.08);border:1px solid rgba(255,160,0,0.25);
+                background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);
                 border-radius:6px;padding:6px 10px;font-size:12px">
               <span style="display:flex;align-items:center;gap:5px">
                 ${iconBox(name, 48)}
-                <span style="color:#d4a020;font-weight:600">${name}</span>
+                <span style="color:var(--color-byproduct);font-weight:600">${name}</span>
                 <span style="font-family:'Share Tech Mono',monospace;color:var(--accent3)">${fmt(info.amount)}<span style="color:var(--text-dim);font-size:10px">/min</span></span>
               </span>
               ${machineHtml}
@@ -1132,7 +1132,7 @@ function calculateRecipes() {
     </div>` : ''}
 
     ${cycleWarnings.size > 0 ? `
-    <div style="background:#2a0a0a;border:1px solid #8b2020;border-radius:6px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:13px;color:#e05050">
+    <div style="background:var(--color-danger-bg);border:1px solid var(--color-danger-border);border-radius:6px;padding:10px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--color-danger)">
       <span style="font-size:16px;flex-shrink:0">⚠</span>
       <span><strong>Circular dependency detected:</strong> ${[...cycleWarnings].join(', ')} — these ingredient(s) appear in their own ingredient tree. Affected branches were not fully resolved.</span>
     </div>` : ''}

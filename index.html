@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-theme="default">
 
 <head>
   <meta charset="UTF-8" />
@@ -7,7 +7,8 @@
   <title>Foundry Calculator</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap"
     rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=14">
+  <link rel="stylesheet" href="app/tokens.css?v=3">
+  <link rel="stylesheet" href="styles.css?v=17">
     <script>
     /* D3 v7 inline */
     // https://d3js.org v7.9.0 Copyright 2010-2023 Mike Bostock
@@ -43,10 +44,7 @@
         border-radius: 999px;
         padding: 4px;
         position: relative;
-        box-shadow:
-          inset 0 1px 3px rgba(0,0,0,0.30),
-          inset 0 -1px 0 rgba(255,255,255,0.08),
-          0 1px 0 rgba(255,255,255,0.08);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.30), inset 0 -1px 0 rgba(255,255,255,0.08), 0 1px 0 rgba(255,255,255,0.08);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
       ">
@@ -112,7 +110,7 @@
           </svg>
         </button>
       </div>
-      <button id="toggleSettingsBtn" onclick="openRecipeSettings()" title="Settings" style="width:40px;height:40px;background:rgba(255,255,255,0.10);border:1px solid rgba(160,60,255,0.20);color:rgba(255,255,255,0.65);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;margin-left:6px;box-shadow:0 2px 8px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.15);">
+      <button id="toggleSettingsBtn" onclick="openRecipeSettings()" title="Settings" style="width:40px;height:40px;background:var(--color-bg-elevated);border:1px solid var(--color-border);color:var(--color-interactive);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.18s;margin-left:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -129,23 +127,23 @@
 
       <!-- View Toggle -->
       <div
-        style="display:flex;border:1px solid rgba(140,50,220,0.25);border-radius:12px;overflow:hidden;margin-bottom:4px;flex-shrink:0;background:rgba(255,255,255,0.04)">
-        <button id="toggleRecipeBtn" onclick="switchSidebarView('recipes')"
-          style="flex:1;padding:9px 4px;background:rgba(100,40,200,0.30);border:none;color:#c088ff;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
+        style="display:flex;border:1px solid var(--color-border);border-radius:12px;overflow:hidden;margin-bottom:4px;flex-shrink:0;background:var(--color-bg-elevated)">
+        <button id="toggleRecipeBtn" onclick="switchSidebarView('recipes')" class="nav-btn--active"
+          style="flex:1;padding:9px 4px;border:none;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:600;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
           </svg>
           Recipes
         </button>
-        <button id="toggleBotBtn" onclick="switchSidebarView('bots')"
-          style="flex:1;padding:9px 4px;background:transparent;border:none;border-left:1px solid rgba(140,50,220,0.20);color:rgba(255,255,255,0.45);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
+        <button id="toggleBotBtn" onclick="switchSidebarView('bots')" class="nav-btn--inactive"
+          style="flex:1;padding:9px 4px;border:none;border-left:1px solid var(--color-border);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="11" width="18" height="10" rx="2"/><path d="M12 2a3 3 0 0 1 3 3v3a3 3 0 0 1-6 0V5a3 3 0 0 1 3-3z"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/>
           </svg>
           Bots
         </button>
-        <button id="togglePowerBtn" onclick="switchSidebarView('power')"
-          style="flex:1;padding:9px 4px;background:transparent;border:none;border-left:1px solid rgba(140,50,220,0.20);color:rgba(255,255,255,0.45);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
+        <button id="togglePowerBtn" onclick="switchSidebarView('power')" class="nav-btn--inactive"
+          style="flex:1;padding:9px 4px;border:none;border-left:1px solid var(--color-border);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
           </svg>
@@ -162,7 +160,7 @@
               <div class="input-group" style="grid-column: 1/-1">
                 <label>Complete Robots / Min</label>
                 <input type="number" id="goalProd" value="32" min="1" />
-                <div style="font-size:10px;color:rgba(255,255,255,0.35);margin-top:4px;line-height:1.5">
+                <div style="font-size:10px;color:var(--color-text-disabled);margin-top:4px;line-height:1.5">
                   e.g. "Combat Robot" for the full recipe incl. all parts &amp; paint
                 </div>
               </div>
@@ -198,13 +196,13 @@
               <input id="powerTargetValue" type="number" min="0" step="any" placeholder="0"
                 oninput="onPowerTargetChange()" style="
                 flex:1; padding:6px 10px;
-                background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
+                background:var(--color-surface-input); border:1px solid var(--color-border);
                 border-radius:8px; color:var(--text); font-size:16px; font-weight:700;
                 outline:none; font-variant-numeric:tabular-nums;
                 font-family:-apple-system,sans-serif; min-width:0;">
               <select id="powerTargetUnit" onchange="onPowerTargetChange()" style="
-                width:64px; background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.14);
-                border-radius:8px; color:rgba(255,255,255,0.6); font-size:12px; cursor:pointer; outline:none;
+                width:64px; background:var(--color-surface-input); border:1px solid var(--color-border);
+                border-radius:8px; color:var(--color-text-primary); font-size:12px; cursor:pointer; outline:none;
                 font-family:-apple-system,sans-serif; flex-shrink:0; text-align:center;">
                 <option value="kw">kW</option>
                 <option value="mw">MW</option>
@@ -227,16 +225,16 @@
           <div class="section-title">Search recipes</div>
           <div style="position:relative">
             <input type="text" id="recipeSearch" placeholder="Z.B. Building Block, Wire Coil…"
-              style="width:100%;box-sizing:border-box;padding:9px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(140,50,220,0.25);color:var(--text);border-radius:10px;font-family:-apple-system,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s,box-shadow 0.2s"
+              style="width:100%;box-sizing:border-box;padding:9px 14px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:10px;font-family:-apple-system,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s,box-shadow 0.2s"
               oninput="filterRecipesInline(this.value)" onfocus="filterRecipesInline(this.value)" autocomplete="off" />
             <div id="recipeInlineResults"
-              style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:rgba(20,5,45,0.95);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid rgba(140,50,220,0.25);border-radius:12px;overflow:hidden;max-height:280px;overflow-y:auto;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
+              style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--color-bg-overlay);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid var(--color-border);border-radius:12px;overflow:hidden;max-height:280px;overflow-y:auto;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
             </div>
           </div>
         </div>
         <div style="display:flex;gap:6px">
           <button class='btn-picker' onclick="openRecipePicker()" title="Open recipe browser"
-            style="flex:1;padding:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(140,50,220,0.22);color:rgba(255,255,255,0.65);border-radius:10px;cursor:pointer;font-size:13px;font-family:-apple-system,sans-serif;font-weight:500;line-height:1;transition:all 0.18s ease;display:flex;align-items:center;justify-content:center;gap:7px">
+            style="flex:1;padding:9px;background:var(--color-bg-elevated);border:1px solid var(--color-border);color:var(--color-interactive);border-radius:10px;cursor:pointer;font-size:13px;font-family:-apple-system,sans-serif;font-weight:500;line-height:1;transition:all 0.18s ease;display:flex;align-items:center;justify-content:center;gap:7px">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
             Browser
           </button>
@@ -271,7 +269,7 @@
         <div id="selectedRecipes"
           style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;min-height:0">
           <div
-            style="color:rgba(255,255,255,0.30);font-size:13px;padding:20px 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;text-align:center">
+            style="color:var(--color-text-disabled);font-size:13px;padding:20px 16px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:12px;text-align:center">
             No recipe selected yet. Add via search or ⊞.
           </div>
         </div>
@@ -284,11 +282,11 @@
 
       <!-- Tab-Leiste -->
       <div id="mainTabBar" style="
-        display:flex; border-bottom:1px solid rgba(140,50,220,0.20);
-        background:rgba(15,5,35,0.60); backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); flex-shrink:0">
-        <button id="mainTabBtnRecipes" onclick="switchMainTab('recipes')" style="
+        display:flex; border-bottom:1px solid var(--color-border);
+        background:var(--color-bg-overlay); backdrop-filter:blur(40px); -webkit-backdrop-filter:blur(40px); flex-shrink:0">
+        <button id="mainTabBtnRecipes" onclick="switchMainTab('recipes')" class="main-tab-btn--active" style="
           padding:11px 22px; background:transparent; border:none;
-          border-bottom:2px solid #a855f7; color:#a855f7;
+          border-bottom:2px solid transparent;
           cursor:pointer; font-family:-apple-system,sans-serif; font-size:12px; font-weight:500;
           letter-spacing:0; transition:all 0.18s; display:flex; align-items:center; gap:7px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -296,9 +294,9 @@
           </svg>
           Results
         </button>
-        <button id="mainTabBtnVisualize" onclick="switchMainTab('visualize')" style="
+        <button id="mainTabBtnVisualize" onclick="switchMainTab('visualize')" class="main-tab-btn--inactive" style="
           padding:11px 22px; background:transparent; border:none;
-          border-bottom:2px solid transparent; color:rgba(255,255,255,0.40);
+          border-bottom:2px solid transparent;
           cursor:pointer; font-family:-apple-system,sans-serif; font-size:12px; font-weight:500;
           letter-spacing:0; transition:all 0.18s; display:flex; align-items:center; gap:7px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -323,12 +321,12 @@
           padding:10px 0 0 16px; flex-shrink:0; z-index:2">
           <div id="vizModePill" style="
             display:flex; align-items:center; gap:3px;
-            background: rgba(255,255,255,0.07);
-            border: 1px solid rgba(255,255,255,0.13);
+            background: rgba(255,255,255,0.10);
+            border: 1px solid rgba(255,255,255,0.18);
             border-radius: 999px;
             padding: 4px;
             position: relative;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.30), inset 0 -1px 0 rgba(255,255,255,0.06);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.30), inset 0 -1px 0 rgba(255,255,255,0.08), 0 1px 0 rgba(255,255,255,0.08);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px)">
 
             <!-- Sliding blob indicator (mirrors #themeBlobIndicator pattern) -->
@@ -337,7 +335,7 @@
               width:44px; height:44px;
               border-radius:50%;
               background: rgba(255,255,255,0.18);
-              box-shadow: 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.25);
+              box-shadow: 0 2px 8px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.35);
               pointer-events:none;
               left:0; top:0;
               z-index:0;
@@ -392,17 +390,17 @@
 
         <!-- Sankey view -->
         <div id="tab-sankey" style="flex:1; display:flex; flex-direction:column; overflow:hidden; min-height:0">
-          <div id="sankeyWrap" style="flex:1; position:relative; overflow:hidden; background:rgba(4,4,20,0.85); min-height:0">
+          <div id="sankeyWrap" style="flex:1; position:relative; overflow:hidden; background:var(--color-viz-bg); min-height:0">
           <div id="sankeyEmpty" style="
             display:flex; flex-direction:column; align-items:center; justify-content:center;
-            height:100%; color:rgba(255,255,255,0.30); font-size:14px; gap:10px">
+            height:100%; color:var(--color-text-disabled); font-size:14px; gap:10px">
             <span style="font-size:32px;opacity:0.4">〰</span>
-            <span>Select recipes and click <strong style="color:#0a84ff;font-weight:500">Calculate</strong> first.</span>
+            <span>Select recipes and click <strong style="color:var(--color-accent);font-weight:500">Calculate</strong> first.</span>
           </div>
           <svg id="sankeySvg" style="width:100%; height:100%; display:none; cursor:grab"></svg>
           <div id="sankeyTooltip" style="
             position:absolute; pointer-events:none; display:none;
-            background:rgba(16,14,36,0.92); border:1px solid rgba(255,255,255,0.12); border-radius:12px;
+            background:var(--color-viz-tooltip-bg); border:1px solid var(--color-border); border-radius:12px;
             padding:9px 13px; font-size:12px; color:var(--text); z-index:99;
             line-height:1.7; min-width:160px; max-width:240px;
             backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
@@ -426,17 +424,17 @@
 
       <!-- Boxes & Lines Tab -->
       <div id="tab-boxes" style="flex:1; display:none; flex-direction:column; overflow:hidden; min-height:0">
-        <div id="boxesWrap" style="flex:1; position:relative; overflow:hidden; background:rgba(4,4,20,0.85); min-height:0">
+        <div id="boxesWrap" style="flex:1; position:relative; overflow:hidden; background:var(--color-viz-bg); min-height:0">
           <div id="boxesEmpty" style="
             display:flex; flex-direction:column; align-items:center; justify-content:center;
-            height:100%; color:rgba(255,255,255,0.30); font-size:14px; gap:10px">
+            height:100%; color:var(--color-text-disabled); font-size:14px; gap:10px">
             <span style="font-size:32px;opacity:0.4">⬛</span>
-            <span>Select recipes and click <strong style="color:#0a84ff;font-weight:500">Calculate</strong> first.</span>
+            <span>Select recipes and click <strong style="color:var(--color-accent);font-weight:500">Calculate</strong> first.</span>
           </div>
           <svg id="boxesSvg" style="width:100%; height:100%; display:none; cursor:grab"></svg>
           <div id="boxesTooltip" style="
             position:absolute; pointer-events:none; display:none;
-            background:rgba(16,14,36,0.92); border:1px solid rgba(255,255,255,0.12); border-radius:12px;
+            background:var(--color-viz-tooltip-bg); border:1px solid var(--color-border); border-radius:12px;
             padding:9px 13px; font-size:12px; color:var(--text); z-index:99;
             line-height:1.7; min-width:140px; max-width:220px;
             backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
@@ -484,10 +482,8 @@
             justify-content: center;
           ">
       <div id="recipeSettingsModal" onclick="event.stopPropagation()" style="
-              background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
               backdrop-filter: blur(60px) saturate(180%);
               -webkit-backdrop-filter: blur(60px) saturate(180%);
-              border: 1px solid rgba(255,255,255,0.15);
               border-radius: 24px;
               width: 720px;
               max-width: 95vw;
@@ -495,14 +491,13 @@
               display: flex;
               flex-direction: column;
               overflow: hidden;
-              box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.20);
             ">
         <div style="
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
                 padding: 16px 20px;
-                border-bottom: 1px solid rgba(255,255,255,0.08);
+                border-bottom: 1px solid var(--color-border);
               ">
           <span style="
                   font-size: 15px;
@@ -513,9 +508,9 @@
                 ">⚙ Default Settings</span>
           <button type="button" aria-label="Close settings" onclick="closeRecipeSettings()" style="
                   width:28px;height:28px;
-                  background: rgba(255,255,255,0.10);
-                  border: 1px solid rgba(255,255,255,0.12);
-                  color: rgba(255,255,255,0.60);
+                  background: var(--color-bg-elevated);
+                  border: 1px solid var(--color-border);
+                  color: var(--color-interactive);
                   border-radius: 50%;
                   cursor: pointer;
                   font-size: 14px;
@@ -536,7 +531,7 @@
         </div>
         <div style="
                 padding: 14px 20px;
-                border-top: 1px solid rgba(255,255,255,0.08);
+                border-top: 1px solid var(--color-border);
                 display: flex;
                 gap: 10px;
                 justify-content: flex-end;
@@ -563,10 +558,8 @@
             justify-content: center;
           ">
       <div id="recipePickerModal" onclick="event.stopPropagation()" style="
-              background: linear-gradient(150deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
               backdrop-filter: blur(60px) saturate(180%);
               -webkit-backdrop-filter: blur(60px) saturate(180%);
-              border: 1px solid rgba(255,255,255,0.15);
               border-radius: 24px;
               width: 900px;
               max-width: 96vw;
@@ -574,7 +567,6 @@
               display: flex;
               flex-direction: column;
               overflow: hidden;
-              box-shadow: 0 30px 80px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.20);
             ">
         <!-- Modal header -->
         <div style="
@@ -582,7 +574,7 @@
                 align-items: center;
                 gap: 12px;
                 padding: 16px 20px;
-                border-bottom: 1px solid rgba(255,255,255,0.08);
+                border-bottom: 1px solid var(--color-border);
               ">
           <span style="
                   font-size: 15px;
@@ -595,8 +587,8 @@
           <input type="text" id="recipePickerSearch" placeholder="Search…" style="
                   flex: 1;
                   padding: 7px 12px;
-                  background: rgba(255,255,255,0.08);
-                  border: 1px solid rgba(255,255,255,0.12);
+                  background: var(--color-surface-input);
+                  border: 1px solid var(--color-border);
                   color: var(--text);
                   border-radius: 10px;
                   font-family: -apple-system,sans-serif;
@@ -605,9 +597,9 @@
                 " oninput="renderRecipeBrowser()" autocomplete="off" />
           <button type="button" aria-label="Close recipe picker" onclick="closeRecipePicker()" style="
                   width:28px;height:28px;
-                  background: rgba(255,255,255,0.10);
-                  border: 1px solid rgba(255,255,255,0.12);
-                  color: rgba(255,255,255,0.60);
+                  background: var(--color-bg-elevated);
+                  border: 1px solid var(--color-border);
+                  color: var(--color-interactive);
                   border-radius: 50%;
                   cursor: pointer;
                   font-size: 14px;
@@ -622,8 +614,8 @@
         <div id="recipeCatTabs" style="
                 display: flex;
                 gap: 0;
-                border-bottom: 1px solid rgba(255,255,255,0.08);
-                background: rgba(255,255,255,0.03);
+                border-bottom: 1px solid var(--color-border);
+                background: transparent;
                 overflow-x: auto;
                 flex-shrink: 0;
               "></div>
@@ -640,9 +632,9 @@
         <!-- Modal footer -->
         <div style="
                 padding: 10px 20px;
-                border-top: 1px solid rgba(255,255,255,0.08);
+                border-top: 1px solid var(--color-border);
                 font-size: 12px;
-                color: rgba(255,255,255,0.30);
+                color: var(--color-text-disabled);
               ">
           Click to select · greyed out = no recipe available
         </div>
@@ -652,7 +644,7 @@
   </div>
 
 
-  <script src="app/theme.js?v=15"></script>
+  <script src="app/theme.js?v=18"></script>
   <script src="data/version-registry.js?v=15"></script>
   <script>
     (function () {
@@ -665,13 +657,13 @@
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/icons.js' + cb + '"></scr' + 'ipt>');
     })();
   </script>
-  <script src="app/state.js?v=16"></script>
-  <script src="app/ui-settings.js?v=16"></script>
-  <script src="app/ui-recipes.js?v=16"></script>
-  <script src="app/calculation.js?v=16"></script>
-  <script src="app/ui-nav.js?v=16"></script>
+  <script src="app/state.js?v=17"></script>
+  <script src="app/ui-settings.js?v=17"></script>
+  <script src="app/ui-recipes.js?v=17"></script>
+  <script src="app/calculation.js?v=18"></script>
+  <script src="app/ui-nav.js?v=17"></script>
   <script src="app/visualization.js?v=16"></script>
-  <script src="app/ui-power.js?v=1"></script>
+  <script src="app/ui-power.js?v=2"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();
@@ -687,12 +679,12 @@
       if (!btn) return;
       btn.innerHTML = POWER_GENERATORS.map(gen => `
         <button onclick="addPowerRow('${gen.id}')" style="
-          padding:8px 12px; background:rgba(168,85,247,0.10); border:1px solid rgba(168,85,247,0.22);
-          color:rgba(255,255,255,0.75); border-radius:8px; font-size:12px; cursor:pointer;
+          padding:8px 12px; background:var(--color-bg-elevated); border:1px solid var(--color-border);
+          color:var(--color-text-primary); border-radius:8px; font-size:12px; cursor:pointer;
           transition:all 0.15s; display:flex; align-items:center; gap:7px; width:100%;
           font-family:-apple-system,sans-serif; text-align:left;"
-          onmouseover="this.style.background='rgba(168,85,247,0.22)'"
-          onmouseout="this.style.background='rgba(168,85,247,0.10)'">
+          onmouseover="this.style.background='var(--color-accent-active-bg)'"
+          onmouseout="this.style.background='var(--color-bg-elevated)'">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="flex-shrink:0"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           ${gen.name}
         </button>`).join('');

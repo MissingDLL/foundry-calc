@@ -1,0 +1,183 @@
+/* ============================================================
+   app/tokens.css
+   ============================================================
+   Semantic design tokens for all three themes (default/dark/light).
+   Scoped to [data-theme="x"] on <html>. Single source of truth for
+   colors — components reference var(--color-*) or the legacy
+   aliases below, never raw literals.
+   ============================================================ */
+
+[data-theme="default"] {
+  /* Surfaces */
+  --color-bg-base:            #060612;
+  --color-bg-elevated:        rgba(255,255,255,0.06);
+  --color-bg-overlay:         rgba(40,10,80,0.45);
+  --color-surface-input:      rgba(255,255,255,0.08);
+
+  /* Text */
+  --color-text-primary:       #f5f5f7;
+  --color-text-secondary:     #98989f;
+  --color-text-disabled:      rgba(255,255,255,0.30);
+
+  /* Accent / Interactive */
+  --color-accent:             #a855f7;
+  --color-accent-hover:       #c088ff;
+  --color-accent-active-bg:   rgba(140,50,220,0.18);
+  --color-accent-inactive-bg: rgba(255,255,255,0.05);
+  --color-interactive:        rgba(255,255,255,0.40);
+
+  /* Semantic */
+  --color-danger:             #ff453a;
+  --color-danger-bg:          rgba(255,69,58,0.10);
+  --color-danger-border:      rgba(255,69,58,0.35);
+  --color-success:            #30d158;
+  --color-success-text:       #7ec87e;
+  --color-success-bg:         rgba(48,209,88,0.10);
+  --color-success-border:     rgba(48,209,88,0.30);
+  --color-warning:            #ffd60a;
+  --color-warning-text:       #f5a623;
+  --color-warning-bg:         rgba(255,180,0,0.10);
+  --color-warning-border:     rgba(255,180,0,0.35);
+  --color-power:              #ff9500;
+  --color-power-bg:           rgba(255,149,0,0.08);
+  --color-power-border:       rgba(255,149,0,0.35);
+  --color-byproduct:          #d4a020;
+  --color-byproduct-bg:       rgba(255,160,0,0.10);
+  --color-byproduct-border:   rgba(255,160,0,0.30);
+
+  /* Borders */
+  --color-border:             rgba(160,60,255,0.20);
+  --color-border-focus:       rgba(168,85,247,0.60);
+
+  /* Viz */
+  --color-viz-bg:             #05000f;
+  --color-viz-tooltip-bg:     rgba(20,5,45,0.95);
+
+  /* Backward-compat aliases (existing selectors keep working) */
+  --accent:     var(--color-accent);
+  --accent2:    var(--color-danger);
+  --accent3:    var(--color-success);
+  --bg:         var(--color-bg-base);
+  --bg2:        rgba(140,50,220,0.06);
+  --bg3:        rgba(140,50,220,0.10);
+  --panel:      var(--color-bg-overlay);
+  --border:     var(--color-border);
+  --text:       var(--color-text-primary);
+  --text-dim:   var(--color-text-secondary);
+  --warn:       var(--color-warning);
+  --highlight:  var(--color-accent-active-bg);
+
+  color-scheme: dark;
+}
+
+[data-theme="dark"] {
+  --color-bg-base:            #000000;
+  --color-bg-elevated:        #1c1c1e;
+  --color-bg-overlay:         #1c1c1e;
+  --color-surface-input:      #2c2c2e;
+
+  --color-text-primary:       #f5f5f7;
+  --color-text-secondary:     #8e8e93;
+  --color-text-disabled:      rgba(255,255,255,0.30);
+
+  --color-accent:             #0a84ff;
+  --color-accent-hover:       #409cff;
+  --color-accent-active-bg:   rgba(10,132,255,0.18);
+  --color-accent-inactive-bg: rgba(255,255,255,0.05);
+  --color-interactive:        rgba(255,255,255,0.40);
+
+  --color-danger:             #ff453a;
+  --color-danger-bg:          rgba(255,69,58,0.10);
+  --color-danger-border:      rgba(255,69,58,0.35);
+  --color-success:            #30d158;
+  --color-success-text:       #7ec87e;
+  --color-success-bg:         rgba(48,209,88,0.10);
+  --color-success-border:     rgba(48,209,88,0.30);
+  --color-warning:            #ffd60a;
+  --color-warning-text:       #f5a623;
+  --color-warning-bg:         rgba(255,180,0,0.10);
+  --color-warning-border:     rgba(255,180,0,0.35);
+  --color-power:              #ff9500;
+  --color-power-bg:           rgba(255,149,0,0.08);
+  --color-power-border:       rgba(255,149,0,0.35);
+  --color-byproduct:          #d4a020;
+  --color-byproduct-bg:       rgba(255,160,0,0.10);
+  --color-byproduct-border:   rgba(255,160,0,0.30);
+
+  --color-border:             rgba(255,255,255,0.10);
+  --color-border-focus:       rgba(10,132,255,0.60);
+
+  --color-viz-bg:             #0a0a14;
+  --color-viz-tooltip-bg:     rgba(28,28,30,0.95);
+
+  --accent:     var(--color-accent);
+  --accent2:    var(--color-danger);
+  --accent3:    var(--color-success);
+  --bg:         var(--color-bg-base);
+  --bg2:        #1c1c1e;
+  --bg3:        #2c2c2e;
+  --panel:      var(--color-bg-overlay);
+  --border:     var(--color-border);
+  --text:       var(--color-text-primary);
+  --text-dim:   var(--color-text-secondary);
+  --warn:       var(--color-warning);
+  --highlight:  rgba(10,132,255,0.15);
+
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --color-bg-base:            #dce8ff;
+  --color-bg-elevated:        rgba(255,255,255,0.88);
+  --color-bg-overlay:         rgba(255,255,255,0.60);
+  --color-surface-input:      rgba(255,255,255,0.90);
+
+  --color-text-primary:       #1d1d1f;
+  --color-text-secondary:     #6e6e73;
+  --color-text-disabled:      rgba(0,0,0,0.35);
+
+  --color-accent:             #007aff;
+  --color-accent-hover:       #3395ff;
+  --color-accent-active-bg:   rgba(0,122,255,0.14);
+  --color-accent-inactive-bg: rgba(0,0,0,0.06);
+  --color-interactive:        rgba(0,0,0,0.50);
+
+  --color-danger:             #d70015;
+  --color-danger-bg:          rgba(255,59,48,0.08);
+  --color-danger-border:      rgba(255,59,48,0.35);
+  --color-success:            #1e7a30;
+  --color-success-text:       #1e7a30;
+  --color-success-bg:         rgba(52,199,89,0.14);
+  --color-success-border:     rgba(52,199,89,0.40);
+  --color-warning:            #b36000;
+  --color-warning-text:       #8a5a00;
+  --color-warning-bg:         rgba(255,159,10,0.14);
+  --color-warning-border:     rgba(255,159,10,0.45);
+  --color-power:              #b35a00;
+  --color-power-bg:           rgba(255,149,0,0.10);
+  --color-power-border:       rgba(255,149,0,0.45);
+  --color-byproduct:          #8a5a00;
+  --color-byproduct-bg:       rgba(255,160,0,0.12);
+  --color-byproduct-border:   rgba(255,160,0,0.40);
+
+  --color-border:             rgba(0,0,0,0.12);
+  --color-border-focus:       rgba(0,122,255,0.50);
+
+  --color-viz-bg:             rgba(255,255,255,0.40);
+  --color-viz-tooltip-bg:     rgba(255,255,255,0.92);
+
+  --accent:     var(--color-accent);
+  --accent2:    var(--color-danger);
+  --accent3:    var(--color-success);
+  --bg:         transparent;
+  --bg2:        rgba(255,255,255,0.75);
+  --bg3:        rgba(255,255,255,0.55);
+  --panel:      var(--color-bg-overlay);
+  --border:     var(--color-border);
+  --text:       var(--color-text-primary);
+  --text-dim:   var(--color-text-secondary);
+  --warn:       var(--color-warning);
+  --highlight:  rgba(0,122,255,0.10);
+
+  color-scheme: light;
+}
