@@ -1,0 +1,6 @@
+  python3 -m http.server 8080     → lokalen Server starten, dann http://localhost:8080
+  tests/runner.html                → im Browser öffnen, führt alle Unit-Tests aus
+  python3 extract_game_data.py     → Game-Daten aus Foundry-Installation neu extrahieren (data/versions/)
+  git pull                         → Aktuellen Stand holen
+
+  Kein Build-Step, kein npm. Vanilla JS, Server nur wegen file:// Image-Loading nötig.
