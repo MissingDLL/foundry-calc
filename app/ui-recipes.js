@@ -492,14 +492,8 @@ function renderSelectedRecipes() {
         .join("");
 
       const ct = r.machines[item.machineName].cycleTime;
-      const baseEff = r.efficiency != null ? r.efficiency : 0;
-      const eff = botEfficiencyOverrides[item.itemName] != null ? botEfficiencyOverrides[item.itemName] : baseEff;
-      const effMultiplier = 1 + eff / 100;
-      const miningBonus = MINING_MACHINES.has(item.machineName) ? globalMiningProductivity / 100 : 0;
-      const fluidBonus = FLUID_MACHINES.has(item.machineName) ? globalFluidProductivity / 100 : 0;
-      const wsBonus = getItemWsBonus(item);
-      const opm = (60 / ct) * getOutputAmount(r) * effMultiplier * (1 + miningBonus + fluidBonus + wsBonus);
-      const machinesNeeded = Math.ceil(item.goal / opm);
+      const opm = machineOpm(r, item);
+      const machinesNeeded = ceilMachines(item.goal / opm);
       const actualOpm = machinesNeeded * opm;
 
       const ingLines = r.ingredients

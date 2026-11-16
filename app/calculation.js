@@ -46,6 +46,26 @@ function getOutputLabel(recipe) {
   return String(o.amount);
 }
 
+// Output items/min of ONE machine, including every productivity bonus:
+//   bot efficiency (override → parent-robot override → recipe base),
+//   global mining/fluid productivity and workstation bonus.
+// `item` needs { machineName, itemName? , wsOverride? } — a selectedRecipeList
+// entry, or { itemName, machineName } for items deeper in the chain.
+// Single source of truth: table, chain resolution, sidebar and Sankey all use it.
+function machineOpm(recipe, item) {
+  const ct = recipe.machines[item.machineName].cycleTime;
+  const parent = item.itemName?.match(/^(.+)\s+(?:Arm|Head|Leg|Torso)$/)?.[1];
+  const eff = botEfficiencyOverrides[item.itemName] ?? botEfficiencyOverrides[parent] ?? recipe.efficiency ?? 0;
+  const miningBonus = MINING_MACHINES.has(item.machineName) ? globalMiningProductivity / 100 : 0;
+  const fluidBonus  = FLUID_MACHINES.has(item.machineName)  ? globalFluidProductivity  / 100 : 0;
+  // All bonuses stack additively in the productivity bracket.
+  return (60 / ct) * getOutputAmount(recipe) * (1 + eff / 100)
+       * (1 + miningBonus + fluidBonus + getItemWsBonus(item));
+}
+
+// ceil() that ignores float noise (3.0000000001 machines → 3, not 4).
+const ceilMachines = (x) => Math.ceil(x - 1e-9);
+
 // ── Infrastructure helpers ─────────────────────────────────────
 
 // Returns the power consumption of a machine in kW.
@@ -197,36 +217,10 @@ function calculateRecipes() {
 
       const ct = r.machines[item.machineName].cycleTime; // seconds per cycle
 
-      // Bot efficiency: user override takes priority over the recipe's base value.
-      // For robot parts (e.g. "Combat Robot Arm"), the override is stored under
-      // the parent robot name ("Combat Robot"), so fall back to that if no
-      // direct override exists for the part.
-      const baseEff = r.efficiency != null ? r.efficiency : 0;
-      const _partParent = item.itemName && item.itemName.match(/^(.+)\s+(?:Arm|Head|Leg|Torso)$/);
-      const parentName  = _partParent ? _partParent[1] : null;
-      const eff = botEfficiencyOverrides[item.itemName] != null
-        ? botEfficiencyOverrides[item.itemName]
-        : (parentName != null && botEfficiencyOverrides[parentName] != null
-          ? botEfficiencyOverrides[parentName]
-          : baseEff);
-      const effMultiplier = 1 + eff / 100; // e.g. 50% eff → ×1.5
-
-      // Global productivity bonuses (set in settings panel)
-      const miningBonus = MINING_MACHINES.has(item.machineName) ? globalMiningProductivity / 100 : 0;
-      const fluidBonus  = FLUID_MACHINES.has(item.machineName)  ? globalFluidProductivity  / 100 : 0;
-
-      // Workstation bonus (robot effects applied to this machine category)
-      const wsBonus = getItemWsBonus(item);
-
-      // Core formula:
-      //   opm = (60 / cycleTime) × outputPerCycle × effMult × (1 + miningBonus + fluidBonus + wsBonus)
-      //
-      // (60 / ct) converts cycles/second → cycles/minute.
-      // All bonuses stack additively in the productivity bracket.
-      const opm = (60 / ct) * getOutputAmount(r) * effMultiplier * (1 + miningBonus + fluidBonus + wsBonus);
+      const opm = machineOpm(r, item);
 
       // Machines needed: always round up (you can't run half a machine)
-      const machines   = Math.ceil(item.goal / opm);
+      const machines   = ceilMachines(item.goal / opm);
       const actualOpm  = machines * opm;       // actual output with rounded-up machines
       const over       = actualOpm - item.goal; // overproduction due to rounding
 
@@ -291,7 +285,7 @@ function calculateRecipes() {
     const md = recipe.machines[machine];
     if (!md) return;
     const ct = md.cycleTime;
-    const opm = (60 / ct) * getOutputAmount(recipe);
+    const opm = machineOpm(recipe, { itemName: resolved, machineName: machine });
     // collect byproducts
     if (Array.isArray(recipe.output) && recipe.output.length > 1) {
       for (let i = 1; i < recipe.output.length; i++) {
@@ -327,8 +321,8 @@ function calculateRecipes() {
     const repMd = repRecipe.machines[repMachine];
     if (!repMd) return;
     const slagPerMachinePerMin  = (60 / repMd.cycleTime) * repRecipe.ingredients[0].amount;
-    const cementPerMachinePerMin = (60 / repMd.cycleTime) * getOutputAmount(repRecipe);
-    const processors    = Math.ceil(info.amount / slagPerMachinePerMin);
+    const cementPerMachinePerMin = machineOpm(repRecipe, { itemName: producesItem, machineName: repMachine });
+    const processors    = ceilMachines(info.amount / slagPerMachinePerMin);
     const cementProduced = processors * cementPerMachinePerMin;
     totals[producesItem] = Math.max(0, totals[producesItem] - cementProduced);
     info.reprocessed = { machine: repMachine, count: processors, produces: producesItem, producedPerMin: cementProduced };
@@ -371,8 +365,6 @@ function calculateRecipes() {
   const totalGoal       = lines.reduce((s, r) => s + r.goal, 0);
   const uniqueMachines  = new Set(lines.map((r) => r.machineName)).size;
   const totalOver       = lines.reduce((s, r) => s + r.over, 0);
-  const avgMachines     = (totalMachines / lines.length).toFixed(1);
-  const ingredientCount = Object.keys(totals).length;
 
   const fmtPwr = (kw) => kw >= 1000
     ? `${(kw / 1000).toLocaleString('de-DE', {maximumFractionDigits: 2})} MW`
@@ -458,7 +450,7 @@ function calculateRecipes() {
       // Add byproduct pills if the recipe has secondary outputs
       if (Array.isArray(recipe.output) && recipe.output.length > 1) {
         const byproductPills = recipe.output.slice(1).map(sec => {
-          const apm = (60 / ct) * sec.amount * r.machines;
+          const apm = (60 / ct) * sec.amount * (sec.chance ?? 1) * r.machines;
           return `<span style="display:inline-flex;align-items:center;gap:5px;
               background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);
               border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
@@ -521,7 +513,13 @@ function calculateRecipes() {
   //
   // resolvedTotals[name] = { amount: Number, machine: String|null }
   const resolvedTotals  = {};
-  const resolvedMachines = {}; // machines needed for ingredient chain (modes 1+2)
+  // Fractional machine count per resolved item (modes 1+2). The same item can be
+  // reached via several paths — sum first, round up once per item at the end.
+  const resolvedMachineRuns = {}; // resolvedItem → { machine, runs }
+  const addMachineRuns = (item, machine, runs) => {
+    const e = (resolvedMachineRuns[item] ||= { machine, runs: 0 });
+    e.runs += runs;
+  };
   const cycleWarnings   = new Set();
 
   // Build a map: fluid key (lowercase_underscore) → producer machine name
@@ -555,7 +553,8 @@ function calculateRecipes() {
     // Full Detail: collect every item at every level of the production chain
     function resolveAllLevels(itemName, amountPerMin, visitedPath) {
       const resolved = resolveRecipeName(itemName);
-      if (visitedPath.has(resolved) || visitedPath.size > 50) return;
+      if (visitedPath.has(resolved)) { cycleWarnings.add(resolved); return; }
+      if (visitedPath.size > 50) return;
 
       const recipe = RECIPES[resolved];
       const addItem = (machine) => {
@@ -577,15 +576,15 @@ function calculateRecipes() {
       const machine = preferredMachineFor(recipe);
       const machData = recipe.machines[machine];
       const ct  = machData.cycleTime;
-      const opm = (60 / ct) * getOutputAmount(recipe);
+      const opm = machineOpm(recipe, { itemName: resolved, machineName: machine });
       addItem(machine);
 
-      // Track secondary outputs (byproducts like Waste Gas, Slag)
+      // Track secondary outputs (byproducts like Waste Gas, Slag).
+      // Machine-based (no productivity bonus), same as the overview table.
       if (Array.isArray(recipe.output) && recipe.output.length > 1) {
-        const primaryAmount = recipe.output[0].amount * (recipe.output[0].chance ?? 1);
         for (let i = 1; i < recipe.output.length; i++) {
           const sec = recipe.output[i];
-          const secApm = amountPerMin * (sec.amount * (sec.chance ?? 1)) / primaryAmount;
+          const secApm = (amountPerMin / opm) * (60 / ct) * sec.amount * (sec.chance ?? 1);
           const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[sec.item] : null;
           if (!resolvedTotals[sec.item]) {
             resolvedTotals[sec.item] = { amount: 0, machine: disposal ? disposal.machine : null, recipeName: sec.item, byproduct: true };
@@ -672,11 +671,7 @@ function calculateRecipes() {
         const machine = (preferred && machineNames.includes(preferred)) ? preferred : firstMachineFor(recipe);
         addToTotals(machine);
         // Track miner machine count
-        const md = recipe.machines[machine];
-        if (md) {
-          const opm = (60 / md.cycleTime) * getOutputAmount(recipe);
-          resolvedMachines[machine] = (resolvedMachines[machine] || 0) + Math.ceil(amountPerMin / opm);
-        }
+        if (recipe.machines[machine]) addMachineRuns(resolved, machine, amountPerMin / machineOpm(recipe, { itemName: resolved, machineName: machine }));
         return;
       }
 
@@ -690,11 +685,11 @@ function calculateRecipes() {
       const machineName = preferredMachineFor(recipe);
       const machData    = recipe.machines[machineName];
       const ct  = machData.cycleTime;
-      const opm = (60 / ct) * getOutputAmount(recipe);
+      const opm = machineOpm(recipe, { itemName: resolved, machineName });
       const runsPerMin = amountPerMin / opm;
 
       // Track this machine
-      resolvedMachines[machineName] = (resolvedMachines[machineName] || 0) + Math.ceil(amountPerMin / opm);
+      addMachineRuns(resolved, machineName, runsPerMin);
 
       const nextPath = new Set(visitedPath);
       nextPath.add(resolved);
@@ -727,8 +722,8 @@ function calculateRecipes() {
           const rec = RECIPES[info.recipeName || name];
           const md  = rec && rec.machines[machine];
           if (md) {
-            const opm         = (60 / md.cycleTime) * getOutputAmount(rec);
-            const count       = Math.ceil(val / opm);
+            const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine });
+            const count       = ceilMachines(val / opm);
             const machPwrKw   = count * getMachinePowerKw(machine);
             const nSolid      = countSolidConnections(rec, name);
             const loaders     = calcLoadersForMachine(machine, nSolid);
@@ -877,8 +872,8 @@ function calculateRecipes() {
             // No capacity data — show machine name only (e.g. Air Intake Base)
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span></div>`;
           } else if (md) {
-            const opm         = (60 / md.cycleTime) * getOutputAmount(rec);
-            const count       = Math.ceil(val / opm);
+            const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine });
+            const count       = ceilMachines(val / opm);
             const machPwrKw   = count * getMachinePowerKw(machine);
             const nSolid      = countSolidConnections(rec, name);
             const loaders     = calcLoadersForMachine(machine, nSolid);
@@ -1020,8 +1015,8 @@ function calculateRecipes() {
     machineTotals[r.machineName] = (machineTotals[r.machineName] || 0) + r.machines;
   });
   // Add machines from ingredient resolution chain
-  Object.entries(resolvedMachines).forEach(([name, count]) => {
-    machineTotals[name] = (machineTotals[name] || 0) + count;
+  Object.values(resolvedMachineRuns).forEach(({ machine, runs }) => {
+    machineTotals[machine] = (machineTotals[machine] || 0) + ceilMachines(runs);
   });
   const machineRows = Object.entries(machineTotals)
     .sort((a, b) => b[1] - a[1])

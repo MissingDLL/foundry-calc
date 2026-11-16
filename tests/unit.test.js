@@ -174,6 +174,30 @@ describe('getOutputAmount()', () => {
 });
 
 
+describe('machineOpm() / ceilMachines()', () => {
+  const crusher = { machines: { [M.CRUSHER_I]: { cycleTime: 2 } }, output: { amount: 1 } };
+
+  it('base rate = 60 / cycleTime × output', () => {
+    expect(machineOpm(crusher, { machineName: M.CRUSHER_I })).toBeCloseTo(30);
+  });
+
+  it('applies mining productivity to chain items too (no wsOverride, no goal)', () => {
+    globalMiningProductivity = 50;
+    expect(machineOpm(crusher, { itemName: 'Anything', machineName: M.CRUSHER_I })).toBeCloseTo(45);
+  });
+
+  it('falls back to parent robot efficiency for robot parts', () => {
+    botEfficiencyOverrides['Combat Robot'] = 100;
+    expect(machineOpm(crusher, { itemName: 'Combat Robot Arm', machineName: M.CRUSHER_I })).toBeCloseTo(60);
+  });
+
+  it('ceilMachines ignores float noise but still rounds real fractions up', () => {
+    expect(ceilMachines(3.0000000001)).toBe(3);
+    expect(ceilMachines(3.01)).toBe(4);
+  });
+});
+
+
 // ════════════════════════════════════════════════════════════
 // 3. getOutputLabel()
 // ════════════════════════════════════════════════════════════

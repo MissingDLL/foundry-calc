@@ -315,8 +315,8 @@ function _applyImportedPlan(plan) {
   if (s.variantSettings)        Object.assign(variantSettings,        s.variantSettings);
   if (s.minerSettings)          Object.assign(minerSettings,          s.minerSettings);
   if (s.botEfficiencyOverrides) Object.assign(botEfficiencyOverrides, s.botEfficiencyOverrides);
-  if (typeof s.globalMiningProductivity === 'number') globalMiningProductivity = s.globalMiningProductivity;
-  if (typeof s.globalFluidProductivity  === 'number') globalFluidProductivity  = s.globalFluidProductivity;
+  if (typeof s.globalMiningProductivity === 'number') globalMiningProductivity = Math.max(0, Math.min(100, s.globalMiningProductivity));
+  if (typeof s.globalFluidProductivity  === 'number') globalFluidProductivity  = Math.max(0, Math.min(100, s.globalFluidProductivity));
   if (s.workstationConfigs)     Object.assign(workstationConfigs,     s.workstationConfigs);
   if (s.machineFamilyDefaults) {
     MACHINE_FAMILIES.forEach(f => {

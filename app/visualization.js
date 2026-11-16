@@ -138,16 +138,17 @@ function buildSankeyGraph() {
         const machineName = (preferred && machineNames.includes(preferred)) ? preferred : machineNames[0];
         if (!node.machineName) node.machineName = machineName;
         const md = rr.machines[machineName];
-        if (md) node.machineCount += rateNeeded / ((60 / md.cycleTime) * getOutputAmount(rr));
+        if (md) node.machineCount += rateNeeded / machineOpm(rr, { itemName: resolved, machineName });
       }
       return resolved;
     }
 
     const r  = RECIPES[resolved];
-    const machEntries = Object.entries(r.machines).filter(([n]) => n !== 'Character');
-    if (!machEntries.length) return null;
-    const [machineName, md] = machEntries[0];
-    const opm  = (60 / md.cycleTime) * getOutputAmount(r);   // output items/min per machine
+    // Same machine choice + bonuses as the results table
+    const machineName = preferredMachineFor(r);
+    const md = machineName && r.machines[machineName];
+    if (!md) return null;
+    const opm  = machineOpm(r, { itemName: resolved, machineName }); // output items/min per machine
     const runs = rateNeeded / opm; // how many machines are needed (fractional, not rounded)
 
     // Accumulate machine type and fractional count for display in info cards
@@ -186,14 +187,8 @@ function buildSankeyGraph() {
 
     const ct  = r.machines[item.machineName].cycleTime;
 
-    // Apply the same bonus stack as calculateRecipes()
-    const eff = 1 + ((botEfficiencyOverrides[item.itemName] ?? (r.efficiency ?? 0)) / 100);
-    const mB  = MINING_MACHINES.has(item.machineName) ? globalMiningProductivity / 100 : 0;
-    const fB  = FLUID_MACHINES.has(item.machineName)  ? globalFluidProductivity  / 100 : 0;
-    const wsB = getItemWsBonus(item);
-
-    const opm      = (60 / ct) * getOutputAmount(r) * eff * (1 + mB + fB + wsB);
-    const machines = Math.ceil(item.goal / opm); // rounded-up integer
+    const opm      = machineOpm(r, item);
+    const machines = ceilMachines(item.goal / opm); // rounded-up integer
     const actualOpm = machines * opm;
 
     const node = getNode(item.itemName, 'final');
@@ -263,7 +258,28 @@ function buildSankeyGraph() {
   const nodes = Object.values(nodeMap);
   // Need at least 2 nodes and 1 link to draw a meaningful graph
   if (nodes.length < 2 || links.length === 0) return null;
-  return { nodes, links };
+  return { nodes, links: dropCycleEdges(links) };
+}
+
+// d3-sankey throws "circular link" on any cycle. visitedPath in expand() only
+// guards a single branch — A→B from one branch and B→A from another still
+// close a loop (e.g. Barrel ↔ Olumite). Drop the back-edges found by DFS.
+function dropCycleEdges(links) {
+  const out = {};
+  links.forEach(l => (out[l.source] ||= []).push(l));
+  const state = {}; // 1 = on DFS stack, 2 = done
+  const back  = new Set();
+  const visit = (n) => {
+    state[n] = 1;
+    for (const l of out[n] || []) {
+      if (state[l.target] === 1) back.add(l);
+      else if (!state[l.target]) visit(l.target);
+    }
+    state[n] = 2;
+  };
+  Object.keys(out).forEach(n => { if (!state[n]) visit(n); });
+  if (back.size) console.warn('foundry-calc: dropped cyclic graph edges:', [...back].map(l => `${l.source} → ${l.target}`));
+  return links.filter(l => !back.has(l));
 }
 
 // ============================================================

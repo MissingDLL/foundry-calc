@@ -655,7 +655,7 @@ function loadSettings() {
           const r = RECIPES[item.recipeName];
           const machineName = (item.machineName && r.machines[item.machineName])
             ? item.machineName
-            : Object.keys(r.machines)[0];
+            : (Object.keys(r.machines).find(m => m !== 'Character') || Object.keys(r.machines)[0]);
           const goal = (typeof item.goal === 'number' && isFinite(item.goal) && item.goal > 0)
             ? Math.min(item.goal, 999999)
             : 60;
