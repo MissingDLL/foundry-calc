@@ -10567,10 +10567,6 @@
         {
           "id": "Blast Furnace Slag",
           "amount": 640.0
-        },
-        {
-          "id": "Waste Gas",
-          "amount": 12.0
         }
       ],
       "machines": {
@@ -10604,10 +10600,6 @@
         {
           "id": "Blast Furnace Slag",
           "amount": 640.0
-        },
-        {
-          "id": "Waste Gas",
-          "amount": 12.0
         }
       ],
       "machines": {

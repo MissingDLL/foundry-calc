@@ -498,7 +498,7 @@ function renderSelectedRecipes() {
 
       const ingLines = r.ingredients
         .map((ing) => {
-          const ipm = (60 / ct) * ing.amount * machinesNeeded;
+          const ipm = (60 / ct) * ing.amount * (item.goal / opm); // goal-based, like calculateRecipes()
           return `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(ing.item, 14)}${ing.item}: <span style="color:var(--accent3)">${fmt(ipm)}</span></span>`;
         })
         .join(" <span style='color:var(--color-text-disabled)'>·</span> ");

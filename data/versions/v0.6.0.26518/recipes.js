@@ -1653,7 +1653,7 @@ const RECIPES = {
   "Molten Technum": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.TECHNUM_ORE, amount: 640 }, { item: I.COKED_IGNIUM, amount: 320 }, { item: I.MINERAL_ROCKS, amount: 128 }],
-    output: [{ item: I.MOLTEN_TECHNUM, amount: 5760 }, { item: I.BLAST_FURNACE_SLAG, amount: 640 }, { item: I.WASTE_GAS, amount: 12 }],
+    output: [{ item: I.MOLTEN_TECHNUM, amount: 5760 }, { item: I.BLAST_FURNACE_SLAG, amount: 640 }],
     machines: {
       [M.BLAST_FURNACE_BASE]: { cycleTime: 1 },
     },
@@ -1661,7 +1661,7 @@ const RECIPES = {
   "Molten Xenoferrite": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.XENOFERRITE_ORE, amount: 640 }, { item: I.COKED_IGNIUM, amount: 320 }, { item: I.MINERAL_ROCKS, amount: 128 }],
-    output: [{ item: I.MOLTEN_XENOFERRITE, amount: 5760 }, { item: I.BLAST_FURNACE_SLAG, amount: 640 }, { item: I.WASTE_GAS, amount: 12 }],
+    output: [{ item: I.MOLTEN_XENOFERRITE, amount: 5760 }, { item: I.BLAST_FURNACE_SLAG, amount: 640 }],
     machines: {
       [M.BLAST_FURNACE_BASE]: { cycleTime: 1 },
     },

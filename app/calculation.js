@@ -223,11 +223,15 @@ function calculateRecipes() {
       const machines   = ceilMachines(item.goal / opm);
       const actualOpm  = machines * opm;       // actual output with rounded-up machines
       const over       = actualOpm - item.goal; // overproduction due to rounding
+      // Machine-equivalents actually needed for the goal (fractional).
+      // Material demand follows the goal, not the rounded-up machine count —
+      // the extra machine capacity just idles, it doesn't eat ingredients.
+      const runs       = item.goal / opm;
 
       // Accumulate ingredient usage for the direct-materials table
       r.ingredients.forEach((ing) => {
         // ipm = ingredient items consumed per minute
-        const ipm = (60 / ct) * ing.amount * machines;
+        const ipm = (60 / ct) * ing.amount * runs;
         totals[ing.item] = (totals[ing.item] || 0) + ipm;
       });
 
@@ -235,6 +239,7 @@ function calculateRecipes() {
         ...item,
         displayName: item.itemName || item.name,
         machines,
+        runs,
         actualOpm,
         over,
       };
@@ -264,7 +269,7 @@ function calculateRecipes() {
     const ct = r.machines[line.machineName].cycleTime;
     for (let i = 1; i < r.output.length; i++) {
       const sec = r.output[i];
-      const apm = line.machines * (60 / ct) * sec.amount * (sec.chance ?? 1);
+      const apm = line.runs * (60 / ct) * sec.amount * (sec.chance ?? 1);
       if (!byproductTotals[sec.item]) byproductTotals[sec.item] = { amount: 0, machine: null };
       byproductTotals[sec.item].amount += apm;
       const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[sec.item] : null;
@@ -361,7 +366,6 @@ function calculateRecipes() {
 
   // ── Summary stats ────────────────────────────────────────
   const totalMachines   = lines.reduce((s, r) => s + r.machines, 0);
-  const totalOutput     = lines.reduce((s, r) => s + r.actualOpm, 0);
   const totalGoal       = lines.reduce((s, r) => s + r.goal, 0);
   const uniqueMachines  = new Set(lines.map((r) => r.machineName)).size;
   const totalOver       = lines.reduce((s, r) => s + r.over, 0);
@@ -399,13 +403,13 @@ function calculateRecipes() {
       </div>
       <div class="summary-box green">
         <div class="summary-label">Total production</div>
-        <div class="summary-value">${fmt(Math.round(totalOutput))}</div>
-        <div class="summary-unit">Units / Min (all recipes)</div>
+        <div class="summary-value">${fmt(totalGoal)}</div>
+        <div class="summary-unit">Units / Min (sum of goals)</div>
       </div>
       <div class="summary-box">
-        <div class="summary-label">Production goal</div>
-        <div class="summary-value">${fmt(Math.round(totalGoal))}</div>
-        <div class="summary-unit">Units / Min (sum of goals)</div>
+        <div class="summary-label">Spare capacity</div>
+        <div class="summary-value">${fmt(totalOver)}</div>
+        <div class="summary-unit">Units / Min (idle, rounded-up machines)</div>
       </div>
       <div class="summary-box orange">
         <div class="summary-label">Machine power</div>
@@ -433,7 +437,7 @@ function calculateRecipes() {
 
       // Build ingredient pills for this recipe's detail row
       let ingPills = recipe.ingredients.map((ing) => {
-        const ipm  = (60 / ct) * ing.amount * r.machines;
+        const ipm  = (60 / ct) * ing.amount * r.runs;
         const warn = ipm > 100; // highlight high-throughput ingredients
         return `<span style="display:inline-flex;align-items:center;gap:5px;
             background:${warn ? 'var(--color-warning-bg)' : 'var(--color-success-bg)'};
@@ -450,7 +454,7 @@ function calculateRecipes() {
       // Add byproduct pills if the recipe has secondary outputs
       if (Array.isArray(recipe.output) && recipe.output.length > 1) {
         const byproductPills = recipe.output.slice(1).map(sec => {
-          const apm = (60 / ct) * sec.amount * (sec.chance ?? 1) * r.machines;
+          const apm = (60 / ct) * sec.amount * (sec.chance ?? 1) * r.runs;
           return `<span style="display:inline-flex;align-items:center;gap:5px;
               background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);
               border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
@@ -487,7 +491,7 @@ function calculateRecipes() {
         </div>` : ''}
       </td>
       <td class="num">${r.machines}</td>
-      <td class="num" style="white-space:nowrap">${fmt(r.actualOpm)}${chanceBadge ? ' ' + chanceBadge : ''}</td>
+      <td class="num" style="white-space:nowrap">${fmt(r.goal)}${chanceBadge ? ' ' + chanceBadge : ''}</td>
       <td style="text-align:right;padding:7px 12px">
         ${r.over > 0.05
           ? `<span style="color:var(--warn)">+${fmt(r.over)}</span>`
@@ -542,7 +546,9 @@ function calculateRecipes() {
   Object.entries(totals).forEach(([name, val]) => {
     const resolved = resolveRecipeName(name);
     const recipe   = RECIPES[resolved];
-    const machine  = recipe ? preferredMachineFor(recipe) : null;
+    // Raw (no ingredients) → miner choice; crafted → machine family default
+    const machine  = !recipe ? null
+      : recipe.ingredients?.length ? preferredMachineFor(recipe) : preferredMinerFor(resolved, recipe);
     const fluidKey = resolved.toLowerCase().replace(/\s+/g, '_');
     directTotals[name] = { amount: val, machine: machine || fluidProducerMap[fluidKey] || null, recipeName: resolved };
   });
@@ -567,9 +573,7 @@ function calculateRecipes() {
         return;
       }
       if (!recipe.ingredients || recipe.ingredients.length === 0) {
-        const preferred = minerSettings[resolved];
-        const machineNames = Object.keys(recipe.machines).filter(n => n !== 'Character');
-        addItem((preferred && machineNames.includes(preferred)) ? preferred : firstMachineFor(recipe));
+        addItem(preferredMinerFor(resolved, recipe));
         return;
       }
       // Crafted item: add it, then recurse into ingredients
@@ -605,7 +609,7 @@ function calculateRecipes() {
       if (!recipe || !recipe.machines[line.machineName]) return;
       const key = line.displayName || line.itemName;
       if (!resolvedTotals[key]) resolvedTotals[key] = { amount: 0, machine: line.machineName, recipeName: line.recipeName || line.name };
-      resolvedTotals[key].amount += line.actualOpm;
+      resolvedTotals[key].amount += line.goal;
     });
     Object.entries(totals).forEach(([name, val]) => resolveAllLevels(name, val, new Set()));
 
@@ -666,9 +670,7 @@ function calculateRecipes() {
       if (!recipe.ingredients || recipe.ingredients.length === 0) {
         // Mode 1: skip raw/mined items
         if (calcDepthMode === 1) return;
-        const machineNames = Object.keys(recipe.machines).filter(n => n !== 'Character');
-        const preferred    = minerSettings[resolved];
-        const machine = (preferred && machineNames.includes(preferred)) ? preferred : firstMachineFor(recipe);
+        const machine = preferredMinerFor(resolved, recipe);
         addToTotals(machine);
         // Track miner machine count
         if (recipe.machines[machine]) addMachineRuns(resolved, machine, amountPerMin / machineOpm(recipe, { itemName: resolved, machineName: machine }));
@@ -1047,7 +1049,7 @@ function calculateRecipes() {
       <div class="collapsible-header" onclick="toggleSection(this)">
         <span class="ch-title">Production Overview</span>
         <span style="display:flex;align-items:center;gap:12px">
-          <span class="ch-meta">${lines.length} Recipes · ${fmt(totalMachines)} Machines · ${fmt(Math.round(totalOutput))} /min</span>
+          <span class="ch-meta">${lines.length} Recipes · ${fmt(totalMachines)} Machines · ${fmt(totalGoal)} /min</span>
           <span class="ch-arrow">▼</span>
         </span>
       </div>
@@ -1058,7 +1060,7 @@ function calculateRecipes() {
               <th>Recipe</th><th>Machine</th>
               <th style="text-align:right">Machines</th>
               <th style="text-align:right">Output/Min</th>
-              <th style="text-align:right">Overproduction</th>
+              <th style="text-align:right" title="Idle capacity of the rounded-up machines">Spare capacity</th>
             </tr>
           </thead>
           <tbody>${overviewRows}</tbody>

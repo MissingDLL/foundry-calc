@@ -189,6 +189,33 @@ function _getRobotPrefix(name) {
   return null;
 }
 
+// The Blast Furnace needs Hot Air, but the game data models that as a
+// per-machine fluid minimum (MACHINE_FLUID_MINIMUMS), not as a recipe
+// ingredient — so every chain walker (tables, Sankey, byproducts) skipped it
+// whenever the furnace sat below a selected recipe (e.g. Xenoferrite Plates
+// Tier 3 → Molten Xenoferrite). Add it as a normal ingredient, proportional
+// to machine time: (L/min per machine) × cycleTime / 60 per cycle.
+// The per-machine floor for directly selected lines stays in calculateRecipes().
+(function _injectFluidMinimumIngredients() {
+  if (typeof MACHINE_FLUID_MINIMUMS === 'undefined') return;
+  Object.entries(RECIPES).forEach(([name, r]) => {
+    const machines = Object.keys(r.machines || {});
+    const mins = machines.map(m => MACHINE_FLUID_MINIMUMS[m]).filter(Boolean);
+    if (!mins.length) return;
+    // ponytail: amount per cycle depends on the machine's cycleTime, so only
+    // single-machine recipes are handled; mixed machine sets get a warning.
+    if (machines.length !== 1) {
+      console.warn('foundry-calc: fluid minimum skipped (multiple machines):', name);
+      return;
+    }
+    const ct = r.machines[machines[0]].cycleTime;
+    Object.entries(mins[0]).forEach(([fluid, perMin]) => {
+      if (r.ingredients.some(i => i.item === fluid)) return; // already in the data
+      r.ingredients.push({ item: fluid, amount: perMin * ct / 60 });
+    });
+  });
+})();
+
 // Inject synthetic "complete robot" recipes for each robot type found in
 // RECIPE_SUBGROUPS["Robots"]. In the current game, complete robots are assembled
 // on the Assembly Line — no crafting recipe exists. We synthesize one so the
@@ -512,6 +539,18 @@ const MINER_GROUPS = [
   { label: "Technum Ore Rubble",     miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
   { label: "Telluxite Ore Rubble",   miners: ["Ore Vein Miner"] },
 ];
+
+// Extraction machine for a raw item: saved user choice → settings-UI default
+// (first entry in MINER_GROUPS) → first non-Character machine of the recipe.
+// Calculation, Sankey and the settings panel must all agree on this —
+// otherwise the panel highlights "Drone Miner I" while the math uses
+// whatever machine happens to be listed first in the recipe.
+function preferredMinerFor(itemName, recipe) {
+  const available = Object.keys(recipe.machines || {}).filter(n => n !== 'Character');
+  const group = MINER_GROUPS.find(g => g.label === itemName);
+  return [minerSettings[itemName], ...(group ? group.miners : [])]
+    .find(m => m && available.includes(m)) || available[0] || null;
+}
 
 // ── Recipe variant groups ─────────────────────────────────────
 // Items that have multiple recipe tiers are grouped here.

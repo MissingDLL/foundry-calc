@@ -97,6 +97,17 @@ function buildSankeyGraph() {
     return nodeMap[label];
   }
 
+  // Byproducts get their own node, never merged with the same item used as an
+  // ingredient (e.g. Crude Olumite in the barrel loop). Merging double-counted
+  // the rate and closed a cycle that cost the real ingredient edge.
+  const byproductKey = (item) => item + ' (Byproduct)';
+  function addByproduct(fromLabel, item, rate) {
+    const n = getNode(byproductKey(item), 'byproduct');
+    n.icon  = item; // icon lookup needs the plain item name
+    n.rate += rate;
+    addEdge(fromLabel, n.label, rate);
+  }
+
   // Adds a directed edge from srcLabel to tgtLabel with flow `value`.
   // If the edge already exists (two recipes sharing an ingredient),
   // the value is accumulated instead of creating a duplicate link.
@@ -133,9 +144,7 @@ function buildSankeyGraph() {
       // For mineable ores / resources: still attach the preferred extraction machine
       const rr = RECIPES[resolved];
       if (rr && rr.machines && Object.keys(rr.machines).length > 0) {
-        const machineNames = Object.keys(rr.machines).filter(n => n !== 'Character');
-        const preferred = minerSettings[resolved];
-        const machineName = (preferred && machineNames.includes(preferred)) ? preferred : machineNames[0];
+        const machineName = preferredMinerFor(resolved, rr);
         if (!node.machineName) node.machineName = machineName;
         const md = rr.machines[machineName];
         if (md) node.machineCount += rateNeeded / machineOpm(rr, { itemName: resolved, machineName });
@@ -170,10 +179,7 @@ function buildSankeyGraph() {
     if (Array.isArray(r.output) && r.output.length > 1) {
       for (let i = 1; i < r.output.length; i++) {
         const sec     = r.output[i];
-        const secRate = runs * (sec.amount * (sec.chance ?? 1)) * (60 / md.cycleTime);
-        const secNode = getNode(sec.item, 'byproduct');
-        secNode.rate += secRate;
-        addEdge(resolved, sec.item, secRate);
+        addByproduct(resolved, sec.item, runs * (sec.amount * (sec.chance ?? 1)) * (60 / md.cycleTime));
       }
     }
 
@@ -189,10 +195,10 @@ function buildSankeyGraph() {
 
     const opm      = machineOpm(r, item);
     const machines = ceilMachines(item.goal / opm); // rounded-up integer
-    const actualOpm = machines * opm;
+    const runs     = item.goal / opm; // fractional machine-equivalents for the goal
 
     const node = getNode(item.itemName, 'final');
-    node.rate        += actualOpm;
+    node.rate        += item.goal; // flows follow the goal, not idle machine capacity
     node.kind         = 'final';  // override any earlier 'mid' classification
     node.machineName  = item.machineName;
     node.machineCount += machines;
@@ -201,7 +207,7 @@ function buildSankeyGraph() {
     // Seed the visited path with the final product itself so that any
     // ingredient cycle back to it is caught immediately.
     r.ingredients.forEach(ing => {
-      const ingRate  = (60 / ct) * ing.amount * machines;
+      const ingRate  = (60 / ct) * ing.amount * runs;
       const ingLabel = expand(ing.item, ingRate, new Set([item.itemName]));
       if (ingLabel) addEdge(ingLabel, item.itemName, ingRate);
     });
@@ -211,10 +217,7 @@ function buildSankeyGraph() {
     if (Array.isArray(r.output) && r.output.length > 1) {
       for (let i = 1; i < r.output.length; i++) {
         const sec     = r.output[i];
-        const secRate = (60 / ct) * (sec.amount * (sec.chance ?? 1)) * machines;
-        const secNode = getNode(sec.item, 'byproduct');
-        secNode.rate += secRate;
-        addEdge(item.itemName, sec.item, secRate);
+        addByproduct(item.itemName, sec.item, (60 / ct) * (sec.amount * (sec.chance ?? 1)) * runs);
       }
     }
   });
@@ -222,7 +225,7 @@ function buildSankeyGraph() {
   // Add disposal / reprocessing sink nodes for byproducts
   if (typeof BYPRODUCT_DISPOSAL !== 'undefined') {
     Object.entries(BYPRODUCT_DISPOSAL).forEach(([itemName, disposal]) => {
-      const byproductNode = nodeMap[itemName];
+      const byproductNode = nodeMap[byproductKey(itemName)];
       if (!byproductNode) return;
 
       const rp = disposal.reprocess;
@@ -239,7 +242,7 @@ function buildSankeyGraph() {
             sink.rate        += byproductNode.rate;
             sink.machineName  = repMachine;
             sink.machineCount += processors;
-            addEdge(itemName, rp.recipe, byproductNode.rate);
+            addEdge(byproductNode.label, rp.recipe, byproductNode.rate);
             return;
           }
         }
@@ -251,7 +254,7 @@ function buildSankeyGraph() {
       sink.rate        += byproductNode.rate;
       sink.machineName  = disposal.machine;
       sink.machineCount += byproductNode.rate / disposal.capacityPerMin;
-      addEdge(itemName, sinkLabel, byproductNode.rate);
+      addEdge(byproductNode.label, sinkLabel, byproductNode.rate);
     });
   }
 
@@ -404,22 +407,26 @@ function _drawBoxes(svgEl, data) {
     inEdges[t].push(s);
   });
 
-  // BFS from source nodes (no incoming edges).
-  // Uses longest-path assignment: if multiple paths reach a node,
-  // the deepest depth wins so nodes always appear to the right of all
-  // their predecessors.
-  const visited = new Set();
-  const queue   = data.nodes.filter(n => inEdges[n.label].length === 0).map(n => { n.depth = 0; return n.label; });
-  queue.forEach(l => visited.add(l));
-
-  while (queue.length) {
-    const cur = queue.shift();
-    outEdges[cur].forEach(tgt => {
-      const d = nodeMap[cur].depth + 1;
-      if (d > nodeMap[tgt].depth) nodeMap[tgt].depth = d; // longest path wins
-      if (!visited.has(tgt)) { visited.add(tgt); queue.push(tgt); }
-    });
+  // Topological order (Kahn). The graph is acyclic — buildSankeyGraph()
+  // drops cycle edges. A plain BFS with a visited-set froze a node's column
+  // on first visit, so e.g. the final product could land in the same column
+  // as its own ingredient.
+  const indeg = {};
+  data.nodes.forEach(n => { indeg[n.label] = inEdges[n.label].length; });
+  const topo  = data.nodes.filter(n => indeg[n.label] === 0).map(n => n.label);
+  for (let i = 0; i < topo.length; i++) {
+    outEdges[topo[i]].forEach(t => { if (--indeg[t] === 0) topo.push(t); });
   }
+  // Longest path from the sources: every node right of all its predecessors.
+  topo.forEach(l => outEdges[l].forEach(t => {
+    nodeMap[t].depth = Math.max(nodeMap[t].depth, nodeMap[l].depth + 1);
+  }));
+  // Then pull every node with successors as far right as possible
+  // (directly before its earliest consumer). Otherwise raw materials all sit
+  // in column 0 and their edges skip columns, cutting through other boxes.
+  [...topo].reverse().forEach(l => {
+    if (outEdges[l].length) nodeMap[l].depth = Math.min(...outEdges[l].map(t => nodeMap[t].depth)) - 1;
+  });
 
   // ── Step 2: Group nodes into depth columns ────────────────
   const maxDepth  = Math.max(...data.nodes.map(n => n.depth));
@@ -586,16 +593,29 @@ function _drawBoxes(svgEl, data) {
   // Rate labels are shown in a hover tooltip rather than always-on,
   // which removes the bulk of the visual clutter on large graphs.
   const linkG = g.append('g');
+  const lbl = (end) => typeof end === 'object' ? end.label : end;
+  // Spread edge endpoints along the box sides, ordered by the other end's
+  // height, so arrows into the same box neither stack nor cross each other.
+  const port = {}; // "out|src|tgt" / "in|src|tgt" → y-offset on the box side
+  const spread = (links, side, other) => {
+    links.sort((a, b) => nodeMap[lbl(a[other])]._y - nodeMap[lbl(b[other])]._y)
+      .forEach((l, i) => { (port[side + '|' + lbl(l.source) + '|' + lbl(l.target)] = BOX_H * (i + 1) / (links.length + 1)); });
+  };
+  data.nodes.forEach(n => {
+    spread(data.links.filter(l => lbl(l.source) === n.label), 'out', 'target');
+    spread(data.links.filter(l => lbl(l.target) === n.label), 'in',  'source');
+  });
   data.links.forEach(link => {
-    const s = nodeMap[typeof link.source === 'object' ? link.source.label : link.source];
-    const t = nodeMap[typeof link.target === 'object' ? link.target.label : link.target];
+    const s = nodeMap[lbl(link.source)];
+    const t = nodeMap[lbl(link.target)];
     if (!s || !t) return;
+    const key = '|' + s.label + '|' + t.label;
 
     // Connect right edge of source to left edge of target, mid-point control
     const x1 = s._x + BOX_W;
-    const y1 = s._y + BOX_H / 2;
+    const y1 = s._y + port['out' + key];
     const x2 = t._x;
-    const y2 = t._y + BOX_H / 2;
+    const y2 = t._y + port['in' + key];
     const mx = (x1 + x2) / 2; // x of both cubic Bezier control points
 
     const markerKind  = (COLOR[t.kind] ? t.kind : null) || 'mid';
@@ -714,8 +734,8 @@ function _drawBoxes(svgEl, data) {
         .attr('font-family', 'monospace')
         .text(mcText);
 
-      // Show one decimal for small counts, integer for large ones
-      const cnt = Math.ceil(n.machineCount * 10) / 10;
+      // Whole machines, rounded up — same as the results table
+      const cnt = ceilMachines(n.machineCount);
       ng.append('text')
         .attr('x', BOX_W - 8).attr('y', 46)
         .attr('text-anchor', 'end')
@@ -724,7 +744,7 @@ function _drawBoxes(svgEl, data) {
         .attr('font-size', 10)
         .attr('font-weight', 700)
         .attr('font-family', 'monospace')
-        .text('×' + (cnt === Math.floor(cnt) ? cnt : cnt.toFixed(1)));
+        .text('×' + cnt);
     }
 
     // Flow rate at bottom centre
@@ -753,8 +773,7 @@ function _drawBoxes(svgEl, data) {
 // proportional to flow rate.
 //
 // Info cards are rendered as HTML <div>s inside SVG <foreignObject>
-// elements placed left or right of each node depending on which side
-// has more space (determined by whether x0 < half the inner width).
+// elements placed right of each node; columns keep >= COL_GAP apart.
 function _drawSankey(svgEl, data) {
   const wrap = document.getElementById('sankeyWrap');
   const W = (wrap ? wrap.getBoundingClientRect().width  : 0) || 1100;
@@ -763,9 +782,12 @@ function _drawSankey(svgEl, data) {
   const NODE_W  = 18;          // width of each Sankey bar
   const LABEL_W = 165;         // inline label width
   const LABEL_H = 54;          // inline label height (3 lines: name + rate + machine)
-  // Horizontal padding reserves space for the labels on both sides
-  const PAD    = { top: 20, right: LABEL_W + 20, bottom: 40, left: LABEL_W + 20 };
-  const IW     = W - PAD.left - PAD.right;   // inner drawable width
+  // Labels always sit right of their bar → only the right side needs label room
+  const PAD    = { top: 20, right: LABEL_W + 20, bottom: 40, left: 20 };
+  const IW     = W - PAD.left - PAD.right;   // inner drawable width (viewport)
+  // Min. distance between columns: label + link-rate pill must fit in the gap,
+  // otherwise neighbouring labels overlap in narrow windows.
+  const COL_GAP = LABEL_W + 80;
   const IH     = H - PAD.top  - PAD.bottom;  // inner drawable height
 
   // Color palette — overridden by __applyTheme() for the light theme
@@ -779,27 +801,35 @@ function _drawSankey(svgEl, data) {
   svg.selectAll('*').remove();
 
   // D3 zoom/pan — applies to the inner <g> group
-  const zoom = d3.zoom().scaleExtent([0.25, 4]).on('zoom', e => {
+  const zoom = d3.zoom().scaleExtent([0.1, 4]).on('zoom', e => {
     g.attr('transform', e.transform);
   });
   svg.call(zoom);
   svgEl.style.cursor = 'grab';
 
   // g is declared before zoom handler so closure captures it correctly
-  const g = svg.append('g').attr('transform', `translate(${PAD.left},${PAD.top})`);
+  const g = svg.append('g');
 
   // Configure the d3-sankey layout
   const sankeyLayout = d3.sankey()
     .nodeId(d => d.label)      // unique node identifier
     .nodeWidth(NODE_W)
-    .nodePadding(50)
-    .extent([[0, 0], [IW, IH]]);
-
+    .nodePadding(50);
   // Run the layout — mutates copies of nodes/links with x0,x1,y0,y1,width
-  const graph = sankeyLayout({
+  const runLayout = (w) => sankeyLayout.extent([[0, 0], [w, IH]])({
     nodes: data.nodes.map(d => ({ ...d })), // shallow copy to avoid mutating originals
     links: data.links.map(d => ({ ...d })),
   });
+  let graph = runLayout(IW);
+  // Too many columns for the window → lay out wider, then zoom out to fit.
+  const cols   = d3.max(graph.nodes, d => d.depth) || 0;
+  const needW  = cols * COL_GAP + NODE_W;
+  const layoutW = Math.max(IW, needW);
+  if (layoutW > IW) graph = runLayout(layoutW);
+  const k = Math.min(1, IW / layoutW);
+  // Initial transform goes through the zoom behaviour so the first
+  // pan/zoom continues from it instead of jumping.
+  svg.call(zoom.transform, d3.zoomIdentity.translate(PAD.left, PAD.top).scale(k));
 
   // ── Draw flow links ───────────────────────────────────────
   // Link width is proportional to flow value (items/min).
@@ -832,13 +862,15 @@ function _drawSankey(svgEl, data) {
   // Show items/min on each individual branch at the midpoint of the link.
   const linkLabelG = g.append('g').attr('pointer-events', 'none');
   graph.links.forEach(lnk => {
-    const mx = (lnk.source.x1 + lnk.target.x0) / 2;
-    const my = (lnk.y0 + lnk.y1) / 2;
+    const my = lnk.y1; // y at the target end
+
     const val = lnk.value >= 1000
       ? (lnk.value / 1000).toFixed(1) + 'k'
       : Math.round(lnk.value * 10) / 10;
     const txt = val + '/min';
     const pw  = txt.length * 5.5 + 10; // pill width estimate
+    // Just before the target bar — the source side of the gap holds the node label
+    const mx  = lnk.target.x0 - pw / 2 - 8;
 
     linkLabelG.append('rect')
       .attr('x', mx - pw / 2).attr('y', my - 8)
@@ -876,13 +908,14 @@ function _drawSankey(svgEl, data) {
 
   // ── Inline labels: icon + name + rate directly at each bar ─
   // Positioned at the node bar edge, centred vertically on the bar.
-  // Left-half nodes: label to the right. Right-half nodes: label to the left.
+  // Always right of the bar (PAD.right reserves room for the last column),
+  // so two labels can never face each other across the same gap.
   // labelFOs is kept as a D3 selection so highlight can update opacity.
   const labelG  = g.append('g');
   const labelFOs = labelG.selectAll('foreignObject')
     .data(graph.nodes)
     .join('foreignObject')
-    .attr('x', d => (d.x0 < IW / 2) ? d.x1 + 6 : d.x0 - LABEL_W - 6)
+    .attr('x', d => d.x1 + 6)
     .attr('y', d => (d.y0 + d.y1) / 2 - LABEL_H / 2)
     .attr('width',  LABEL_W)
     .attr('height', LABEL_H);
@@ -893,24 +926,20 @@ function _drawSankey(svgEl, data) {
     .style('display',        'flex')
     .style('align-items',    'center')
     .style('gap',            '5px')
-    .style('flex-direction', d => (d.x0 < IW / 2) ? 'row' : 'row-reverse')
     .style('overflow',       'visible')
     .html(d => {
       const c        = COLOR[d.kind] || COLOR.mid;
-      const onLeft   = d.x0 < IW / 2;
-      const textAlign = onLeft ? 'left' : 'right';
+      const textAlign = 'left';
       const maxTxtW   = LABEL_W - 30;
       const cntRaw    = d.machineCount || 0;
-      const cntFmt    = d.kind === 'raw'
-        ? Math.ceil(cntRaw)
-        : cntRaw < 10 ? (Math.round(cntRaw * 10) / 10) : Math.ceil(cntRaw);
+      const cntFmt    = ceilMachines(cntRaw); // whole machines, same as the results table
       const machineText = d.machineName && d.machineCount > 0
         ? `<div style="color:var(--color-text-secondary);font-size:8.5px;font-family:monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
              ${d.machineName.length > 15 ? d.machineName.slice(0, 14) + '…' : d.machineName} ×${cntFmt}
            </div>`
         : '';
       return `
-        <div style="flex-shrink:0;line-height:0">${getIcon(d.label, 20)}</div>
+        <div style="flex-shrink:0;line-height:0">${getIcon(d.icon || d.label, 20)}</div>
         <div style="text-align:${textAlign};overflow:hidden;line-height:1.25;min-width:0">
           <div style="color:${c.text};font-size:10.5px;font-weight:600;
             font-family:-apple-system,sans-serif;white-space:nowrap;

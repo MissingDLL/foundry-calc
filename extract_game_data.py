@@ -1025,13 +1025,11 @@ def parse_blast_furnace_recipes(templates_dir: Path, id_to_name: dict,
                 outputs.append({"item": oname, "amount": oamt, "chance": None,
                                  "is_elemental": True})
 
-        waste = r.get("waste_gas_data") or {}
-        if waste.get("identifier"):
-            wname = id_to_name.get(waste["identifier"], waste["identifier"])
-            wamt = float(waste.get("amount_str", waste.get("amount", 0)) or 0)
-            if wname and wamt:
-                outputs.append({"item": wname, "amount": wamt, "chance": None,
-                                 "is_elemental": True})
+        # waste_gas_data is intentionally NOT an output: the Blast Furnace burns
+        # it in its mandatory built-in "Flare Stack" module (gas_exhaust_1,
+        # min/max 1). The alternative "Waste Gas Drain" module is a hidden
+        # "[do not use]" item, so no waste gas ever leaves the furnace.
+        # (Real waste gas producers list it in outputElemental_data instead.)
 
         recipes.append({
             "identifier": identifier,

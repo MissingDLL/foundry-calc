@@ -288,7 +288,9 @@ function renderSettingsContent(targetId) {
     lbl.textContent = group.label;
     row.appendChild(lbl);
 
-    const currentChoice = minerSettings[group.label] || group.miners[0];
+    const currentChoice = RECIPES[group.label]
+      ? preferredMinerFor(group.label, RECIPES[group.label])
+      : (minerSettings[group.label] || group.miners[0]);
 
     group.miners.forEach((miner) => {
       const isActive = currentChoice === miner;
@@ -778,24 +780,19 @@ function applySettingsToSelected() {
     }
     // If current machineName is no longer valid for the new recipe, fall back to first available
     if (!matched && !machines.includes(item.machineName)) {
-      item.machineName = machines[0];
+      item.machineName = preferredMachineFor(r) || machines[0];
     }
   });
   renderSelectedRecipes();
   calculateRecipes();
 }
 
-// Use settings when adding a new recipe
+// Use settings when adding a new recipe — same rule as the chain resolution
+// (preferredMachineFor), so the settings panel's highlighted default is what
+// new lines actually get.
 function getPreferredMachine(recipeName) {
   const r = RECIPES[recipeName];
-  if (!r) return null;
-  const machines = Object.keys(r.machines);
-  for (const fam of MACHINE_FAMILIES) {
-    if (fam.defaultChoice && machines.includes(fam.defaultChoice)) {
-      return fam.defaultChoice;
-    }
-  }
-  return machines[0];
+  return r ? preferredMachineFor(r) : null;
 }
 
 // ── Recipe Browser (Modal) ───────────────────────────────────
