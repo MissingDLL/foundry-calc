@@ -54,7 +54,7 @@ function _updateBlobIndicator(name) {
 function _updateLegendSwatches() {
   const legendPalette = window.__sankeyColors || window.__vizDefaultColors;
   if (!legendPalette) return;
-  const keys = ['raw', 'mid', 'final'];
+  const keys = ['raw', 'mid', 'final', 'byproduct', 'sink']; // same order as the legend spans
   ['sankeyLegend', 'boxesLegend'].forEach(id => {
     const legend = document.getElementById(id);
     if (!legend) return;

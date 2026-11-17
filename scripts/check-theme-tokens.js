@@ -104,6 +104,7 @@ const HTML_ALLOWED = new Set([
   // legend swatches (runtime-themed)
   '#6aaa6a', '#1a4a1a', '#2a6a2a', '#6a9adf', '#1a2a4a', '#2a4a8a',
   '#e08050', '#3a1a08', '#7a3a10',
+  '#d4a020', '#1a1200', '#7a5a00', '#c060a0', '#1a0a14', '#6a2050', // byproduct, disposal
 ]);
 
 function checkHtmlLiterals() {
