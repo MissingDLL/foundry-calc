@@ -320,6 +320,92 @@ function renderSettingsContent(targetId) {
   });
   el.appendChild(minerGrid);
 
+  if (typeof VEIN_MINING_FLUIDS !== "undefined" && Object.keys(VEIN_MINING_FLUIDS).length) {
+    const fluid = Object.values(VEIN_MINING_FLUIDS)[0];
+    const dep = document.createElement("label");
+    dep.style.cssText = "display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);margin-top:12px;cursor:pointer";
+    const depCb = document.createElement("input");
+    depCb.type = "checkbox";
+    depCb.checked = veinsDepleted;
+    depCb.onchange = () => { veinsDepleted = depCb.checked; saveSettings(); calculateRecipes(); };
+    dep.appendChild(depCb);
+    dep.appendChild(document.createTextNode(
+      `Veins depleted (mined to the core): ${fluid.machines.join(", ")} need ${fluid.perMinerPerMin} L/min ${fluid.fluid} each (less with Mining Efficiency)`));
+    el.appendChild(dep);
+
+    const veins = document.createElement("label");
+    veins.style.cssText = "display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);margin:6px 0 0 24px";
+    const veinsInp = document.createElement("input");
+    veinsInp.type = "number"; veinsInp.min = "1"; veinsInp.step = "1"; veinsInp.value = depletedVeins;
+    veinsInp.style.cssText = "width:56px;padding:3px 6px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--accent3);border-radius:8px;text-align:right";
+    veinsInp.oninput = () => {
+      const v = parseInt(veinsInp.value, 10);
+      depletedVeins = isNaN(v) || v < 1 ? 1 : v;
+      saveSettings(); calculateRecipes();
+    };
+    veins.appendChild(document.createTextNode("Depleted veins in use (1 Fracking Tower per vein):"));
+    veins.appendChild(veinsInp);
+    el.appendChild(veins);
+  }
+
+  // ── Section: Modular buildings (speed modules + adjacency) ────────
+  if (typeof MODULAR_BUILDINGS !== "undefined" && Object.keys(MODULAR_BUILDINGS).length) {
+    const modSep = document.createElement("div");
+    modSep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
+    el.appendChild(modSep);
+
+    const modTitle = document.createElement("div");
+    modTitle.style.cssText =
+      "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
+    modTitle.textContent = "Modular Buildings";
+    el.appendChild(modTitle);
+
+    const modDesc = document.createElement("div");
+    modDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
+    modDesc.textContent =
+      "How many speed modules your buildings have. More modules = faster (and more power / hot air).";
+    el.appendChild(modDesc);
+
+    const modGrid = document.createElement("div");
+    modGrid.style.cssText = "display:flex;flex-direction:column;gap:10px";
+    const onChange = () => { _applyModularSpeeds(); saveSettings(); calculateRecipes(); };
+
+    Object.entries(MODULAR_BUILDINGS).forEach(([machine, mb]) => {
+      const row = document.createElement("label");
+      row.style.cssText = "display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--text)";
+      const name = document.createElement("div");
+      name.style.cssText = "width:160px;flex-shrink:0;display:flex;align-items:center;gap:6px";
+      name.innerHTML = getIcon(machine, 20) + "<span>" + machine + "</span>";
+      row.appendChild(name);
+
+      const sel = document.createElement("select");
+      for (let n = mb.min; n <= mb.max; n++) {
+        const speed = Math.round((1 + (n - mb.ignored) * mb.speedPerModule) * 100);
+        const opt = new Option(mb.throughputPerModule
+          ? `${n} × ${mb.module} — ${fmt(n * mb.throughputPerModule)} L/min`
+          : `${n} × ${mb.module} — ${speed}%`, n);
+        opt.selected = n === modularModules(machine);
+        sel.appendChild(opt);
+      }
+      sel.onchange = () => { modularSettings[machine] = Number(sel.value); onChange(); };
+      row.appendChild(sel);
+      modGrid.appendChild(row);
+    });
+
+    const adj = document.createElement("label");
+    adj.style.cssText = "display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);margin-top:4px;cursor:pointer";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = adjacencyBonus;
+    cb.onchange = () => { adjacencyBonus = cb.checked; onChange(); };
+    adj.appendChild(cb);
+    adj.appendChild(document.createTextNode(
+      "Adjacency power bonus (buildings of the same type placed side by side in a row)"));
+    modGrid.appendChild(adj);
+
+    el.appendChild(modGrid);
+  }
+
   // ── Section: Bot efficiency overrides ────────────────────────
   // ── Section: Global Research Productivity ────────────────────
   const resSep = document.createElement("div");
@@ -329,13 +415,15 @@ function renderSettingsContent(targetId) {
   const resTitle = document.createElement("div");
   resTitle.style.cssText =
     "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
-  resTitle.textContent = "Global Research Productivity";
+  resTitle.textContent = "Endless Research (level)";
   el.appendChild(resTitle);
 
   const resDesc = document.createElement("div");
   resDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
+  const pctOf = (name) => Math.round(researchBonus(name) * 100);
   resDesc.textContent =
-    "Mining: applies to Crusher I/II · Fluid: applies to Fluid Assembler, Chemical Processor, Barrel Filler, Greenhouse";
+    `Mining Efficiency: no extra output/min, only less fracking liquid on depleted veins (+${pctOf('Mining Efficiency')}% free ore per level) · ` +
+    `Pumpjack Efficiency: +${pctOf('Pumpjack Efficiency')}% pumpjack output per level`;
   el.appendChild(resDesc);
 
   const resGrid = document.createElement("div");
@@ -343,14 +431,14 @@ function renderSettingsContent(targetId) {
 
   [
     {
-      label: "Mining", icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L2 14l8 8 12-12-8-8z"/><path d="M7 13l4 4"/><path d="M19 3l2 2"/></svg>`,
-      key: "mining", getter: () => globalMiningProductivity,
-      setter: (v) => { globalMiningProductivity = v; }
+      label: "Mining Efficiency", icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2L2 14l8 8 12-12-8-8z"/><path d="M7 13l4 4"/><path d="M19 3l2 2"/></svg>`,
+      key: "mining", getter: () => miningEfficiencyLevel,
+      setter: (v) => { miningEfficiencyLevel = v; }
     },
     {
-      label: "Fluid", icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6 8 4 12 4 15a8 8 0 0 0 16 0c0-3-2-7-8-13z"/></svg>`,
-      key: "fluid", getter: () => globalFluidProductivity,
-      setter: (v) => { globalFluidProductivity = v; }
+      label: "Pumpjack Efficiency", icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6 8 4 12 4 15a8 8 0 0 0 16 0c0-3-2-7-8-13z"/></svg>`,
+      key: "pumpjack", getter: () => pumpjackEfficiencyLevel,
+      setter: (v) => { pumpjackEfficiencyLevel = v; }
     },
   ].forEach(({ label, icon, getter, setter }) => {
     const cell = document.createElement("div");
@@ -371,20 +459,20 @@ function renderSettingsContent(targetId) {
     const inp = document.createElement("input");
     inp.type = "number";
     inp.min = "0";
-    inp.max = "9999";
-    inp.step = "10";
+    inp.step = "1"; // endless research: no upper limit
     inp.value = getter();
     inp.style.cssText =
       "width:52px;padding:3px 6px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--accent3);font-family:-apple-system,sans-serif;font-size:13px;border-radius:8px;text-align:right";
     inp.oninput = function () {
-      const val = parseFloat(this.value);
+      const val = parseInt(this.value, 10);
       setter(isNaN(val) || val < 0 ? 0 : val);
       saveSettings();
+      calculateRecipes();
     };
 
     const pct = document.createElement("span");
     pct.style.cssText = "font-size:11px;color:var(--text-dim)";
-    pct.textContent = "%";
+    pct.textContent = "lvl";
 
     const resetBtn = document.createElement("button");
     resetBtn.title = "Reset";
@@ -396,6 +484,7 @@ function renderSettingsContent(targetId) {
       setter(0);
       inp.value = 0;
       saveSettings();
+      calculateRecipes();
     };
 
     inputWrap.appendChild(inp);

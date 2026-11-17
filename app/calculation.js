@@ -11,7 +11,7 @@
 //   data/icons.js       → getIcon()
 //   app/state.js        → selectedRecipeList, resolveRecipeName,
 //                          botEfficiencyOverrides, minerSettings,
-//                          globalMiningProductivity/FluidProductivity,
+//                          mining/pumpjackEfficiencyLevel, modular settings,
 //                          getItemWsBonus, MINING_MACHINES, FLUID_MACHINES
 //   app/ui-nav.js       → fmt()
 // ============================================================
@@ -56,12 +56,16 @@ function machineOpm(recipe, item) {
   const ct = recipe.machines[item.machineName].cycleTime;
   const parent = item.itemName?.match(/^(.+)\s+(?:Arm|Head|Leg|Torso)$/)?.[1];
   const eff = botEfficiencyOverrides[item.itemName] ?? botEfficiencyOverrides[parent] ?? recipe.efficiency ?? 0;
-  const miningBonus = MINING_MACHINES.has(item.machineName) ? globalMiningProductivity / 100 : 0;
-  const fluidBonus  = FLUID_MACHINES.has(item.machineName)  ? globalFluidProductivity  / 100 : 0;
+  const pumpjackBonus = typeof RESEARCH_BONUSES !== 'undefined' && RESEARCH_BONUSES.pumpjacks.includes(item.machineName)
+    ? pumpjackEfficiencyLevel * researchBonus('Pumpjack Efficiency') : 0;
   // All bonuses stack additively in the productivity bracket.
   return (60 / ct) * getOutputAmount(recipe) * (1 + eff / 100)
-       * (1 + miningBonus + fluidBonus + getItemWsBonus(item));
+       * (1 + pumpjackBonus + getItemWsBonus(item));
 }
+
+// Byproduct supply pool of the last calculation (item → per min), read by the
+// Sankey/Boxes graph so both views take byproducts from the same pool.
+let _lastSupply = {};
 
 // ceil() that ignores float noise (3.0000000001 machines → 3, not 4).
 const ceilMachines = (x) => Math.ceil(x - 1e-9);
@@ -84,6 +88,57 @@ function getMachinePowerKw(machineName) {
       : r.power_consumption;
   }
   return MACHINE_POWER_KW[machineName] || 0;
+}
+
+// Power of `count` machines of one type.
+// Modular buildings: power scales with module speed (in-game: Air Intake
+// 1.4 MW base → 8.4 MW at 600 %). Adjacency bonus (if enabled) assumes all
+// buildings of a type stand side by side in one row: the two ends have one
+// neighbour, inner ones two; each neighbour cuts `adjacencyPowerDecrease`
+// (in-game: Hot Air Stove 10 MW → 7.5 MW with one neighbour).
+function machinesPowerKw(machine, count) {
+  const mb = _modular(machine);
+  // Fracking Tower: power grows per optional module (+100 % each), not with speed
+  const factor = mb?.powerPerModule != null ? 1 + (modularModules(machine) - mb.ignored) * mb.powerPerModule
+                                            : modularSpeed(machine);
+  const each = (getMachinePowerKw(machine) || mb?.basePowerKw || 0) * factor;
+  const dec  = adjacencyBonus ? (mb?.adjacencyPowerDecrease || 0) : 0;
+  const neighbourSlots = count > 1 ? 2 * (count - 1) : 0;
+  return Math.max(0, each * (count - dec * neighbourSlots));
+}
+
+// Fracking Towers for depleted veins: one tower feeds one vein, so at least
+// one per depleted vein; more only if the liquid exceeds a tower's throughput.
+function frackingTowerPlan(liquidPerMin) {
+  const entry = liquidPerMin > 0 && typeof MODULAR_BUILDINGS !== 'undefined'
+    && Object.entries(MODULAR_BUILDINGS).find(([, mb]) => mb.throughputPerModule);
+  if (!entry) return null;
+  const [machine, mb] = entry;
+  const capacity = modularModules(machine) * mb.throughputPerModule;
+  const count = Math.max(depletedVeins, ceilMachines(liquidPerMin / capacity));
+  return { machine, count, capacity, powerKw: machinesPowerKw(machine, count) };
+}
+
+// Fluid each running machine needs regardless of utilisation, scaled by its
+// modules — the Blast Furnace burns Hot Air to hold temperature (it cools down
+// and slows without it), so this is per rounded-up machine, never proportional.
+// `item` (what the machine produces) adds the vein mining fluid: Ore Vein
+// Miners need fracking liquid once a vein is mined to its core (setting).
+function fluidNeedsPerMachine(machine, item) {
+  const base = (typeof MACHINE_FLUID_MINIMUMS !== 'undefined' && MACHINE_FLUID_MINIMUMS[machine]) || {};
+  const mb = _modular(machine);
+  const extraModules = mb ? modularModules(machine) - mb.ignored : 0;
+  const out = {};
+  Object.entries(base).forEach(([fluid, perMin]) => {
+    out[fluid] = perMin * (1 + extraModules * (mb?.fluidPerModule?.[fluid] || 0));
+  });
+  const vein = veinsDepleted && typeof VEIN_MINING_FLUIDS !== 'undefined' && VEIN_MINING_FLUIDS[item];
+  if (vein && vein.machines.includes(machine)) {
+    // Mining Efficiency: X % more free ore per same fracking liquid (in-game: level 10 → 75 L/min)
+    const perMiner = vein.perMinerPerMin / (1 + miningEfficiencyLevel * researchBonus('Mining Efficiency'));
+    out[vein.fluid] = (out[vein.fluid] || 0) + perMiner;
+  }
+  return out;
 }
 
 // Returns the first non-Character machine name for a recipe.
@@ -246,19 +301,24 @@ function calculateRecipes() {
     })
     .filter(Boolean); // drop any recipes that couldn't be resolved
 
-  // ── Minimum fluid supply enforcement ─────────────────────────
-  // Some machines (e.g. Blast Furnace) require a fixed minimum fluid
-  // flow per machine unit, independent of actual recipe throughput.
-  if (typeof MACHINE_FLUID_MINIMUMS !== 'undefined') {
-    lines.forEach(line => {
-      const minimums = MACHINE_FLUID_MINIMUMS[line.machineName];
-      if (!minimums) return;
-      Object.entries(minimums).forEach(([fluidItem, minPerMachine]) => {
-        const minTotal = minPerMachine * line.machines;
-        if ((totals[fluidItem] || 0) < minTotal) totals[fluidItem] = minTotal;
-      });
+  // ── Fixed fluid supply per machine (Blast Furnace → Hot Air) ──
+  const fixedFluids = {}; // fluid → L/min added by fixed per-machine needs (sizes fracking towers)
+  lines.forEach(line => {
+    Object.entries(fluidNeedsPerMachine(line.machineName, line.recipeName)).forEach(([fluid, perMachine]) => {
+      totals[fluid] = (totals[fluid] || 0) + perMachine * line.machines;
+      fixedFluids[fluid] = (fixedFluids[fluid] || 0) + perMachine * line.machines;
     });
-  }
+  });
+  // Same rule deeper in the chain: per item, rounded-up machines × fixed fluid.
+  const chainFluidDemand = (runsByItem) => {
+    const out = {};
+    Object.entries(runsByItem).forEach(([item, { machine, runs }]) =>
+      Object.entries(fluidNeedsPerMachine(machine, item)).forEach(([fluid, per]) => {
+        out[fluid] = (out[fluid] || 0) + per * ceilMachines(runs);
+        fixedFluids[fluid] = (fixedFluids[fluid] || 0) + per * ceilMachines(runs);
+      }));
+    return out;
+  };
 
   // ── Byproducts from selected recipes ────────────────────────
   // Computed from lines directly — independent of depth mode.
@@ -311,27 +371,34 @@ function calculateRecipes() {
   }
   Object.entries(totals).forEach(([name, val]) => collectByproducts(name, val, new Set()));
 
-  // ── Byproduct reprocessing (e.g. Blast Furnace Slag → Cement) ─
-  // If a byproduct has a `reprocess` disposal option and its product is
-  // needed in the chain, use the reprocessing recipe and reduce the
-  // primary material requirement accordingly.
+  // ── Byproduct supply pool ────────────────────────────────────
+  // Byproducts are real output: wherever the chain needs that item again it is
+  // taken from here first (e.g. Crude Olumite from emptying barrels). For a
+  // byproduct with a reprocessing recipe the pool holds what it COULD become
+  // (Slag → Cement): Concrete anywhere in the chain uses slag cement before
+  // cement from raw materials, and only that share is reprocessed. The rest of
+  // the byproduct is disposed of directly (liquid slag → Flare Stack).
+  // ponytail: byproduct amounts come from the full chain before pool savings;
+  // a pooled item whose own chain makes byproducts is slightly over-counted.
+  const supply = {};
   Object.entries(byproductTotals).forEach(([name, info]) => {
-    const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[name] : null;
-    if (!disposal?.reprocess) return;
-    const producesItem = disposal.reprocess.produces;
-    if (!(producesItem in totals) || totals[producesItem] <= 0) return;
-    const repRecipe = RECIPES[disposal.reprocess.recipe];
-    if (!repRecipe) return;
-    const repMachine = preferredMachineFor(repRecipe);
-    const repMd = repRecipe.machines[repMachine];
-    if (!repMd) return;
-    const slagPerMachinePerMin  = (60 / repMd.cycleTime) * repRecipe.ingredients[0].amount;
-    const cementPerMachinePerMin = machineOpm(repRecipe, { itemName: producesItem, machineName: repMachine });
-    const processors    = ceilMachines(info.amount / slagPerMachinePerMin);
-    const cementProduced = processors * cementPerMachinePerMin;
-    totals[producesItem] = Math.max(0, totals[producesItem] - cementProduced);
-    info.reprocessed = { machine: repMachine, count: processors, produces: producesItem, producedPerMin: cementProduced };
+    const rp = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[name]?.reprocess : null;
+    const repRecipe  = rp && RECIPES[rp.recipe];
+    const repMachine = repRecipe && preferredMachineFor(repRecipe);
+    if (!repMachine) { supply[name] = (supply[name] || 0) + info.amount; return; }
+    const inPerMachine  = (60 / repRecipe.machines[repMachine].cycleTime) * repRecipe.ingredients[0].amount;
+    const outPerMachine = machineOpm(repRecipe, { itemName: rp.produces, machineName: repMachine });
+    const potential = (info.amount / inPerMachine) * outPerMachine;
+    supply[rp.produces] = (supply[rp.produces] || 0) + potential;
+    info.reprocessed = { machine: repMachine, produces: rp.produces, potential, inPerMachine, outPerMachine };
   });
+  _lastSupply = { ...supply }; // for the Sankey/Boxes graph
+  // Takes up to `amount` of `item` from `pool`; returns what still has to be made.
+  const takeFrom = (pool, item, amount) => {
+    const t = Math.min(pool[item] || 0, amount);
+    if (t > 0) pool[item] -= t;
+    return amount - t;
+  };
 
   // ── Infrastructure: loaders + power per line ────────────────
   const infraByMachine = {}; // aggregated by machineName
@@ -339,7 +406,7 @@ function calculateRecipes() {
     const recipe = RECIPES[line.recipeName || line.name];
     const nSolid  = countSolidConnections(recipe, line.itemName);
     const loaders = calcLoadersForMachine(line.machineName, nSolid);
-    const machPwr = getMachinePowerKw(line.machineName);
+    const machPwr = machinesPowerKw(line.machineName, 1); // per machine, same rules as totals
 
     const key = line.machineName;
     if (!infraByMachine[key]) {
@@ -353,13 +420,14 @@ function calculateRecipes() {
     }
     const e = infraByMachine[key];
     e.count           += line.machines;
-    e.totalMachPwrKw  += machPwr * line.machines;
     e.loaderCount     += loaders.loaderCount     * line.machines;
     e.secondLaneCount += loaders.secondLaneCount * line.machines;
     e.thirdLaneCount  += loaders.thirdLaneCount  * line.machines;
     e.totalLoaderPwrKw += loaders.powerKw        * line.machines;
   });
 
+  // Adjacency needs the whole count per type, so total power is set per type
+  Object.values(infraByMachine).forEach(e => { e.totalMachPwrKw = machinesPowerKw(e.machineName, e.count); });
   const totalMachPwrKw  = Object.values(infraByMachine).reduce((s, e) => s + e.totalMachPwrKw,   0);
   const totalLoaderPwrKw = Object.values(infraByMachine).reduce((s, e) => s + e.totalLoaderPwrKw, 0);
   const totalPwrKw       = totalMachPwrKw + totalLoaderPwrKw;
@@ -536,21 +604,29 @@ function calculateRecipes() {
   });
   if (typeof FLUID_SOURCE_MACHINES !== 'undefined') {
     Object.entries(FLUID_SOURCE_MACHINES).forEach(([key, info]) => {
-      fluidProducerMap[key] = info.machine;
+      // keyed by item name ("Water"); lookups below use the normalised key
+      fluidProducerMap[key.toLowerCase().replace(/\s+/g, '_')] = info.machine;
     });
   }
+
+  // Source shown for a raw item without a producing machine: fluid intake or
+  // an external delivery (Firmarlite Bar ← Space Station).
+  const rawSource = (item) => fluidProducerMap[item.toLowerCase().replace(/\s+/g, '_')]
+    || (typeof EXTERNAL_SOURCES !== 'undefined' && EXTERNAL_SOURCES[item]) || null;
 
   // Always compute direct-level materials (mode-0 view) — used for Direct Materials
   // section in modes 0 and 1.
   const directTotals = {};
+  const directPool   = { ...supply };
   Object.entries(totals).forEach(([name, val]) => {
+    val = takeFrom(directPool, name, val);
+    if (val <= 1e-9) return;
     const resolved = resolveRecipeName(name);
     const recipe   = RECIPES[resolved];
     // Raw (no ingredients) → miner choice; crafted → machine family default
     const machine  = !recipe ? null
       : recipe.ingredients?.length ? preferredMachineFor(recipe) : preferredMinerFor(resolved, recipe);
-    const fluidKey = resolved.toLowerCase().replace(/\s+/g, '_');
-    directTotals[name] = { amount: val, machine: machine || fluidProducerMap[fluidKey] || null, recipeName: resolved };
+    directTotals[name] = { amount: val, machine: machine || rawSource(resolved), recipeName: resolved };
   });
 
   if (calcDepthMode === 0) {
@@ -561,6 +637,8 @@ function calculateRecipes() {
       const resolved = resolveRecipeName(itemName);
       if (visitedPath.has(resolved)) { cycleWarnings.add(resolved); return; }
       if (visitedPath.size > 50) return;
+      amountPerMin = takeFrom(supply, itemName, amountPerMin); // byproducts first
+      if (amountPerMin <= 1e-9) return;
 
       const recipe = RECIPES[resolved];
       const addItem = (machine) => {
@@ -569,7 +647,7 @@ function calculateRecipes() {
       };
 
       if (!recipe || !recipe.machines || Object.keys(recipe.machines).length === 0 || getOutputAmount(recipe) === 0) {
-        addItem(fluidProducerMap[resolved.toLowerCase().replace(/\s+/g, '_')] || null);
+        addItem(rawSource(resolved));
         return;
       }
       if (!recipe.ingredients || recipe.ingredients.length === 0) {
@@ -583,19 +661,10 @@ function calculateRecipes() {
       const opm = machineOpm(recipe, { itemName: resolved, machineName: machine });
       addItem(machine);
 
-      // Track secondary outputs (byproducts like Waste Gas, Slag).
-      // Machine-based (no productivity bonus), same as the overview table.
-      if (Array.isArray(recipe.output) && recipe.output.length > 1) {
-        for (let i = 1; i < recipe.output.length; i++) {
-          const sec = recipe.output[i];
-          const secApm = (amountPerMin / opm) * (60 / ct) * sec.amount * (sec.chance ?? 1);
-          const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[sec.item] : null;
-          if (!resolvedTotals[sec.item]) {
-            resolvedTotals[sec.item] = { amount: 0, machine: disposal ? disposal.machine : null, recipeName: sec.item, byproduct: true };
-          }
-          resolvedTotals[sec.item].amount += secApm;
-        }
-      }
+      // Byproducts are NOT tracked here: they come from byproductTotals (same
+      // source as the Byproducts panel, incl. the supply pool) — see below.
+      // Tracking them here mixed them with the same item used as an ingredient
+      // (Xeno-Crystal: 2/min byproduct + 238/min demand shown as "Incinerator").
 
       const nextPath = new Set(visitedPath);
       nextPath.add(resolved);
@@ -612,6 +681,17 @@ function calculateRecipes() {
       resolvedTotals[key].amount += line.goal;
     });
     Object.entries(totals).forEach(([name, val]) => resolveAllLevels(name, val, new Set()));
+    {
+      const lineKeys = new Set(lines.map(l => l.displayName || l.itemName)); // already in totals
+      const runsByItem = {};
+      Object.entries(resolvedTotals).forEach(([name, info]) => {
+        const rec = RECIPES[info.recipeName];
+        if (info.byproduct || lineKeys.has(name) || !rec?.machines?.[info.machine]) return;
+        if (!Object.keys(fluidNeedsPerMachine(info.machine, info.recipeName)).length) return;
+        runsByItem[info.recipeName] = { machine: info.machine, runs: info.amount / machineOpm(rec, { itemName: info.recipeName, machineName: info.machine }) };
+      });
+      Object.entries(chainFluidDemand(runsByItem)).forEach(([f, amt]) => resolveAllLevels(f, amt, new Set()));
+    }
 
     // Max-depth ordering: each item gets the DEEPEST level at which it appears.
     // This ensures raw materials (used by multiple levels) always appear at the bottom.
@@ -647,6 +727,8 @@ function calculateRecipes() {
         return;
       }
       if (visitedPath.size > 50) return;
+      amountPerMin = takeFrom(supply, itemName, amountPerMin); // byproducts first
+      if (amountPerMin <= 1e-9) return;
 
       const recipe = RECIPES[resolved];
 
@@ -661,8 +743,7 @@ function calculateRecipes() {
           getOutputAmount(recipe) === 0) {
         // Mode 1: skip raw materials — only crafted intermediates are shown
         if (calcDepthMode === 1) return;
-        const fluidKey = resolved.toLowerCase().replace(/\s+/g, '_');
-        addToTotals(fluidProducerMap[fluidKey] || null);
+        addToTotals(rawSource(resolved));
         return;
       }
 
@@ -705,7 +786,33 @@ function calculateRecipes() {
     Object.entries(totals).forEach(([name, val]) => {
       resolveIngredient(name, val, new Set());
     });
+    Object.entries(chainFluidDemand(resolvedMachineRuns)).forEach(([f, amt]) => resolveIngredient(f, amt, new Set()));
   }
+
+  // What the chain did not use of each byproduct (or its reprocessed product)
+  // still has to be disposed of.
+  Object.entries(byproductTotals).forEach(([name, info]) => {
+    const rp = info.reprocessed;
+    if (!rp) { info.leftover = supply[name] ?? info.amount; return; }
+    rp.producedPerMin = Math.max(0, rp.potential - (supply[rp.produces] || 0)); // used by the chain
+    const usedInput   = rp.producedPerMin / rp.outPerMachine * rp.inPerMachine;
+    rp.count          = ceilMachines(usedInput / rp.inPerMachine);
+    info.leftover     = Math.max(0, info.amount - usedInput);
+  });
+  // Full Detail: one row per byproduct that really leaves the chain — the
+  // unused rest (→ disposal) or the reprocessed share (→ e.g. Chemical Processor).
+  if (calcDepthMode === 3) {
+    Object.entries(byproductTotals).forEach(([name, info]) => {
+      const amount = info.reprocessed?.count > 0 ? info.amount : info.leftover;
+      if (!(amount > 0.01) || resolvedTotals[name]) return;
+      const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[name] : null;
+      resolvedTotals[name] = { amount, machine: disposal ? disposal.machine : null,
+                               recipeName: name, byproduct: true, order: 1000000 };
+    });
+  }
+  const frackPlan = frackingTowerPlan(
+    typeof VEIN_MINING_FLUIDS !== 'undefined' && veinsDepleted
+      ? fixedFluids[Object.values(VEIN_MINING_FLUIDS)[0]?.fluid] || 0 : 0);
 
   // ── Material table builder (shared by Direct + resolved sections) ───────────
   function buildMaterialRows(totalsMap) {
@@ -726,7 +833,7 @@ function calculateRecipes() {
           if (md) {
             const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine });
             const count       = ceilMachines(val / opm);
-            const machPwrKw   = count * getMachinePowerKw(machine);
+            const machPwrKw   = machinesPowerKw(machine, count);
             const nSolid      = countSolidConnections(rec, name);
             const loaders     = calcLoadersForMachine(machine, nSolid);
             const loaderPwrKw = loaders.powerKw * count;
@@ -752,11 +859,11 @@ function calculateRecipes() {
             // Check for capacity-based machines (fluid sources with throughput_l_per_min)
             const machineRec = RECIPES[machine];
             const fluidKey = name.toLowerCase().replace(/\s+/g, '_');
-            const fluidSrc = typeof FLUID_SOURCE_MACHINES !== 'undefined' ? FLUID_SOURCE_MACHINES[fluidKey] : null;
+            const fluidSrc = typeof FLUID_SOURCE_MACHINES !== 'undefined' ? (FLUID_SOURCE_MACHINES[name] || FLUID_SOURCE_MACHINES[fluidKey]) : null;
             const capacityLpm = fluidSrc?.capacityPerMin ?? machineRec?.throughput_l_per_min ?? null;
             if (capacityLpm) {
               const count = Math.ceil(val / capacityLpm);
-              const machPwrKw = count * getMachinePowerKw(machine);
+              const machPwrKw = machinesPowerKw(machine, count);
               totMachPwr += machPwrKw;
               machineTd = `
                 <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span></div></td>
@@ -842,15 +949,18 @@ function calculateRecipes() {
         const disposal = (typeof BYPRODUCT_DISPOSAL !== 'undefined') ? BYPRODUCT_DISPOSAL[name] : null;
         if (disposal && info.byproduct) {
           const rp = byproductTotals[name]?.reprocessed;
-          if (rp) {
+          if (rp?.count > 0) {
             // Reprocessing: e.g. Chemical Processor for Blast Furnace Slag → Cement
-            const machPwrKw = rp.count * getMachinePowerKw(rp.machine);
+            const machPwrKw = machinesPowerKw(rp.machine, rp.count);
             totMachPwr += machPwrKw;
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(rp.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${rp.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${rp.count}</span><span style="font-size:10px;color:var(--color-success-text);margin-left:4px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span></div>`;
+            // Unused rest goes straight to disposal (e.g. 200/min slag → Flare Stack)
+            const rest = byproductTotals[name]?.leftover || 0;
+            if (rest > 0.01) machineCell += `<div style="display:flex;align-items:center;gap:5px;margin-top:3px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${ceilMachines(rest / disposal.capacityPerMin)}</span><span style="font-size:10px;color:var(--text-dim);margin-left:4px">rest ${fmt(rest)}/min</span></div>`;
             if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
           } else {
             const count     = Math.ceil(val / disposal.capacityPerMin);
-            const machPwrKw = count * getMachinePowerKw(disposal.machine);
+            const machPwrKw = machinesPowerKw(disposal.machine, count);
             totMachPwr += machPwrKw;
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
             if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
@@ -861,12 +971,12 @@ function calculateRecipes() {
           // Fluid source machines from fluidProducerMap (no cycleTime-based recipe for this item)
           const machineRec = RECIPES[machine];
           const fluidKey   = name.toLowerCase().replace(/\s+/g, '_');
-          const fluidSrc   = typeof FLUID_SOURCE_MACHINES !== 'undefined' ? FLUID_SOURCE_MACHINES[fluidKey] : null;
+          const fluidSrc   = typeof FLUID_SOURCE_MACHINES !== 'undefined' ? (FLUID_SOURCE_MACHINES[name] || FLUID_SOURCE_MACHINES[fluidKey]) : null;
           const capacityLpm = fluidSrc?.capacityPerMin ?? machineRec?.throughput_l_per_min ?? null;
           if (!md && capacityLpm) {
             // Capacity-based count (e.g. Pipe Intake → ceil(waterRate / 30000))
             const count     = Math.ceil(val / capacityLpm);
-            const machPwrKw = count * getMachinePowerKw(machine);
+            const machPwrKw = machinesPowerKw(machine, count);
             totMachPwr += machPwrKw;
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
             if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
@@ -876,7 +986,7 @@ function calculateRecipes() {
           } else if (md) {
             const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine });
             const count       = ceilMachines(val / opm);
-            const machPwrKw   = count * getMachinePowerKw(machine);
+            const machPwrKw   = machinesPowerKw(machine, count);
             const nSolid      = countSolidConnections(rec, name);
             const loaders     = calcLoadersForMachine(machine, nSolid);
             const loaderPwrKw = loaders.powerKw * count;
@@ -1020,6 +1130,7 @@ function calculateRecipes() {
   Object.values(resolvedMachineRuns).forEach(({ machine, runs }) => {
     machineTotals[machine] = (machineTotals[machine] || 0) + ceilMachines(runs);
   });
+  if (frackPlan) machineTotals[frackPlan.machine] = (machineTotals[frackPlan.machine] || 0) + frackPlan.count;
   const machineRows = Object.entries(machineTotals)
     .sort((a, b) => b[1] - a[1])
     .map(([name, count]) => {
@@ -1028,6 +1139,10 @@ function calculateRecipes() {
             └&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.start.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.start.name}
             &nbsp;·&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.producer.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.producer.name}
             &nbsp;·&nbsp;${count * ASSEMBLY_LINE_COMPOSITION.painter.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.painter.name}
+          </div>`
+        : name === frackPlan?.machine
+        ? `<div style="font-size:10px;color:var(--color-text-disabled);margin-top:3px">
+            ${depletedVeins} depleted vein(s) · ${fmt(frackPlan.capacity)} L/min each · ${fmtPwr(frackPlan.powerKw)}
           </div>`
         : '';
       return `
@@ -1106,12 +1221,22 @@ function calculateRecipes() {
           ${Object.entries(byproductTotals).map(([name, info]) => {
             const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[name] : null;
             let machineHtml = '';
-            if (info.reprocessed) {
-              const rp = info.reprocessed;
-              machineHtml = `<span style="display:flex;align-items:center;gap:4px;margin-top:3px">${iconBox(rp.machine, 48)}<span style="font-size:10px;color:var(--text-dim)">${rp.machine} ×${rp.count}</span></span>`
-                + `<span style="font-size:10px;color:var(--color-success-text);margin-top:2px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span>`;
+            const machineLine = (m, n) => `<span style="display:flex;align-items:center;gap:4px;margin-top:3px">${iconBox(m, 48)}<span style="font-size:10px;color:var(--text-dim)">${m} ×${n}</span></span>`;
+            const note = (txt) => `<span style="font-size:10px;color:var(--color-success-text);margin-top:2px">${txt}</span>`;
+            const rp = info.reprocessed;
+            if (rp?.producedPerMin > 0.01) {
+              machineHtml = machineLine(rp.machine, rp.count)
+                + note(`→ ${fmt(rp.producedPerMin)}/min ${rp.produces} for the chain`);
+              if (info.leftover > 0.01 && disposal) {
+                machineHtml += note(`rest ${fmt(info.leftover)}/min →`)
+                  + machineLine(disposal.machine, ceilMachines(info.leftover / disposal.capacityPerMin));
+              }
+            } else if (info.leftover <= 0.01) {
+              machineHtml = note('fully used in the chain');
             } else if (disposal) {
-              machineHtml = `<span style="display:flex;align-items:center;gap:4px;margin-top:3px">${iconBox(disposal.machine, 48)}<span style="font-size:10px;color:var(--text-dim)">${disposal.machine} ×${Math.ceil(info.amount / disposal.capacityPerMin)}</span></span>`;
+              const used = info.amount - info.leftover;
+              if (used > 0.01) machineHtml = note(`${fmt(used)}/min used in chain`);
+              machineHtml += machineLine(disposal.machine, ceilMachines(info.leftover / disposal.capacityPerMin));
             }
             return `<span style="display:inline-flex;flex-direction:column;gap:2px;
                 background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);

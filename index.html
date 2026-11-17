@@ -654,19 +654,19 @@
         sel = GAME_VERSION_DEFAULT;
       // Bump the revision after re-running extract_game_data.py — the version
       // id alone never changes, so browsers kept serving stale data files.
-      var cb = '?vcb=' + sel + '-r2';
+      var cb = '?vcb=' + sel + '-r13';
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/game-data.js' + cb + '"></scr' + 'ipt>');
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/recipes.js' + cb + '"></scr' + 'ipt>');
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/icons.js' + cb + '"></scr' + 'ipt>');
     })();
   </script>
-  <script src="app/state.js?v=20"></script>
-  <script src="app/ui-settings.js?v=18"></script>
+  <script src="app/state.js?v=25"></script>
+  <script src="app/ui-settings.js?v=21"></script>
   <script src="app/ui-recipes.js?v=19"></script>
-  <script src="app/calculation.js?v=24"></script>
-  <script src="app/ui-nav.js?v=18"></script>
-  <script src="app/visualization.js?v=23"></script>
-  <script src="app/ui-power.js?v=2"></script>
+  <script src="app/calculation.js?v=32"></script>
+  <script src="app/ui-nav.js?v=21"></script>
+  <script src="app/visualization.js?v=39"></script>
+  <script src="app/ui-power.js?v=3"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();

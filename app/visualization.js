@@ -29,7 +29,7 @@
 //   data/icons.js       → getIcon()
 //   app/state.js        → selectedRecipeList, resolveRecipeName,
 //                          botEfficiencyOverrides, minerSettings,
-//                          globalMining/FluidProductivity, getItemWsBonus,
+//                          mining/pumpjackEfficiencyLevel, getItemWsBonus,
 //                          MINING_MACHINES, FLUID_MACHINES
 //   app/calculation.js  → getOutputAmount()
 //   app/ui-nav.js       → fmt()
@@ -101,6 +101,23 @@ function buildSankeyGraph() {
   // ingredient (e.g. Crude Olumite in the barrel loop). Merging double-counted
   // the rate and closed a cycle that cost the real ingredient edge.
   const byproductKey = (item) => item + ' (Byproduct)';
+
+  // Byproduct supply pool from calculateRecipes(): an item the chain needs is
+  // taken from here first. Source node: the reprocessing recipe for its
+  // product (Slag → "Cement (Slag Reprocessing)") or the byproduct node itself.
+  const pool = { ..._lastSupply };
+  const supplySource = {};
+  if (typeof BYPRODUCT_DISPOSAL !== 'undefined') {
+    Object.entries(BYPRODUCT_DISPOSAL).forEach(([b, d]) => {
+      if (d.reprocess) supplySource[d.reprocess.produces] = d.reprocess.recipe;
+      else supplySource[b] = byproductKey(b);
+    });
+  }
+  const take = (item, amount) => {
+    const t = supplySource[item] ? Math.min(pool[item] || 0, amount) : 0;
+    if (t > 0) pool[item] -= t;
+    return t;
+  };
   function addByproduct(fromLabel, item, rate) {
     const n = getNode(byproductKey(item), 'byproduct');
     n.icon  = item; // icon lookup needs the plain item name
@@ -140,6 +157,13 @@ function buildSankeyGraph() {
     const raw  = isRaw(resolved);
     const node = getNode(resolved, raw ? 'raw' : 'mid');
     node.rate += rateNeeded; // accumulate total throughput
+    // Covered by byproducts first; only the rest is produced below
+    const taken = take(itemName, rateNeeded);
+    if (taken > 0) {
+      addEdge(supplySource[itemName], resolved, taken);
+      rateNeeded -= taken;
+      if (rateNeeded <= 1e-9) return resolved;
+    }
     if (raw) {
       // For mineable ores / resources: still attach the preferred extraction machine
       const rr = RECIPES[resolved];
@@ -222,39 +246,48 @@ function buildSankeyGraph() {
     }
   });
 
-  // Add disposal / reprocessing sink nodes for byproducts
+  // Fixed fluid per running machine (Blast Furnace → Hot Air), per rounded-up
+  // machine count of each node — same rule as calculateRecipes().
+  // Raw nodes included: depleted veins make Ore Vein Miners need fracking liquid.
+  Object.values(nodeMap).filter(n => n.machineName).forEach(n => {
+    Object.entries(fluidNeedsPerMachine(n.machineName, n.label)).forEach(([fluid, per]) => {
+      const amount = per * ceilMachines(n.machineCount);
+      const src = amount > 0 && expand(fluid, amount, new Set([n.label]));
+      if (src) addEdge(src, n.label, amount);
+    });
+  });
+
+  // Byproducts: reprocessing (always, e.g. Slag → Cement) and disposal of
+  // whatever the chain did not take from the pool (Flare Stack / Incinerator).
+  const addSink = (label, machine, rate, count) => {
+    const n = getNode(label, 'sink');
+    n.rate += rate; n.machineName = machine; n.machineCount += count;
+  };
   if (typeof BYPRODUCT_DISPOSAL !== 'undefined') {
     Object.entries(BYPRODUCT_DISPOSAL).forEach(([itemName, disposal]) => {
       const byproductNode = nodeMap[byproductKey(itemName)];
       if (!byproductNode) return;
 
       const rp = disposal.reprocess;
-      if (rp && nodeMap[rp.produces]) {
-        // Reprocessing path: byproduct → reprocessing recipe node (sink)
-        const repRecipe = RECIPES[rp.recipe];
-        if (repRecipe) {
-          const repMachineEntries = Object.entries(repRecipe.machines).filter(([n]) => n !== 'Character');
-          if (repMachineEntries.length) {
-            const [repMachine, repMd] = repMachineEntries[0];
-            const slagPerMachinePerMin   = (60 / repMd.cycleTime) * repRecipe.ingredients[0].amount;
-            const processors = Math.ceil(byproductNode.rate / slagPerMachinePerMin);
-            const sink = getNode(rp.recipe, 'sink');
-            sink.rate        += byproductNode.rate;
-            sink.machineName  = repMachine;
-            sink.machineCount += processors;
-            addEdge(byproductNode.label, rp.recipe, byproductNode.rate);
-            return;
-          }
+      const repRecipe  = rp && RECIPES[rp.recipe];
+      const repMachine = repRecipe && preferredMachineFor(repRecipe);
+      let leftover = Math.min(byproductNode.rate, pool[itemName] ?? byproductNode.rate);
+      if (repMachine) {
+        // Only what the chain took from the pool is reprocessed (Slag → Cement)
+        const inPerMachine  = (60 / repRecipe.machines[repMachine].cycleTime) * repRecipe.ingredients[0].amount;
+        const outPerMachine = machineOpm(repRecipe, { itemName: rp.produces, machineName: repMachine });
+        const usedOut = Math.max(0, (_lastSupply[rp.produces] || 0) - (pool[rp.produces] || 0));
+        const usedIn  = Math.min(byproductNode.rate, usedOut / outPerMachine * inPerMachine);
+        if (usedIn > 0) { // also tiny amounts: the expand() edge already points at this node
+          addSink(rp.recipe, repMachine, usedIn, usedIn / inPerMachine);
+          addEdge(byproductNode.label, rp.recipe, usedIn);
         }
+        leftover = byproductNode.rate - usedIn;
       }
-
-      // Default: disposal machine (e.g. Flare Stack)
-      const sinkLabel = disposal.machine;
-      const sink = getNode(sinkLabel, 'sink');
-      sink.rate        += byproductNode.rate;
-      sink.machineName  = disposal.machine;
-      sink.machineCount += byproductNode.rate / disposal.capacityPerMin;
-      addEdge(byproductNode.label, sinkLabel, byproductNode.rate);
+      if (leftover > 0.01) {
+        addSink(disposal.machine, disposal.machine, leftover, leftover / disposal.capacityPerMin);
+        addEdge(byproductNode.label, disposal.machine, leftover);
+      }
     });
   }
 
@@ -262,6 +295,50 @@ function buildSankeyGraph() {
   // Need at least 2 nodes and 1 link to draw a meaningful graph
   if (nodes.length < 2 || links.length === 0) return null;
   return { nodes, links: dropCycleEdges(links) };
+}
+
+// Number of conflicting link pairs: two links conflict if they swap their
+// vertical order (cross) or if their bands overlap anywhere (a thin link running
+// through a wide 324,000 L/min Hot Air band). Links follow the real curve
+// (sankeyLinkHorizontal: cubic, control points at mid-x) and real width.
+// Links sharing a node are not compared.
+function countLinkCrossings(links) {
+  const N = 16;
+  const curve = links.map(l => {
+    const x0 = l.source.x1, x1 = l.target.x0, xm = (x0 + x1) / 2, y0 = l.y0, y1 = l.y1;
+    const pts = [];
+    for (let i = 0; i <= N; i++) {
+      const t = i / N, u = 1 - t;
+      pts.push([u*u*u*x0 + 3*u*u*t*xm + 3*u*t*t*xm + t*t*t*x1,
+                u*u*u*y0 + 3*u*u*t*y0 + 3*u*t*t*y1 + t*t*t*y1]);
+    }
+    return { l, pts, x0, x1, half: Math.max(1, l.width) / 2 };
+  });
+  const yAt = (c, x) => {
+    const p = c.pts;
+    for (let i = 1; i < p.length; i++) if (x <= p[i][0]) {
+      const [xa, ya] = p[i - 1], [xb, yb] = p[i];
+      return xb === xa ? ya : ya + (yb - ya) * (x - xa) / (xb - xa);
+    }
+    return p[p.length - 1][1];
+  };
+  let n = 0;
+  for (let i = 0; i < curve.length; i++) for (let j = i + 1; j < curve.length; j++) {
+    const A = curve[i], B = curve[j];
+    if (A.l.source === B.l.source || A.l.target === B.l.target ||
+        A.l.source === B.l.target || A.l.target === B.l.source) continue;
+    const lo = Math.max(A.x0, B.x0), hi = Math.min(A.x1, B.x1);
+    if (hi <= lo) continue;
+    let sign = 0, conflict = false;
+    for (let k = 0; k <= 8 && !conflict; k++) {
+      const x = lo + (hi - lo) * k / 8, d = yAt(A, x) - yAt(B, x);
+      if (Math.abs(d) < A.half + B.half) conflict = true;      // bands overlap
+      else if (sign && Math.sign(d) !== sign) conflict = true; // order swapped
+      else sign = Math.sign(d);
+    }
+    if (conflict) n++;
+  }
+  return n;
 }
 
 // d3-sankey throws "circular link" on any cycle. visitedPath in expand() only
@@ -814,18 +891,115 @@ function _drawSankey(svgEl, data) {
   const sankeyLayout = d3.sankey()
     .nodeId(d => d.label)      // unique node identifier
     .nodeWidth(NODE_W)
+    // Right-align: each node sits directly before its first consumer, so raw
+    // materials feeding a late step (Mineral Rocks → Molten Xenoferrite) don't
+    // start in column 0 and cut across other chains (same rule as Boxes).
+    .nodeAlign(d3.sankeyRight)
     .nodePadding(50);
   // Run the layout — mutates copies of nodes/links with x0,x1,y0,y1,width
-  const runLayout = (w) => sankeyLayout.extent([[0, 0], [w, IH]])({
-    nodes: data.nodes.map(d => ({ ...d })), // shallow copy to avoid mutating originals
-    links: data.links.map(d => ({ ...d })),
-  });
+  // d3-sankey's vertical ordering depends on its relaxation iteration count and
+  // the best count differs per graph (e.g. Mineral Rocks crossing the Ignium
+  // chain at 6, clean at 32). Try a few, keep the layout with the fewest link
+  // crossings — a few ms for typical graphs.
+  const layoutOnce = (w, it, rank) => sankeyLayout
+    .iterations(it)
+    .nodeSort(rank ? (a, b) => rank.get(a.label) - rank.get(b.label) : undefined) // fixed order or d3's
+    .extent([[0, 0], [w, IH]])({
+      nodes: data.nodes.map(d => ({ ...d })), // shallow copy to avoid mutating originals
+      links: data.links.map(d => ({ ...d, amount: d.value })), // amount: shown in labels/tooltips
+    });
+  const runLayout = (w) => {
+    let best = null;
+    for (const it of [6, 16, 32, 48, 64, 96]) {
+      const g = layoutOnce(w, it);
+      const c = countLinkCrossings(g.links);
+      if (!best || c < best.c) best = { g, c, it };
+      if (c === 0) return g;
+    }
+    // Then swap neighbours inside a column while that removes conflicts. A
+    // single swap often only helps together with one in the neighbouring
+    // column (Ignium row ↔ Xenoferrite row spans 2 columns), so a swap that
+    // doesn't help alone is retried combined with each swap next door.
+    const rank = new Map([...best.g.nodes]
+      .sort((a, b) => a.layer - b.layer || a.y0 - b.y0).map((n, i) => [n.label, i]));
+    const byLayer = {};
+    best.g.nodes.forEach(n => (byLayer[n.layer] ||= []).push(n.label));
+    const layers = Object.keys(byLayer).map(Number).sort((a, b) => a - b);
+    const col = (L) => byLayer[L].sort((a, b) => rank.get(a) - rank.get(b));
+    const swap = (a, b) => { const r = rank.get(a); rank.set(a, rank.get(b)); rank.set(b, r); };
+    const tryRank = () => {
+      const g = layoutOnce(w, best.it, rank), c = countLinkCrossings(g.links);
+      if (c < best.c) { best = { g, c, it: best.it }; return true; }
+      return false;
+    };
+    // Move a node to any other slot of its column (Mineral Rocks from top to
+    // bottom = 2 neighbour swaps, the first of which alone doesn't help).
+    const moveNode = (L, from, to) => {
+      const c = col(L), slots = c.map(l => rank.get(l)).sort((x, y) => x - y);
+      const order = [...c]; order.splice(to, 0, order.splice(from, 1)[0]);
+      order.forEach((l, k) => rank.set(l, slots[k]));
+    };
+    for (let pass = 0, improved = true; improved && pass < 4 && best.c > 0; pass++) {
+      improved = false;
+      for (const L of layers) {
+        const n = col(L).length;
+        for (let from = 0; from < n && best.c > 0; from++) {
+          for (let to = 0; to < n && best.c > 0; to++) {
+            if (to === from) continue;
+            const saved = col(L).map(l => [l, rank.get(l)]);
+            moveNode(L, from, to);
+            if (tryRank()) { improved = true; break; }
+            saved.forEach(([l, r]) => rank.set(l, r)); // undo
+          }
+        }
+      }
+      for (const L of layers) {
+        const cl = col(L);
+        for (let i = 0; i + 1 < cl.length && best.c > 0; i++) {
+          const [a, b] = [col(L)[i], col(L)[i + 1]];
+          swap(a, b);
+          if (tryRank()) { improved = true; continue; }
+          let combined = false;
+          for (const L2 of [L - 1, L + 1].filter(x => byLayer[x])) {
+            const c2 = col(L2);
+            for (let j = 0; j + 1 < c2.length && !combined; j++) {
+              const [p, q] = [c2[j], c2[j + 1]];
+              swap(p, q);
+              if (tryRank()) combined = true; else swap(p, q);
+            }
+            if (combined) break;
+          }
+          if (combined) improved = true; else swap(a, b); // undo
+        }
+      }
+    }
+    return best.g;
+  };
+  // Straighten each node's widest incoming link: d3 centres a node between
+  // ALL its inputs, so e.g. Molten Xenoferrite sits ~50 px below the huge
+  // Hot Air band and the band kinks. Shift a node only if it stays inside the
+  // area, overlaps no node in its column and adds no link conflict.
+  const straighten = (gr, height) => {
+    const pad = 10;
+    [...gr.nodes].sort((a, b) => a.layer - b.layer).forEach(n => {
+      const main = n.targetLinks.reduce((m, l) => (!m || l.width > m.width ? l : m), null);
+      const dy = main ? main.y0 - main.y1 : 0;
+      if (Math.abs(dy) < 1 || n.y0 + dy < 0 || n.y1 + dy > height) return;
+      if (gr.nodes.some(o => o !== n && o.layer === n.layer &&
+          n.y0 + dy < o.y1 + pad && n.y1 + dy > o.y0 - pad)) return;
+      const before = countLinkCrossings(gr.links);
+      n.y0 += dy; n.y1 += dy; sankeyLayout.update(gr);
+      if (countLinkCrossings(gr.links) > before) { n.y0 -= dy; n.y1 -= dy; sankeyLayout.update(gr); }
+    });
+    return gr;
+  };
   let graph = runLayout(IW);
   // Too many columns for the window → lay out wider, then zoom out to fit.
   const cols   = d3.max(graph.nodes, d => d.depth) || 0;
   const needW  = cols * COL_GAP + NODE_W;
   const layoutW = Math.max(IW, needW);
   if (layoutW > IW) graph = runLayout(layoutW);
+  straighten(graph, IH);
   const k = Math.min(1, IW / layoutW);
   // Initial transform goes through the zoom behaviour so the first
   // pan/zoom continues from it instead of jumping.
@@ -845,7 +1019,7 @@ function _drawSankey(svgEl, data) {
         if (!_activeHighlight) d3.select(this).attr('stroke-opacity', 0.55);
         _showTooltip(event,
           `<div style="color:var(--accent);font-weight:700;margin-bottom:3px">${d.source.label} → ${d.target.label}</div>
-           <div style="color:var(--accent3)">${fmt(Math.round(d.value))} / min</div>
+           <div style="color:var(--accent3)">${fmt(d.amount)} / min</div>
            <div style="color:var(--color-text-secondary);font-size:10px;margin-top:3px">Klicken zum Hervorheben</div>`);
       })
       .on('mousemove', _moveTooltip)
@@ -859,18 +1033,44 @@ function _drawSankey(svgEl, data) {
       });
 
   // ── Link rate labels ─────────────────────────────────────
-  // Show items/min on each individual branch at the midpoint of the link.
+  // Each pill sits ON its own link. Candidate spots along the curve (middle
+  // first) are tried; a spot is used only if the pill touches no other link,
+  // pill or node label — otherwise the link stays unlabelled (value is in the
+  // tooltip). Biggest flows are placed first.
   const linkLabelG = g.append('g').attr('pointer-events', 'none');
-  graph.links.forEach(lnk => {
-    const my = lnk.y1; // y at the target end
+  const taken = graph.nodes.map(n => ({ // node label boxes (right of each bar)
+    x0: n.x1 + 6, x1: n.x1 + 6 + LABEL_W, y0: (n.y0 + n.y1) / 2 - LABEL_H / 2, y1: (n.y0 + n.y1) / 2 + LABEL_H / 2 }));
+  const overlaps = (b) => taken.some(t => b.x0 < t.x1 && b.x1 > t.x0 && b.y0 < t.y1 && b.y1 > t.y0);
+  const pathOf = new Map();
+  linkPaths.each(function (d) { pathOf.set(d, this); });
+  // Sampled centre line of every link, with its half stroke width
+  const samples = [];
+  graph.links.forEach(l => {
+    const p = pathOf.get(l), len = p.getTotalLength();
+    for (let i = 0; i <= 40; i++) {
+      const pt = p.getPointAtLength(len * i / 40);
+      samples.push({ l, x: pt.x, y: pt.y, r: Math.max(1, l.width) / 2 });
+    }
+  });
+  const hitsOtherLink = (b, own) => samples.some(sp => sp.l !== own &&
+    sp.x > b.x0 && sp.x < b.x1 && sp.y + sp.r > b.y0 && sp.y - sp.r < b.y1);
 
-    const val = lnk.value >= 1000
-      ? (lnk.value / 1000).toFixed(1) + 'k'
-      : Math.round(lnk.value * 10) / 10;
+  [...graph.links].sort((a, b) => b.amount - a.amount).forEach(lnk => {
+    const val = lnk.amount >= 1000
+      ? (lnk.amount / 1000).toFixed(1) + 'k'
+      : Math.round(lnk.amount * 10) / 10;
     const txt = val + '/min';
     const pw  = txt.length * 5.5 + 10; // pill width estimate
-    // Just before the target bar — the source side of the gap holds the node label
-    const mx  = lnk.target.x0 - pw / 2 - 8;
+    const p = pathOf.get(lnk), len = p.getTotalLength();
+    let spot = null;
+    for (const t of [0.5, 0.4, 0.6, 0.3, 0.7, 0.2, 0.8]) {
+      const pt  = p.getPointAtLength(len * t);
+      const box = { x0: pt.x - pw / 2 - 2, x1: pt.x + pw / 2 + 2, y0: pt.y - 9, y1: pt.y + 9 };
+      if (!overlaps(box) && !hitsOtherLink(box, lnk)) { spot = { pt, box }; break; }
+    }
+    if (!spot) return;
+    taken.push(spot.box);
+    const mx = spot.pt.x, my = spot.pt.y;
 
     linkLabelG.append('rect')
       .attr('x', mx - pw / 2).attr('y', my - 8)
@@ -947,7 +1147,7 @@ function _drawSankey(svgEl, data) {
             ${d.label}
           </div>
           <div style="color:var(--accent3);font-family:monospace;font-size:10px;white-space:nowrap">
-            ${fmt(Math.round(d.rate))}<span style="color:var(--color-text-secondary);font-size:8px">/min</span>
+            ${fmt(d.rate >= 100 ? Math.round(d.rate) : d.rate)}<span style="color:var(--color-text-secondary);font-size:8px">/min</span>
           </div>
           ${machineText}
         </div>`;

@@ -94,7 +94,24 @@ function resolveRecipeName(canonicalName) {
   if (group) {
     return variantSettings[canonicalName] || group.variants[0];
   }
-  return canonicalName;
+  if (RECIPES[canonicalName]) return canonicalName;
+  return _producerOf(canonicalName) || canonicalName;
+}
+
+// Recipes keyed by a name other than their product ("Olumite Refining: Olumite
+// Gas" makes Olumite Gas): product → recipe, from the primary output.
+// ponytail: first recipe wins if several make the same product without a
+// variant group; add a variant group when a choice is needed.
+let _producerByOutput = null;
+function _producerOf(item) {
+  if (!_producerByOutput) {
+    _producerByOutput = {};
+    Object.entries(RECIPES).forEach(([key, r]) => {
+      const out = Array.isArray(r.output) ? r.output[0]?.item : null;
+      if (out && out !== key && !_producerByOutput[out]) _producerByOutput[out] = key;
+    });
+  }
+  return _producerByOutput[item];
 }
 
 // Returns all variant recipe keys for a canonical name, or a
@@ -188,33 +205,6 @@ function _getRobotPrefix(name) {
   }
   return null;
 }
-
-// The Blast Furnace needs Hot Air, but the game data models that as a
-// per-machine fluid minimum (MACHINE_FLUID_MINIMUMS), not as a recipe
-// ingredient — so every chain walker (tables, Sankey, byproducts) skipped it
-// whenever the furnace sat below a selected recipe (e.g. Xenoferrite Plates
-// Tier 3 → Molten Xenoferrite). Add it as a normal ingredient, proportional
-// to machine time: (L/min per machine) × cycleTime / 60 per cycle.
-// The per-machine floor for directly selected lines stays in calculateRecipes().
-(function _injectFluidMinimumIngredients() {
-  if (typeof MACHINE_FLUID_MINIMUMS === 'undefined') return;
-  Object.entries(RECIPES).forEach(([name, r]) => {
-    const machines = Object.keys(r.machines || {});
-    const mins = machines.map(m => MACHINE_FLUID_MINIMUMS[m]).filter(Boolean);
-    if (!mins.length) return;
-    // ponytail: amount per cycle depends on the machine's cycleTime, so only
-    // single-machine recipes are handled; mixed machine sets get a warning.
-    if (machines.length !== 1) {
-      console.warn('foundry-calc: fluid minimum skipped (multiple machines):', name);
-      return;
-    }
-    const ct = r.machines[machines[0]].cycleTime;
-    Object.entries(mins[0]).forEach(([fluid, perMin]) => {
-      if (r.ingredients.some(i => i.item === fluid)) return; // already in the data
-      r.ingredients.push({ item: fluid, amount: perMin * ct / 60 });
-    });
-  });
-})();
 
 // Inject synthetic "complete robot" recipes for each robot type found in
 // RECIPE_SUBGROUPS["Robots"]. In the current game, complete robots are assembled
@@ -423,8 +413,51 @@ function buildRecipeCategoryList() {
 const variantSettings      = {}; // { canonicalLabel → preferred variant key }
 const minerSettings        = {}; // { oreRubbleName → preferred miner machine }
 const botEfficiencyOverrides = {}; // { botName → efficiencyValue (%) }
-let globalMiningProductivity = 0;  // global % bonus applied to all Crusher recipes
-let globalFluidProductivity  = 0;  // global % bonus applied to all Fluid/Chemical recipes
+// Endless research levels (in-game "Mining Efficiency (11)" → 11).
+// Mining Efficiency does NOT raise output per minute (free ore, vein lasts
+// longer) — it only cuts fracking liquid per ore on depleted veins.
+// Pumpjack Efficiency raises pumpjack output. Bonus per level from game data.
+let miningEfficiencyLevel   = 0;
+let pumpjackEfficiencyLevel = 0;
+let depletedVeins           = 1; // depleted veins being mined → ≥ 1 Fracking Tower each
+const researchBonus = (name) =>
+  (typeof RESEARCH_BONUSES !== 'undefined' && RESEARCH_BONUSES.perLevel[name]) || 0;
+const modularSettings      = {}; // { machineName → number of speed modules (Tower/Vent) }
+let adjacencyBonus         = true; // same-type buildings assumed side by side in one row
+let veinsDepleted          = false; // veins mined to the core → Ore Vein Miners need fracking liquid
+
+// ── Modular buildings (Blast Furnace, Hot Air Stove, Air Intake …) ──
+// Each optional speed module (above `ignored`) adds `speedPerModule`.
+// Default = fully built, the usual end-game setup.
+const _modular = (machine) =>
+  (typeof MODULAR_BUILDINGS !== 'undefined' && MODULAR_BUILDINGS[machine]) || null;
+
+function modularModules(machine) {
+  const mb = _modular(machine);
+  if (!mb) return 0;
+  const n = modularSettings[machine];
+  // default: fully built — except where game data says otherwise (power cores: 0)
+  return typeof n === 'number' ? Math.max(mb.min, Math.min(mb.max, n)) : (mb.default ?? mb.max);
+}
+
+function modularSpeed(machine) {
+  const mb = _modular(machine);
+  return mb ? 1 + (modularModules(machine) - mb.ignored) * mb.speedPerModule : 1;
+}
+
+// Speed is a throughput multiplier, not productivity: inputs scale with outputs.
+// So it goes into the effective cycleTime of every recipe on that machine —
+// every reader of `.cycleTime` (tables, chain, Sankey, sidebar) picks it up.
+// The game-data value is kept in `baseCycleTime`; call again after a change.
+function _applyModularSpeeds() {
+  Object.values(RECIPES).forEach(r => {
+    Object.entries(r.machines || {}).forEach(([m, md]) => {
+      if (!_modular(m)) return;
+      if (md.baseCycleTime == null) md.baseCycleTime = md.cycleTime;
+      md.cycleTime = md.baseCycleTime / modularSpeed(m);
+    });
+  });
+}
 
 // ── Calculation depth mode ────────────────────────────────────
 // 0 = Direct   – show only the immediate ingredients of selected recipes
@@ -503,12 +536,6 @@ function getItemWsBonus(item) {
   return calcWsBonusForMachine(item.machineName, config);
 }
 
-// ── Machine classification sets ───────────────────────────────
-// Used in calculateRecipes() and buildSankeyGraph() to decide which
-// global productivity bonus applies to a given recipe.
-const MINING_MACHINES = new Set([M.CRUSHER_I, M.CRUSHER_II]);
-const FLUID_MACHINES  = new Set([M.FLUID_ASSEMBLER_I, M.CHEMICAL_PROCESSOR, M.BARREL_FILLER_I, M.GREENHOUSE]);
-
 // ── Machine families (for grouped settings UI) ────────────────
 // Each family groups machines that share the same upgrade path so
 // the settings panel can show them together in a sensible order.
@@ -533,12 +560,20 @@ const MACHINE_FAMILIES = [
 // that can extract it.  The user can pick their preferred miner in
 // the settings panel; the chosen machine appears in the raw-materials
 // table with a count estimate.
-const MINER_GROUPS = [
-  { label: "Xenoferrite Ore Rubble", miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
-  { label: "Ignium Ore Rubble",      miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
-  { label: "Technum Ore Rubble",     miners: ["Drone Miner I", "Drone Miner II", "Ore Vein Miner"] },
-  { label: "Telluxite Ore Rubble",   miners: ["Ore Vein Miner"] },
-];
+// Derived from the recipes (was a hand-written list that missed Mineral Rocks
+// and listed Telluxite with one miner only): every raw item (no ingredients)
+// with 2+ extraction machines. Slowest first → the default (miners[0]) stays
+// the basic Drone Miner I.
+const MINER_GROUPS = Object.entries(RECIPES)
+  .filter(([, r]) => !(r.ingredients || []).length)
+  .map(([label, r]) => ({
+    label,
+    miners: Object.keys(r.machines || {})
+      .filter(m => m !== 'Character')
+      .sort((a, b) => r.machines[b].cycleTime - r.machines[a].cycleTime),
+  }))
+  .filter(g => g.miners.length > 1)
+  .sort((a, b) => a.label.localeCompare(b.label));
 
 // Extraction machine for a raw item: saved user choice → settings-UI default
 // (first entry in MINER_GROUPS) → first non-Character machine of the recipe.
@@ -629,9 +664,13 @@ function _flushSaveSettings() {
       variantSettings,
       minerSettings,
       botEfficiencyOverrides,
-      globalMiningProductivity,
-      globalFluidProductivity,
+      miningEfficiencyLevel,
+      pumpjackEfficiencyLevel,
+      depletedVeins,
       calcDepthMode,
+      modularSettings,
+      adjacencyBonus,
+      veinsDepleted,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
       // Save recipe list without UI-only state (wsExpanded)
@@ -658,10 +697,16 @@ function loadSettings() {
     if (s.workstationConfigs) Object.assign(workstationConfigs, s.workstationConfigs);
 
     // Clamp productivity values to the valid UI range [0, 100]
-    if (typeof s.globalMiningProductivity === 'number')
-      globalMiningProductivity = Math.max(0, Math.min(100, s.globalMiningProductivity));
-    if (typeof s.globalFluidProductivity === 'number')
-      globalFluidProductivity  = Math.max(0, Math.min(100, s.globalFluidProductivity));
+    // Old %-based keys (globalMining/FluidProductivity) had wrong semantics → ignored
+    const lvl = (v, min = 0) => (typeof v === 'number' && isFinite(v)) ? Math.max(min, Math.floor(v)) : null;
+    miningEfficiencyLevel   = lvl(s.miningEfficiencyLevel)   ?? miningEfficiencyLevel;
+    pumpjackEfficiencyLevel = lvl(s.pumpjackEfficiencyLevel) ?? pumpjackEfficiencyLevel;
+    depletedVeins           = lvl(s.depletedVeins, 1)        ?? depletedVeins;
+    if (s.modularSettings) Object.entries(s.modularSettings).forEach(([m, n]) => {
+      if (typeof n === 'number' && isFinite(n)) modularSettings[m] = n; // clamped in modularModules()
+    });
+    if (typeof s.adjacencyBonus === 'boolean') adjacencyBonus = s.adjacencyBonus;
+    if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
     if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))
       calcDepthMode = s.calcDepthMode;
 
@@ -716,5 +761,6 @@ function loadSettings() {
 // Restore settings immediately – runs synchronously before DOMContentLoaded,
 // so UI modules already see the correct values when they first render.
 loadSettings();
+_applyModularSpeeds();
 
 // ── Modal animation helpers ─────────────────────────────────

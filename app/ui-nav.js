@@ -240,8 +240,12 @@ function exportPlan() {
       variantSettings,
       minerSettings,
       botEfficiencyOverrides,
-      globalMiningProductivity,
-      globalFluidProductivity,
+      miningEfficiencyLevel,
+      pumpjackEfficiencyLevel,
+      depletedVeins,
+      modularSettings,
+      adjacencyBonus,
+      veinsDepleted,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
     },
@@ -306,8 +310,12 @@ function _applyImportedPlan(plan) {
   Object.keys(minerSettings).forEach(k => delete minerSettings[k]);
   Object.keys(botEfficiencyOverrides).forEach(k => delete botEfficiencyOverrides[k]);
   Object.keys(workstationConfigs).forEach(k => delete workstationConfigs[k]);
-  globalMiningProductivity = 0;
-  globalFluidProductivity  = 0;
+  miningEfficiencyLevel   = 0;
+  pumpjackEfficiencyLevel = 0;
+  depletedVeins           = 1;
+  Object.keys(modularSettings).forEach(k => delete modularSettings[k]);
+  adjacencyBonus = true;
+  veinsDepleted  = false;
   MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
 
   // Restore settings from the imported plan
@@ -315,9 +323,17 @@ function _applyImportedPlan(plan) {
   if (s.variantSettings)        Object.assign(variantSettings,        s.variantSettings);
   if (s.minerSettings)          Object.assign(minerSettings,          s.minerSettings);
   if (s.botEfficiencyOverrides) Object.assign(botEfficiencyOverrides, s.botEfficiencyOverrides);
-  if (typeof s.globalMiningProductivity === 'number') globalMiningProductivity = Math.max(0, Math.min(100, s.globalMiningProductivity));
-  if (typeof s.globalFluidProductivity  === 'number') globalFluidProductivity  = Math.max(0, Math.min(100, s.globalFluidProductivity));
+  const lvl = (v, min = 0) => (typeof v === 'number' && isFinite(v)) ? Math.max(min, Math.floor(v)) : null;
+  miningEfficiencyLevel   = lvl(s.miningEfficiencyLevel)   ?? 0;
+  pumpjackEfficiencyLevel = lvl(s.pumpjackEfficiencyLevel) ?? 0;
+  depletedVeins           = lvl(s.depletedVeins, 1)        ?? 1;
   if (s.workstationConfigs)     Object.assign(workstationConfigs,     s.workstationConfigs);
+  if (s.modularSettings) Object.entries(s.modularSettings).forEach(([m, n]) => {
+    if (typeof n === 'number' && isFinite(n)) modularSettings[m] = n; // clamped in modularModules()
+  });
+  if (typeof s.adjacencyBonus === 'boolean') adjacencyBonus = s.adjacencyBonus;
+  if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
+  _applyModularSpeeds();
   if (s.machineFamilyDefaults) {
     MACHINE_FAMILIES.forEach(f => {
       const saved = s.machineFamilyDefaults[f.label];
@@ -369,8 +385,12 @@ function sharePlan() {
       variantSettings,
       minerSettings,
       botEfficiencyOverrides,
-      globalMiningProductivity,
-      globalFluidProductivity,
+      miningEfficiencyLevel,
+      pumpjackEfficiencyLevel,
+      depletedVeins,
+      modularSettings,
+      adjacencyBonus,
+      veinsDepleted,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
     },

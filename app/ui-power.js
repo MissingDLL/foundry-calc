@@ -117,8 +117,10 @@ function _buildPowerGenerators() {
       requiresFuel: true,
       isNpp: true,
       fuels: [fuelName],
-      nppFuelLitPerMin: nppReactor.fuel_lit_per_min,
-      note: 'Needs Xeno Reactor + Steam Generator + Cooling Tower + Fuel Mixer',
+      // Ratios derived from game data (extract_game_data.py): 10 turbines share
+      // one reactor, 5 share one cooling tower.
+      note: `Per ${nppReactor.turbines_per_reactor || '?'} turbines: 1 Xeno Reactor + 1 Steam Generator · ` +
+            `1 Cooling Tower per ${nppTurbine.turbines_per_cooling_tower || '?'} turbines`,
     });
   }
 
@@ -145,10 +147,8 @@ function _fuelPerUnitPerMin(gen, fuelName) {
   if (!gen.requiresFuel || !fuelName) return 0;
   const fuel = POWER_FUEL_ITEMS[fuelName];
   if (!fuel) return 0;
-  if (gen.isNpp) {
-    // NPP: fuel consumption is fixed per reactor, not derived from power
-    return gen.nppFuelLitPerMin || 0;
-  }
+  // NPP turbines too: Reactor Fuel Mix MJ/L is derived from the whole chain
+  // (reactor → steam generator → turbines), so 36 MW ↔ 4,320 L/min per turbine.
   // power_kw * 60s / (efficiency * fuel_value_mj * 1000 kJ/MJ)
   const eff = gen.isSteam ? 1.0 : (gen.efficiency || 1.0);
   return (gen.powerKw * 60) / (eff * fuel.mj * 1000);

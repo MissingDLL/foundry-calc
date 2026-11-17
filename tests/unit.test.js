@@ -90,8 +90,10 @@ function _resetState() {
   Object.keys(minerSettings).forEach(k => delete minerSettings[k]);
   Object.keys(botEfficiencyOverrides).forEach(k => delete botEfficiencyOverrides[k]);
   Object.keys(workstationConfigs).forEach(k => delete workstationConfigs[k]);
-  globalMiningProductivity = 0;
-  globalFluidProductivity  = 0;
+  miningEfficiencyLevel    = 0;
+  pumpjackEfficiencyLevel  = 0;
+  depletedVeins            = 1;
+  veinsDepleted            = false;
   selectedRecipeList       = [];
   MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
 }
@@ -181,9 +183,31 @@ describe('machineOpm() / ceilMachines()', () => {
     expect(machineOpm(crusher, { machineName: M.CRUSHER_I })).toBeCloseTo(30);
   });
 
-  it('applies mining productivity to chain items too (no wsOverride, no goal)', () => {
-    globalMiningProductivity = 50;
-    expect(machineOpm(crusher, { itemName: 'Anything', machineName: M.CRUSHER_I })).toBeCloseTo(45);
+  it('Mining Efficiency does NOT change output per minute (free ore only)', () => {
+    miningEfficiencyLevel = 11;
+    expect(machineOpm(crusher, { itemName: 'Anything', machineName: M.CRUSHER_I })).toBeCloseTo(30);
+  });
+
+  it('Pumpjack Efficiency: +10 % pumpjack output per level', () => {
+    const pj = RESEARCH_BONUSES.pumpjacks[0];
+    const r = { machines: { [pj]: { cycleTime: 1 } }, output: { amount: 100 } };
+    pumpjackEfficiencyLevel = 11;
+    expect(machineOpm(r, { itemName: 'Crude Olumite', machineName: pj })).toBeCloseTo(6000 * 2.1);
+  });
+
+  it('depleted vein: fracking liquid per miner, level 10 → 75 L/min (in-game)', () => {
+    veinsDepleted = true; miningEfficiencyLevel = 10;
+    expect(fluidNeedsPerMachine('Ore Vein Miner', 'Telluxite Ore Rubble')['Fracking Liquid']).toBeCloseTo(75);
+    veinsDepleted = false;
+    expect(fluidNeedsPerMachine('Ore Vein Miner', 'Telluxite Ore Rubble')['Fracking Liquid']).toBe(undefined);
+  });
+
+  it('Fracking Tower, 5 modules: 37,500 L/min, 2.5 MW (in-game); one per depleted vein', () => {
+    depletedVeins = 3;
+    const plan = frackingTowerPlan(100);
+    expect(plan.capacity).toBeCloseTo(37500);
+    expect(plan.count).toBe(3);
+    expect(machinesPowerKw(plan.machine, 1)).toBeCloseTo(2500);
   });
 
   it('falls back to parent robot efficiency for robot parts', () => {
@@ -194,6 +218,60 @@ describe('machineOpm() / ceilMachines()', () => {
   it('ceilMachines ignores float noise but still rounds real fractions up', () => {
     expect(ceilMachines(3.0000000001)).toBe(3);
     expect(ceilMachines(3.01)).toBe(4);
+  });
+});
+
+
+describe('Xeno Power Plant (in-game values)', () => {
+  it('reactor: 43,200 L/min fuel + depleted loop → 180,000 L/min energized', () => {
+    const r = RECIPES['Energized Reactor Compound'];
+    const m = Object.keys(r.machines)[0];
+    expect(machineOpm(r, { itemName: 'Energized Reactor Compound', machineName: m })).toBeCloseTo(180000, 0);
+    expect(r.ingredients.find(i => i.item === 'Reactor Fuel Mix').amount).toBeCloseTo(43200, 0);
+    expect(r.ingredients.find(i => i.item === 'Depleted Reactor Compound').amount).toBeCloseTo(180000, 0);
+  });
+  it('10 turbines per reactor, 5 per cooling tower, fuel mix 0.5 MJ/L', () => {
+    expect(POWER_SOURCES.find(s => s.type === 'npp_reactor').turbines_per_reactor).toBe(10);
+    expect(POWER_SOURCES.find(s => s.type === 'npp_turbine').turbines_per_cooling_tower).toBe(5);
+    expect(POWER_FUEL_ITEMS['Reactor Fuel Mix'].mj).toBeCloseTo(0.5);
+  });
+});
+
+
+// In-game reference values (v0.6.0.26518, fully built, screenshots 2026-11-16)
+describe('modular buildings (in-game values)', () => {
+  const AIR = 'Air Intake Base', STOVE = 'Hot Air Stove Base', BF = 'Blast Furnace Base';
+  const resetModular = () => { Object.keys(modularSettings).forEach(k => delete modularSettings[k]); adjacencyBonus = true; _applyModularSpeeds(); };
+
+  it('Air Intake, 7 vents: 600 % → 162,000 L/min, 8.4 MW', () => {
+    resetModular();
+    expect(modularSpeed(AIR)).toBeCloseTo(6);
+    expect(machineOpm(RECIPES['Air'], { itemName: 'Air', machineName: AIR })).toBeCloseTo(162000, 0);
+    expect(machinesPowerKw(AIR, 1)).toBeCloseTo(8400, 0);
+  });
+
+  it('Hot Air Stove, 6 towers: 108,000 L/min; 2 side by side → 7.5 MW each', () => {
+    resetModular();
+    expect(machineOpm(RECIPES['Hot Air'], { itemName: 'Hot Air', machineName: STOVE })).toBeCloseTo(108000, 0);
+    expect(machinesPowerKw(STOVE, 2)).toBeCloseTo(15000, 0);
+    adjacencyBonus = false;
+    expect(machinesPowerKw(STOVE, 2)).toBeCloseTo(20000, 0);
+    resetModular();
+  });
+
+  it('Blast Furnace, 5 towers: 11,520 L/min molten, 324,000 L/min hot air', () => {
+    resetModular();
+    const r = RECIPES['Molten Xenoferrite'];
+    expect(machineOpm(r, { itemName: 'Molten Xenoferrite', machineName: BF })).toBeCloseTo(11520, 0);
+    expect(fluidNeedsPerMachine(BF)['Hot Air']).toBeCloseTo(324000, 0);
+  });
+
+  it('fewer modules slow the building down and keep the input ratio', () => {
+    modularSettings[BF] = 1; _applyModularSpeeds();
+    const r = RECIPES['Molten Xenoferrite'];
+    expect(machineOpm(r, { itemName: 'Molten Xenoferrite', machineName: BF })).toBeCloseTo(5760, 0);
+    expect(fluidNeedsPerMachine(BF)['Hot Air']).toBeCloseTo(216000, 0);
+    resetModular();
   });
 });
 
@@ -224,36 +302,25 @@ describe('getOutputLabel()', () => {
 // 4. saveSettings() / loadSettings() – persistence round-trips
 // ════════════════════════════════════════════════════════════
 describe('saveSettings() / loadSettings() round-trip', () => {
-  it('persists and restores globalMiningProductivity', () => {
-    globalMiningProductivity = 35;
+  it('persists and restores research levels (no upper limit)', () => {
+    miningEfficiencyLevel = 35; pumpjackEfficiencyLevel = 120;
     _flushSaveSettings();
-    globalMiningProductivity = 0;
+    miningEfficiencyLevel = 0; pumpjackEfficiencyLevel = 0;
     loadSettings();
-    expect(globalMiningProductivity).toBe(35);
+    expect(miningEfficiencyLevel).toBe(35);
+    expect(pumpjackEfficiencyLevel).toBe(120);
   });
 
-  it('persists and restores globalFluidProductivity', () => {
-    globalFluidProductivity = 20;
-    _flushSaveSettings();
-    globalFluidProductivity = 0;
+  it('clamps negative research levels to 0 on load', () => {
+    localStorage.setItem('fc_settings', JSON.stringify({ miningEfficiencyLevel: -5 }));
     loadSettings();
-    expect(globalFluidProductivity).toBe(20);
+    expect(miningEfficiencyLevel).toBe(0);
   });
 
-  it('clamps globalMiningProductivity > 100 on load', () => {
-    localStorage.setItem('fc_settings', JSON.stringify({
-      globalMiningProductivity: 150,
-    }));
+  it('ignores the old %-based productivity keys', () => {
+    localStorage.setItem('fc_settings', JSON.stringify({ globalMiningProductivity: 50 }));
     loadSettings();
-    expect(globalMiningProductivity).toBe(100);
-  });
-
-  it('clamps globalMiningProductivity < 0 on load', () => {
-    localStorage.setItem('fc_settings', JSON.stringify({
-      globalMiningProductivity: -5,
-    }));
-    loadSettings();
-    expect(globalMiningProductivity).toBe(0);
+    expect(miningEfficiencyLevel).toBe(0);
   });
 
   it('persists and restores variantSettings', () => {
@@ -318,7 +385,7 @@ describe('saveSettings() / loadSettings() round-trip', () => {
     console.warn = () => {};
     loadSettings();
     console.warn = origWarn;
-    expect(globalMiningProductivity).toBe(0);
+    expect(miningEfficiencyLevel).toBe(0);
   });
 
   it('skips recipes that no longer exist in RECIPES', () => {
@@ -376,17 +443,17 @@ describe('_applyImportedPlan()', () => {
   it('clears existing state before applying imported values', () => {
     // Pre-load some settings that should be wiped on import
     variantSettings['SomeVariant'] = 'Old Value';
-    globalMiningProductivity = 50;
+    miningEfficiencyLevel = 50;
 
     _applyImportedPlan({
       version: 1,
       selectedRecipeList: [],
-      settings: { globalMiningProductivity: 10 },
+      settings: { miningEfficiencyLevel: 10 },
     });
 
-    // Old variant must be gone; new productivity must be 10
+    // Old variant must be gone; new level must be 10
     expect(variantSettings['SomeVariant']).toBeFalsy();
-    expect(globalMiningProductivity).toBe(10);
+    expect(miningEfficiencyLevel).toBe(10);
   });
 
   it('restores settings from a valid plan', () => {
@@ -394,13 +461,13 @@ describe('_applyImportedPlan()', () => {
       version: 1,
       selectedRecipeList: [],
       settings: {
-        globalMiningProductivity: 42,
-        globalFluidProductivity:  17,
+        miningEfficiencyLevel:   42,
+        pumpjackEfficiencyLevel: 17,
         variantSettings: { 'Plates': 'Tier 3' },
       },
     });
-    expect(globalMiningProductivity).toBe(42);
-    expect(globalFluidProductivity).toBe(17);
+    expect(miningEfficiencyLevel).toBe(42);
+    expect(pumpjackEfficiencyLevel).toBe(17);
     expect(variantSettings['Plates']).toBe('Tier 3');
   });
 
