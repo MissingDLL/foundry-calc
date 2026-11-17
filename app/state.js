@@ -543,6 +543,11 @@ function calcWsBonusForMachine(machineName, wsConfig) {
 // Uses the item's own wsOverride config if set, otherwise falls back
 // to the global workstationConfigs entry for that machine category.
 function getItemWsBonus(item) {
+  // Chain machines (no own wsOverride key) follow the selected lines: if every
+  // line is set to "No WS", the chain gets no bonus either.
+  // ponytail: mixed lines share the chain, so any Global/Custom line keeps it on.
+  if (item.wsOverride === undefined && selectedRecipeList.length &&
+      selectedRecipeList.every(l => l.wsOverride?.disabled)) return 0;
   const config = item.wsOverride !== undefined && item.wsOverride !== null
     ? item.wsOverride
     : workstationConfigs[MACHINE_TO_CATEGORY[item.machineName]];

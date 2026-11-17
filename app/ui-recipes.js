@@ -602,6 +602,25 @@ function renderSelectedRecipes() {
 }
 
 // ── Per-item workstation row ──────────────────────────────────
+// Machine groups along the item's full chain that have a global workstation
+// (same machine choice as the calculation).
+function chainWsCategories(item) {
+  const cats = new Set(), seen = new Set();
+  const walk = (recipeName, machine) => {
+    const c = MACHINE_TO_CATEGORY[machine];
+    if (c && workstationConfigs[c]) cats.add(c);
+    if (seen.has(recipeName)) return;
+    seen.add(recipeName);
+    (RECIPES[recipeName]?.ingredients || []).forEach(ing => {
+      const rn = resolveRecipeName(ing.item), rr = RECIPES[rn];
+      if (!rr) return;
+      walk(rn, rr.ingredients?.length ? preferredMachineFor(rr) : preferredMinerFor(rn, rr));
+    });
+  };
+  walk(item.recipeName, item.machineName);
+  return [...cats];
+}
+
 function buildItemWsRow(item, idx) {
   const cat = MACHINE_TO_CATEGORY[item.machineName];
   const globalConfig = cat ? workstationConfigs[cat] : null;
@@ -684,7 +703,7 @@ function buildItemWsRow(item, idx) {
         ${useOverride
         ? slotsHtml
         : globalConfig && !useOverride
-          ? `<div style="font-size:11px;color:var(--text-dim);margin-top:5px">Using global WS for: <span style="color:var(--accent)">${cat || "—"}</span></div>`
+          ? `<div style="font-size:11px;color:var(--text-dim);margin-top:5px">Using global WS for: <span style="color:var(--accent)">${chainWsCategories(item).join(", ") || "—"}</span></div>`
           : `<div style="font-size:11px;color:var(--color-text-disabled);margin-top:5px">No WS bonus active.</div>`
       }
       </div>`;
