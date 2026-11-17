@@ -349,36 +349,45 @@ function calculateRecipes() {
   // ── Byproducts from full ingredient chain ───────────────────
   // Collect byproducts from intermediate recipes (e.g. Blast Furnace Slag)
   // that are not direct top-level recipes but appear in the ingredient tree.
-  function collectByproducts(itemName, amountPerMin, visitedPath) {
+  // Byproducts per 1 unit/min of an item, memoised: byproducts scale linearly
+  // with the amount, so each item's subtree is walked once. (The old per-path
+  // walk was exponential on deep chains — Assault Robot took ~5.5 s.)
+  // ponytail: the memo keeps the first cycle-truncated result for an item; fine
+  // for the rare loops (barrels, reactor), exact for acyclic chains.
+  const bpMemo = new Map();
+  function byproductsPerUnit(itemName, visitedPath) {
     const resolved = resolveRecipeName(itemName);
-    if (visitedPath.has(resolved) || visitedPath.size > 50) return;
+    if (visitedPath.has(resolved) || visitedPath.size > 50) return {};
+    if (bpMemo.has(resolved)) return bpMemo.get(resolved);
+    const out = {};
+    bpMemo.set(resolved, out);
     const recipe = RECIPES[resolved];
-    if (!recipe || !recipe.machines || Object.keys(recipe.machines).length === 0) return;
-    if (!recipe.ingredients || recipe.ingredients.length === 0) return;
-    const machine = preferredMachineFor(recipe);
-    const md = recipe.machines[machine];
-    if (!md) return;
-    const ct = md.cycleTime;
-    const opm = machineOpm(recipe, { itemName: resolved, machineName: machine });
-    // collect byproducts
-    if (Array.isArray(recipe.output) && recipe.output.length > 1) {
-      for (let i = 1; i < recipe.output.length; i++) {
-        const sec = recipe.output[i];
-        const apm = (amountPerMin / opm) * sec.amount * (60 / ct) * (sec.chance ?? 1);
-        if (!byproductTotals[sec.item]) {
-          const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[sec.item] : null;
-          byproductTotals[sec.item] = { amount: 0, machine: disposal ? disposal.machine : null };
-        }
-        byproductTotals[sec.item].amount += apm;
-      }
+    const machine = recipe?.ingredients?.length && Object.keys(recipe.machines || {}).length
+      ? preferredMachineFor(recipe) : null;
+    const md = machine && recipe.machines[machine];
+    if (!md) return out;
+    const runsPerUnit = (60 / md.cycleTime) / machineOpm(recipe, { itemName: resolved, machineName: machine });
+    if (Array.isArray(recipe.output)) {
+      recipe.output.slice(1).forEach(sec => {
+        out[sec.item] = (out[sec.item] || 0) + runsPerUnit * sec.amount * (sec.chance ?? 1);
+      });
     }
-    const nextPath = new Set(visitedPath);
-    nextPath.add(resolved);
+    const nextPath = new Set(visitedPath).add(resolved);
     recipe.ingredients.forEach(ing => {
-      collectByproducts(ing.item, (amountPerMin / opm) * ing.amount * (60 / ct), nextPath);
+      const sub = byproductsPerUnit(ing.item, nextPath), f = runsPerUnit * ing.amount;
+      Object.entries(sub).forEach(([b, v]) => { out[b] = (out[b] || 0) + v * f; });
     });
+    return out;
   }
-  Object.entries(totals).forEach(([name, val]) => collectByproducts(name, val, new Set()));
+  Object.entries(totals).forEach(([name, val]) => {
+    Object.entries(byproductsPerUnit(name, new Set())).forEach(([b, perUnit]) => {
+      if (!byproductTotals[b]) {
+        const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[b] : null;
+        byproductTotals[b] = { amount: 0, machine: disposal ? disposal.machine : null };
+      }
+      byproductTotals[b].amount += perUnit * val;
+    });
+  });
 
   // ── Byproduct supply pool ────────────────────────────────────
   // Byproducts are real output: wherever the chain needs that item again it is

@@ -380,7 +380,7 @@ let _sankeyDirty = false;
 function renderSankey() {
   const tab = document.getElementById('tab-sankey');
   // If the tab is hidden, mark dirty and return — avoids wasted D3 work
-  if (!tab || tab.style.display === 'none') {
+  if (!tab || tab.offsetParent === null) {
     _sankeyDirty = true;
     return;
   }
@@ -420,7 +420,7 @@ let _boxesDirty = false;
 // Shares the same data builder as Sankey; only the rendering differs.
 function renderBoxes() {
   const tab = document.getElementById('tab-boxes');
-  if (!tab || tab.style.display === 'none') { _boxesDirty = true; return; }
+  if (!tab || tab.offsetParent === null) { _boxesDirty = true; return; }
 
   const svg    = document.getElementById('boxesSvg');
   const empty  = document.getElementById('boxesEmpty');
@@ -909,6 +909,10 @@ function _drawSankey(svgEl, data) {
       links: data.links.map(d => ({ ...d, amount: d.value })), // amount: shown in labels/tooltips
     });
   const runLayout = (w) => {
+    // Time budget: big graphs (Assault Robot, ~60 nodes) took seconds; keep
+    // the best layout found within the budget.
+    const deadline = performance.now() + 250;
+    const outOfTime = () => performance.now() > deadline;
     let best = null;
     for (const it of [6, 16, 32, 48, 64, 96]) {
       const g = layoutOnce(w, it);
@@ -939,12 +943,12 @@ function _drawSankey(svgEl, data) {
       const order = [...c]; order.splice(to, 0, order.splice(from, 1)[0]);
       order.forEach((l, k) => rank.set(l, slots[k]));
     };
-    for (let pass = 0, improved = true; improved && pass < 4 && best.c > 0; pass++) {
+    for (let pass = 0, improved = true; improved && pass < 4 && best.c > 0 && !outOfTime(); pass++) {
       improved = false;
       for (const L of layers) {
         const n = col(L).length;
-        for (let from = 0; from < n && best.c > 0; from++) {
-          for (let to = 0; to < n && best.c > 0; to++) {
+        for (let from = 0; from < n && best.c > 0 && !outOfTime(); from++) {
+          for (let to = 0; to < n && best.c > 0 && !outOfTime(); to++) {
             if (to === from) continue;
             const saved = col(L).map(l => [l, rank.get(l)]);
             moveNode(L, from, to);
@@ -955,14 +959,14 @@ function _drawSankey(svgEl, data) {
       }
       for (const L of layers) {
         const cl = col(L);
-        for (let i = 0; i + 1 < cl.length && best.c > 0; i++) {
+        for (let i = 0; i + 1 < cl.length && best.c > 0 && !outOfTime(); i++) {
           const [a, b] = [col(L)[i], col(L)[i + 1]];
           swap(a, b);
           if (tryRank()) { improved = true; continue; }
           let combined = false;
           for (const L2 of [L - 1, L + 1].filter(x => byLayer[x])) {
             const c2 = col(L2);
-            for (let j = 0; j + 1 < c2.length && !combined; j++) {
+            for (let j = 0; j + 1 < c2.length && !combined && !outOfTime(); j++) {
               const [p, q] = [c2[j], c2[j + 1]];
               swap(p, q);
               if (tryRank()) combined = true; else swap(p, q);
