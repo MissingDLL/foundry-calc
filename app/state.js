@@ -266,7 +266,18 @@ function _injectSyntheticRobotRecipes() {
       _synthetic:  true,
     };
   }
+  _applyWorkstationEffects(); // complete robots exist only from here on
 }
+
+// Attach the robots' workstation bonuses (game data WORKSTATION_EFFECTS) to
+// their recipes, where all workstation code reads them (r.workstation_effect).
+function _applyWorkstationEffects() {
+  if (typeof WORKSTATION_EFFECTS === 'undefined') return;
+  Object.entries(WORKSTATION_EFFECTS).forEach(([name, we]) => {
+    if (RECIPES[name]) RECIPES[name].workstation_effect = { ...we, power_consumption_unit: 'kW' };
+  });
+}
+_applyWorkstationEffects();
 
 // Builds (or rebuilds) the entire bot sidebar list.
 function buildRecipeCategoryList() {
@@ -477,7 +488,9 @@ const workstationConfigs = {};
 // workstation_effect definitions to the concrete machine names
 // they affect.  Empty arrays = category exists in-game but no
 // machine currently in RECIPES is affected.
-const APPLIES_TO_MACHINES = {
+// Game data (WORKSTATION_CATEGORIES) wins; the hand-written list below is
+// only the fallback for old data versions without it.
+const APPLIES_TO_MACHINES = (typeof WORKSTATION_CATEGORIES !== 'undefined') ? { ...WORKSTATION_CATEGORIES } : {
   "Assemblers":        [M.ASSEMBLER_I, M.ASSEMBLER_II, M.ASSEMBLER_III, M.FLUID_ASSEMBLER_I],
   "Crushers":          [M.CRUSHER_I, M.CRUSHER_II],
   "Smelters":          [M.SMELTER_SMALL, M.ADVANCED_SMELTER, M.LAVA_SMELTER_I, M.LAVA_SMELTER_II, M.BLAST_FURNACE, M.ELECTRIC_ARC_FURNACE],

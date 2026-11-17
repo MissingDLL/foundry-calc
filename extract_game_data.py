@@ -654,6 +654,42 @@ def detect_research_bonuses(templates_dir: Path, bots_raw: dict, id_to_name: dic
     return out
 
 
+def detect_workstation_data(templates_dir: Path, id_to_name: dict) -> dict:
+    """
+    Workstation bonuses from game data (the old hand-written APPLIES_TO_MACHINES
+    list and the robots' workstation_effect were never extracted):
+      categories: tag displayName → machines carrying that workstationEffectTag
+      effects:    robot name → {machine_speed | machine_efficiency (%),
+                  power_consumption (data02 / 100), applies_to: [category]}
+    data01 / data02 are stored ×100 (Light Bot 3000/2000 → +30 % speed, 20).
+    """
+    tags = {k: v.get("displayName") or k
+            for k, v in load_yaml_templates(templates_dir, "WorkstationEffectTagTemplate").items()}
+    tag_of = lambda raw: tags.get(str(raw).split("|")[0], "")
+    item_ids = _build_item_bot_ids(templates_dir)
+    categories: dict[str, set] = {}
+    for ident, v in load_yaml_templates(templates_dir, "BuildableObjectTemplate").items():
+        name = id_to_name.get(ident, "")
+        if not name or ident not in item_ids:
+            continue
+        for t in v.get("workstationEffectTags") or []:
+            if tag_of(t):
+                categories.setdefault(tag_of(t), set()).add(name)
+    kind = {"SPEED_BOOST": "machine_speed", "EFFICIENCY_BOOST": "machine_efficiency"}
+    effects: dict[str, dict] = {}
+    for v in load_yaml_templates(templates_dir, "ItemTemplate").values():
+        key = kind.get(v.get("workstationItem_effect", ""))
+        try:
+            d1 = float(v.get("workstationItem_data01") or 0)
+            d2 = float(v.get("workstationItem_data02") or 0)
+        except (ValueError, TypeError):
+            continue
+        applies = [tag_of(t) for t in v.get("workstationItem_requiredTags") or [] if tag_of(t)]
+        if key and d1 > 0 and applies and v.get("name"):
+            effects[v["name"]] = {key: d1 / 100, "power_consumption": d2 / 100, "applies_to": applies}
+    return {"categories": {c: sorted(m) for c, m in sorted(categories.items())}, "effects": effects}
+
+
 def detect_external_sources(templates_dir: Path, recipes: list[dict],
                              fluid_sources: dict, id_to_name: dict) -> dict:
     """
@@ -1729,6 +1765,7 @@ def generate_game_data_js(version: str, recipes: list[dict],
                           vein_mining_fluids: dict,
                           research_bonuses: dict,
                           external_sources: dict,
+                          workstation_data: dict,
                           power_data: dict | None = None) -> str:
     """Generate game-data.js content."""
 
@@ -1912,6 +1949,12 @@ def generate_game_data_js(version: str, recipes: list[dict],
     for ore, info in sorted(vein_mining_fluids.items()):
         lines.append(f"  '{ore}': {json.dumps(info)},")
     lines.append("});")
+    lines.append("")
+
+    # WORKSTATION_CATEGORIES / WORKSTATION_EFFECTS (robot bonuses per machine group)
+    lines.append("// ── Workstations: machine groups and robot bonuses ─────────────")
+    lines.append(f"const WORKSTATION_CATEGORIES = Object.freeze({json.dumps(workstation_data['categories'])});")
+    lines.append(f"const WORKSTATION_EFFECTS = Object.freeze({json.dumps(workstation_data['effects'])});")
     lines.append("")
 
     # EXTERNAL_SOURCES (items delivered from the orbital station)
@@ -2453,6 +2496,7 @@ def main():
     # Byproduct disposal (needs complete recipe list)
     byproduct_disposal = detect_byproducts_and_disposal(templates_dir, recipes, id_to_name)
     external_sources = detect_external_sources(templates_dir, recipes, fluid_sources, id_to_name)
+    workstation_data = detect_workstation_data(templates_dir, id_to_name)
     vein_mining_fluids = detect_vein_mining_fluids(templates_dir, bots_raw, id_to_name)
     research_bonuses = detect_research_bonuses(templates_dir, bots_raw, id_to_name)
     # A vein mining fluid is consumed (by miners), so it is no byproduct to dispose of
@@ -2512,7 +2556,7 @@ def main():
         bot_data, subgroups, templates_dir, id_to_name,
         assembly_line_composition, assembly_line_robots, fluid_sources,
         byproduct_disposal, machine_fluid_minimums, modular_buildings,
-        vein_mining_fluids, research_bonuses, external_sources, power_data)
+        vein_mining_fluids, research_bonuses, external_sources, workstation_data, power_data)
     game_data_path = out_dir / "game-data.js"
     game_data_path.write_text(game_data_content, encoding="utf-8")
     print(f"  Wrote {game_data_path}")

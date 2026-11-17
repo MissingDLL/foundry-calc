@@ -70,6 +70,15 @@ let _lastSupply = {};
 // ceil() that ignores float noise (3.0000000001 machines → 3, not 4).
 const ceilMachines = (x) => Math.ceil(x - 1e-9);
 
+// Small "WS +x %" chip when a workstation bonus applies to this machine/item
+// (global per machine group or the line's own override). Empty otherwise.
+function wsBadge(item) {
+  const b = getItemWsBonus(item);
+  return b > 0
+    ? `<span title="Workstation bonus" style="font-size:10px;color:var(--accent3);border:1px solid var(--color-success-border);background:var(--color-success-bg);border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap">WS +${fmt(Math.round(b * 1000) / 10)}%</span>`
+    : '';
+}
+
 // ── Infrastructure helpers ─────────────────────────────────────
 
 // Returns the power consumption of a machine in kW.
@@ -551,7 +560,7 @@ function calculateRecipes() {
         ${r.recipeName !== r.itemName && r.itemName ? '<span style="font-size:10px;color:var(--text-dim);margin-left:4px">' + (r.recipeName || "") + "</span>" : ""}
       </div></td>
       <td style="padding:7px 12px">
-        <div style="display:flex;align-items:center;gap:8px">${iconBox(r.machineName, 64)}<span style="color:var(--text-dim);font-size:13px">${r.machineName}</span></div>
+        <div style="display:flex;align-items:center;gap:8px">${iconBox(r.machineName, 64)}<span style="color:var(--text-dim);font-size:13px">${r.machineName}</span>${wsBadge(r)}</div>
         ${r.machineName === M.ASSEMBLY_LINE ? `<div style="font-size:10px;color:var(--color-text-disabled);margin-top:3px;padding-left:2px;line-height:1.7">
           └&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.start.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.start.name}
           &nbsp;·&nbsp;${r.machines * ASSEMBLY_LINE_COMPOSITION.producer.count}×&nbsp;${ASSEMBLY_LINE_COMPOSITION.producer.name}
@@ -850,7 +859,7 @@ function calculateRecipes() {
             totThird    += loaders.thirdLaneCount  * count;
 
             machineTd = `
-              <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span></div></td>
+              <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span>${wsBadge({ itemName: info.recipeName || name, machineName: machine })}</div></td>
               <td class="num">${count}</td>
               <td class="num">${fmtPwr(machPwrKw)}</td>
               <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${loaderDesc}</td>
@@ -994,7 +1003,7 @@ function calculateRecipes() {
             totMachPwr   += machPwrKw;
             totLoaderPwr += loaderPwrKw;
 
-            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
+            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span>${wsBadge({ itemName: info.recipeName || name, machineName: machine })}</div>`;
 
             const totalLoaders = loaders.loaderCount * count;
             const totalSecond  = loaders.secondLaneCount * count;
