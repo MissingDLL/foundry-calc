@@ -40,6 +40,9 @@ const M = Object.freeze({
   REACTOR_FUEL_MIXER_BASE: "Reactor Fuel Mixer Base",
   SMELTER_SMALL: "Smelter (Small)",
   STEAM_GENERATOR_BASE: "Steam Generator Base",
+  XENO_CRYSTAL_EXTRACTOR: "Xeno-Crystal-Extractor",
+  XENO_REACTOR_BASE: "Xeno Reactor Base",
+  XENO_SCRAP_EXTRACTOR: "Xeno-Scrap-Extractor",
 });
 
 // ── Assembly Line sub-machine composition ─────────────────────
@@ -588,18 +591,46 @@ const FLUID_SOURCE_MACHINES = Object.freeze({
 
 // ── Byproduct disposal ────────────────────────────────────────
 const BYPRODUCT_DISPOSAL = Object.freeze({
+  'Blast Furnace Slag': {
+    machine: 'Flare Stack', capacityPerMin: 3000.0,
+    reprocess: { recipe: 'Cement (Slag Reprocessing)', produces: 'Cement', surplus: { machine: 'Incinerator', capacityPerMin: 180.0 } },
+  },
+  'Charged Xeno-Crystal': { machine: 'Incinerator', capacityPerMin: 180.0 },
+  'Crude Olumite': { machine: 'Flare Stack', capacityPerMin: 3000.0 },
   'Depleted Reactor Compound': { machine: 'Flare Stack', capacityPerMin: 3000.0 },
-  'Fracking Liquid': { machine: 'Flare Stack', capacityPerMin: 3000.0 },
-  'High-Pressure Steam': { machine: 'Flare Stack', capacityPerMin: 3000.0 },
-  'Hot Air': { machine: 'Flare Stack', capacityPerMin: 3000.0 },
-  'Paint': { machine: 'Flare Stack', capacityPerMin: 3000.0 },
-  'Reactor Fuel Mix': { machine: 'Flare Stack', capacityPerMin: 3000.0 },
   'Waste Gas': { machine: 'Flare Stack', capacityPerMin: 3000.0 },
+  'Xeno-Crystal': { machine: 'Incinerator', capacityPerMin: 180.0 },
 });
 
 // ── Minimum fluid supply per machine instance ─────────────────
 const MACHINE_FLUID_MINIMUMS = Object.freeze({
-  'Blast Furnace Base': { 'Hot Air': 21600.0 },
+  'Blast Furnace Base': { 'Hot Air': 216000.0 },
+});
+
+// ── Fluid per Ore Vein Miner once a vein is depleted (app setting) ──
+const VEIN_MINING_FLUIDS = Object.freeze({
+  'Ignium Ore Rubble': {"fluid": "Fracking Liquid", "perMinerPerMin": 150.0, "machines": ["Ore Vein Miner"]},
+  'Mineral Rocks': {"fluid": "Fracking Liquid", "perMinerPerMin": 150.0, "machines": ["Ore Vein Miner"]},
+  'Technum Ore Rubble': {"fluid": "Fracking Liquid", "perMinerPerMin": 150.0, "machines": ["Ore Vein Miner"]},
+  'Telluxite Ore Rubble': {"fluid": "Fracking Liquid", "perMinerPerMin": 150.0, "machines": ["Ore Vein Miner"]},
+  'Xenoferrite Ore Rubble': {"fluid": "Fracking Liquid", "perMinerPerMin": 150.0, "machines": ["Ore Vein Miner"]},
+});
+
+// ── Items without production, delivered from the space station ──
+const EXTERNAL_SOURCES = Object.freeze({"Firmarlite Bar": "Space Station Terminal"});
+
+// ── Endless research: bonus per level (parsed from descriptions) ──
+const RESEARCH_BONUSES = Object.freeze({"perLevel": {"Mining Efficiency": 0.1, "Mining Efficiency (Demo)": 0.1, "Pumpjack Efficiency": 0.1}, "pumpjacks": ["Pumpjack I"]});
+
+// ── Modular buildings: speed per optional module ─────────────
+// speed = 1 + (modules - ignored) × speedPerModule; values at base speed above.
+const MODULAR_BUILDINGS = Object.freeze({
+  'Air Intake Base': {"module": "Vent", "min": 2, "max": 7, "ignored": 2, "speedPerModule": 1.0},
+  'Blast Furnace Base': {"module": "Tower", "min": 1, "max": 5, "ignored": 1, "speedPerModule": 0.25, "fluidPerModule": {"Hot Air": 0.125}},
+  'Fracking Tower Base': {"module": "Tower", "min": 1, "max": 5, "ignored": 1, "speedPerModule": 0.0, "throughputPerModule": 7500.0, "powerPerModule": 1.0, "basePowerKw": 500.0},
+  'Hot Air Stove Base': {"module": "Tower", "min": 1, "max": 6, "ignored": 1, "speedPerModule": 0.2, "adjacencyPowerDecrease": 0.25},
+  'Xeno-Crystal-Extractor': {"module": "Power Core", "min": 0, "max": 5, "ignored": 0, "speedPerModule": 1.0, "powerPerModule": 0.0, "default": 0},
+  'Xeno-Scrap-Extractor': {"module": "Power Core", "min": 0, "max": 5, "ignored": 0, "speedPerModule": 1.0, "powerPerModule": 0.0, "default": 0},
 });
 
 // ── Machine power consumption (kW) ───────────────────────────
@@ -637,6 +668,9 @@ const MACHINE_POWER_KW = Object.freeze({
   [M.REACTOR_FUEL_MIXER_BASE]: 2000,
   [M.SMELTER_SMALL]: 100,
   [M.STEAM_GENERATOR_BASE]: 0,
+  [M.XENO_CRYSTAL_EXTRACTOR]: 500,
+  [M.XENO_REACTOR_BASE]: 0,
+  [M.XENO_SCRAP_EXTRACTOR]: 500,
 });
 
 // ── Machine connection layout ─────────────────────────────────
@@ -674,6 +708,9 @@ const MACHINE_CONNECTIONS = Object.freeze({
   [M.REACTOR_FUEL_MIXER_BASE]: { sides: [0, 0, 0, 0], loader_needed: false },
   [M.SMELTER_SMALL]: { sides: [2, 2, 2, 2], loader_needed: true },
   [M.STEAM_GENERATOR_BASE]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.XENO_CRYSTAL_EXTRACTOR]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.XENO_REACTOR_BASE]: { sides: [0, 0, 0, 0], loader_needed: false },
+  [M.XENO_SCRAP_EXTRACTOR]: { sides: [0, 0, 0, 0], loader_needed: false },
   "Air Intake": { sides: [0, 0, 0, 0], loader_needed: false },
   "Air Intake Module": { sides: [0, 0, 0, 0], loader_needed: false },
   "Assembly Line Logistics Container": { sides: [0, 0, 0, 0], loader_needed: false },
@@ -904,15 +941,12 @@ const MACHINE_CONNECTIONS = Object.freeze({
   "Wooden Decor Blocks": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xeno Power Core": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xeno Reactor": { sides: [0, 0, 0, 0], loader_needed: false },
-  "Xeno Reactor Base": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xeno Reactor Module": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xeno-Crystal": { sides: [0, 0, 0, 0], loader_needed: false },
-  "Xeno-Crystal-Extractor": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xeno-Logistics Container": { sides: [4, 4, 4, 4], loader_needed: true },
   "Xeno-Logistics Tower": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xeno-Scrap": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xeno-Scrap Remnants": { sides: [0, 0, 0, 0], loader_needed: false },
-  "Xeno-Scrap-Extractor": { sides: [0, 0, 0, 0], loader_needed: false },
   "Xenoferrite Ore": { sides: [0, 0, 0, 0], loader_needed: false },
 });
 
@@ -922,8 +956,9 @@ const POWER_SOURCES = Object.freeze([
   { id: "_base_boiler_i", name: "Boiler", type: "steam_boiler", steam_lit_per_sec: 60.0, energy_kj_per_sec: 3600.0, requires_vent: false },
   { id: "_base_burner_generator_lvg", name: "Burner Generator", type: "solid_fuel", power_kw: 1800.0, efficiency: 0.8, locked_fuel: "" },
   { id: "_base_geothermal_generator_i", name: "Geothermal Boiler", type: "steam_boiler", steam_lit_per_sec: 360.0, energy_kj_per_sec: 0.0, requires_vent: true },
-  { id: "_base_npp_reactor_base", name: "Xeno Reactor Base", type: "npp_reactor", fuel_name: "Reactor Fuel Mix", fuel_lit_per_min: 4320.0 },
-  { id: "_base_npp_steam_turbine_base", name: "High-Pressure Turbine Base", type: "npp_turbine", power_kw: 36000.0, efficiency: 1.0 },
+  { id: "_base_npp_cooling_tower_base", name: "Cooling Tower Base", type: "npp_cooling_tower", capacity_lit_per_min: 180000.0 },
+  { id: "_base_npp_reactor_base", name: "Xeno Reactor Base", type: "npp_reactor", fuel_name: "Reactor Fuel Mix", fuel_lit_per_min: 43200.0, turbines_per_reactor: 10.0 },
+  { id: "_base_npp_steam_turbine_base", name: "High-Pressure Turbine Base", type: "npp_turbine", power_kw: 36000.0, efficiency: 1.0, steam_lit_per_min: 36000.0, turbines_per_cooling_tower: 5.0 },
   { id: "_base_solar_panel_i", name: "Solar Panel (Small)", type: "solar", power_kw: 300.0, power_kw_min: 100.0 },
   { id: "_base_solar_panel_ii", name: "Solar Panel (Large)", type: "solar", power_kw: 650.0, power_kw_min: 650.0 },
   { id: "_base_turbine_i", name: "Steam Turbine", type: "steam_turbine", power_kw: 3600.0 },

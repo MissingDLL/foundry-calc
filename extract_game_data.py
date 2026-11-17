@@ -22,16 +22,22 @@ from pathlib import Path
 GAME_PATH_DEFAULT = "/run/media/system/Games/SteamLibrary/steamapps/common/FOUNDRY"
 SCRIPT_DIR = Path(__file__).parent
 
-# ── Tick rate (justified convention, not magic number) ────────────────────────
-# Air Intake: amount_str=450 → known output 162,000 L/min
-# 162,000 / 450 / 60 = 6 ticks/sec = 360 ticks/min
-# Cross-check: Hot Air Stove amount_str=900 × 360 = 324,000 L/min ✓
-TICKS_PER_MIN = 360
+# ── Time units (verified in-game, v0.6.0.26518) ───────────────────────────────
+# The old TICKS_PER_MIN=360 was "calibrated" against a fully upgraded Air Intake
+# (7 vents = 600 % speed) and was wrong for everything else.
+#   ResourceConverter amount_str is PER SECOND at base speed:
+#     Air Intake 450/s = 27,000 L/min base; ×6 (7 vents) = 162,000 ✓
+#     Hot Air Stove 900/s = 54,000 L/min base; ×2 (6 towers) = 108,000 ✓
+#   *PerTick fields use 60 ticks/s:
+#     Blast Furnace baseHotAirConsumptionPerTick 60 → 216,000 L/min base;
+#     ×1.5 (5 towers) = 324,000 ✓
+SECONDS_PER_MIN = 60
+TICKS_PER_MIN = 60 * 60
 
-# ── Blast Furnace cycle time convention ───────────────────────────────────────
-# BF has no timeMs in BlastFurnaceModeTemplate — continuous process.
-# cycleTime=1 means "amounts are per second" (calculator convention).
-BLAST_FURNACE_CYCLE_TIME = 1
+# ── Blast Furnace cycle time ──────────────────────────────────────────────────
+# BlastFurnaceModeTemplate amounts are per MINUTE at base speed
+# (Xenoferrite: 640 ore → 5,760 L molten/min; ×2 with 5 towers = 11,520 ✓).
+BLAST_FURNACE_CYCLE_TIME = 60
 
 # ── BuildableObjectTemplate `type` values ────────────────────────────────────
 # Production machine types — these resolve to recipe machines
@@ -325,6 +331,10 @@ def extract_power_data(templates_dir: Path, id_to_name: dict) -> dict:
                 continue
             fuel_name = id_to_name.get(input_id, input_id)
             fuel_lit_per_min = max_input_per_tick * TICKS_PER_MIN
+            try:
+                out_per_min = float(v.get("nppReactor_maxOutputPerTick_str") or 0) * TICKS_PER_MIN
+            except (ValueError, TypeError):
+                out_per_min = 0.0
             sources.append({
                 "id": ident,
                 "name": name,
@@ -332,22 +342,61 @@ def extract_power_data(templates_dir: Path, id_to_name: dict) -> dict:
                 "fuel_id": input_id,
                 "fuel_name": fuel_name,
                 "fuel_lit_per_min": fuel_lit_per_min,
+                "output_id": v.get("nppReactor_output_elementalTemplate_identifier", "") or "",
+                "output_lit_per_min": out_per_min,
             })
 
-    # Post-process: add Reactor Fuel Mix to fuel_items using NPP turbine+reactor data
-    # Find the NPP turbine power and reactor fuel consumption
+        # ── NPP Cooling Tower (disperses the turbines' exhaust steam) ──────────
+        elif bot_type == "NPP_CoolingTower":
+            try:
+                cap = float(v.get("nppCoolingTower_inputTurbine_maxInputPerTick_str") or 0) * TICKS_PER_MIN
+            except (ValueError, TypeError):
+                cap = 0.0
+            if cap > 0:
+                sources.append({"id": ident, "name": name, "type": "npp_cooling_tower",
+                                "input_id": v.get("nppCoolingTower_inputTurbine_identifier", "") or "",
+                                "capacity_lit_per_min": cap})
+
+    # Post-process the Xeno Power Plant chain (verified in-game, v0.6.0.26518):
+    #   Reactor: 43,200 L/min Fuel Mix → 180,000 Energized Reactor Compound
+    #   Steam Generator (ResourceConverter consuming the reactor output):
+    #     180,000 Energized → 360,000 High-Pressure Steam
+    #   Turbine: 36 MW from HP Steam (60 kJ/L) → 36,000 L/min, residual 1 L/L Exhaust
+    #   Cooling Tower: disperses 180,000 L/min Exhaust Steam
+    # → 10 turbines per reactor, 5 per cooling tower, Fuel Mix = 0.5 MJ/L.
+    # (The old rule "1 turbine power / 1 reactor fuel" assumed 1 turbine per reactor.)
     npp_turbine = next((s for s in sources if s["type"] == "npp_turbine"), None)
     npp_reactor = next((s for s in sources if s["type"] == "npp_reactor"), None)
-    if npp_turbine and npp_reactor:
-        fuel_lit_per_min = npp_reactor["fuel_lit_per_min"]
-        power_kw = npp_turbine["power_kw"]
-        if fuel_lit_per_min > 0:
-            # energy density: kW / (L/min / 60s) = kW * 60 / L_per_min
-            kj_per_l = (power_kw * 60) / fuel_lit_per_min
-            mj_per_l = round(kj_per_l / 1000, 6)
+    npp_tower   = next((s for s in sources if s["type"] == "npp_cooling_tower"), None)
+    elements = load_yaml_templates(templates_dir, "ElementTemplate")
+    if npp_turbine and npp_reactor and npp_reactor["fuel_lit_per_min"] > 0:
+        sg = next((v for i, v in bots_raw.items() if i in item_ids and any(
+            x.get("identifier") == npp_reactor["output_id"]
+            for x in (v.get("resourceConverter_input_elemental") or []))), None)
+        steam_id, steam_ratio = "", 0.0
+        for o in (sg or {}).get("resourceConverter_output_elemental") or []:
+            el = elements.get(o.get("identifier", ""), {})
+            if el.get("fuel_fuelValueKJPerL_str"):  # the turbine fuel (High-Pressure Steam)
+                ins = sg["resourceConverter_input_elemental"]
+                inp = next(x for x in ins if x.get("identifier") == npp_reactor["output_id"])
+                steam_id = o["identifier"]
+                steam_ratio = float(o.get("amount_str") or 0) / float(inp.get("amount_str") or 1)
+                break
+        steam_el = elements.get(steam_id, {})
+        steam_kj = float(steam_el.get("fuel_fuelValueKJPerL_str") or 0)
+        if steam_kj > 0 and steam_ratio > 0:
+            steam_per_min = npp_reactor["output_lit_per_min"] * steam_ratio
+            reactor_kw = steam_per_min * steam_kj / 60
+            npp_reactor["turbines_per_reactor"] = round(reactor_kw / npp_turbine["power_kw"], 4)
+            turbine_steam = npp_turbine["power_kw"] * 60 / steam_kj
+            exhaust = turbine_steam * float(steam_el.get("fuel_residualAmountPerL_str") or 0)
+            npp_turbine["steam_lit_per_min"] = turbine_steam
+            if npp_tower and exhaust > 0:
+                npp_turbine["turbines_per_cooling_tower"] = round(npp_tower["capacity_lit_per_min"] / exhaust, 4)
             rfm_name = npp_reactor["fuel_name"]
-            if rfm_name and rfm_name not in fuel_items:
-                fuel_items[rfm_name] = {"mj": mj_per_l, "type": "elemental"}
+            if rfm_name:
+                fuel_items[rfm_name] = {"mj": round(reactor_kw * 60 / npp_reactor["fuel_lit_per_min"] / 1000, 6),
+                                        "type": "elemental"}
 
     return {"sources": sources, "fuel_items": fuel_items}
 
@@ -583,6 +632,79 @@ def build_intermediate_items(templates_dir: Path, id_to_name: dict) -> set[str]:
 # Ore mining map — dynamic from OreVeinTemplate + TerrainBlockType
 # ─────────────────────────────────────────────────────────────────────────────
 
+def detect_research_bonuses(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> dict:
+    """
+    Endless researches (flags ENDLESS_RESEARCH) → {name: bonusPerLevel}.
+    The game data has no numeric field for the bonus — only the description
+    ("…by 10% per level", "Produces 10% additional…"), so it is parsed from
+    there. Also lists the Pumpjack machines (Pumpjack Efficiency target).
+    """
+    out: dict = {"perLevel": {}, "pumpjacks": []}
+    for v in load_yaml_templates(templates_dir, "ResearchTemplate").values():
+        if "ENDLESS_RESEARCH" not in str(v.get("flags", "")).split("|"):
+            continue
+        m = re.search(r"(\d+(?:\.\d+)?)\s*%", str(v.get("description", "")))
+        if not m:
+            print(f"  WARNING: no % bonus found in description of research '{v.get('name')}'", file=sys.stderr)
+            continue
+        out["perLevel"][v.get("name", "")] = float(m.group(1)) / 100
+    item_ids = _build_item_bot_ids(templates_dir)
+    out["pumpjacks"] = sorted(id_to_name[i] for i, v in bots_raw.items()
+                              if v.get("type") == "Pumpjack" and i in item_ids and id_to_name.get(i))
+    return out
+
+
+def detect_external_sources(templates_dir: Path, recipes: list[dict],
+                             fluid_sources: dict, id_to_name: dict) -> dict:
+    """
+    Ingredients no recipe/miner/fluid source produces, but flagged SALES_CURRENCY
+    in ItemTemplate, are sent down from the orbital station (e.g. Firmarlite Bar).
+    Returns {item_name: "Space Station"}.
+    """
+    produced = set(id_to_name.get(k, k) for k in fluid_sources)
+    for r in recipes:
+        produced.add(r["name"])
+        produced.update(o["item"] for o in r.get("outputs", []))
+    flags = {v.get("name", ""): str(v.get("flags", ""))
+             for v in load_yaml_templates(templates_dir, "ItemTemplate").values()}
+    # Shown source = the buildable "Space Station Terminal" (has an icon)
+    stations = sorted((n for n, f in flags.items()
+                       if "Space Station" in n and "BUILDABLE_OBJECT" in f.split("|")),
+                      key=lambda n: "Terminal" not in n)  # the terminal first
+    source = stations[0] if stations else "Space Station"
+    out: dict[str, str] = {}
+    for r in recipes:
+        for i in r.get("ingredients", []):
+            if i["item"] not in produced and "SALES_CURRENCY" in flags.get(i["item"], "").split("|"):
+                out[i["item"]] = source
+    return out
+
+
+def detect_vein_mining_fluids(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> dict:
+    """
+    Returns {ore_item_name: {fluid, perMinerPerMin, machines}} — fluid an Ore Vein
+    Miner needs once the vein is mined down to its core (OreVeinTemplate
+    miningFluid_identifier / requiredMiningFluid_literPerMinutePerMiner_str).
+    Only needed for depleted veins → the app applies it behind a setting.
+    """
+    terrain_raw = load_yaml_templates(templates_dir, "TerrainBlockType")
+    item_ids = _build_item_bot_ids(templates_dir)
+    vein_miners = sorted(id_to_name[i] for i, v in bots_raw.items()
+                         if v.get("type") == "OreVeinMiner" and i in item_ids and id_to_name.get(i))
+    out: dict[str, dict] = {}
+    for ov in load_yaml_templates(templates_dir, "OreVeinTemplate").values():
+        tbt = terrain_raw.get(ov.get("mineableBlockType_identifier", "")) or {}
+        ore = id_to_name.get(tbt.get("oreVeinMineable_yieldItem_identifier", ""), "")
+        fluid = id_to_name.get(ov.get("miningFluid_identifier", ""), "")
+        try:
+            per_min = float(ov.get("requiredMiningFluid_literPerMinutePerMiner_str") or 0)
+        except (TypeError, ValueError):
+            per_min = 0.0
+        if ore and fluid and per_min > 0 and vein_miners:
+            out[ore] = {"fluid": fluid, "perMinerPerMin": per_min, "machines": vein_miners}
+    return out
+
+
 def build_ore_mining_map(templates_dir: Path) -> dict:
     """
     Returns {yield_item_identifier: ore_vein_identifier} for all mineable ore veins.
@@ -700,68 +822,58 @@ def detect_byproducts_and_disposal(templates_dir: Path, recipes: list[dict],
                                    id_to_name: dict) -> dict:
     """
     Returns {item_name: {machine, capacityPerMin, ?reprocess}} for byproduct items.
-    Byproducts = elemental outputs that never appear as elemental inputs in any recipe.
-    The disposal machine is detected by dissolver_isElemental=True in BuildableObjectTemplate.
-    Reprocess entries are found by scanning recipes for inputs matching the byproduct.
+    Byproduct = any secondary output (outputs[1:]) of a recipe, e.g. Blast Furnace
+    Slag, Waste Gas. (The old rule "elemental output never used as input" missed
+    Slag — it IS an input of Cement (Slag Reprocessing) — and made the reprocess
+    lookup below dead code.)
+    Disposal machines come from Dissolver BOTs: elemental → Flare Stack,
+    solid → Incinerator. reprocess = recipe consuming the byproduct; its surplus
+    product needs disposal too (Slag → Cement → Incinerator).
     """
     bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
-
-    # Find all elemental outputs and inputs across recipes
-    elemental_outputs: dict[str, str] = {}  # item_name → recipe_name
-    elemental_inputs: set[str] = set()
-
-    for r in recipes:
-        for out in r.get("outputs", []):
-            if out.get("is_elemental"):
-                elemental_outputs[out["item"]] = r["name"]
-        for inp in r.get("ingredients", []):  # recipes use "ingredients", not "inputs"
-            if inp.get("is_elemental"):
-                elemental_inputs.add(inp["item"])
-
-    byproduct_names = set(elemental_outputs.keys()) - elemental_inputs
-
-    # Find Flare Stack (dissolver_isElemental=True) in ItemTemplate bots
     item_ids = _build_item_bot_ids(templates_dir)
-    flare_stack_name = ""
-    flare_capacity = 0.0
+
+    # Dissolvers: biggest capacity per kind (elemental / solid)
+    dissolver: dict[bool, dict] = {}
     for ident, v in bots_raw.items():
-        if ident not in item_ids:
+        if ident not in item_ids or v.get("type") != "Dissolver" or not id_to_name.get(ident):
             continue
-        if v.get("dissolver_isElemental") and v.get("dissolver_elementalConsumptionPerSecond_str"):
-            name = id_to_name.get(ident, "")
-            if not name:
-                continue
-            try:
-                cap = float(v["dissolver_elementalConsumptionPerSecond_str"]) * 60
-            except (ValueError, TypeError):
-                cap = 0.0
-            if cap > flare_capacity:
-                flare_stack_name = name
-                flare_capacity = cap
+        elemental = str(v.get("dissolver_isElemental")) == "True"
+        field = "dissolver_elementalConsumptionPerSecond_str" if elemental else "dissolver_solidsPerSecond_str"
+        try:
+            cap = float(v.get(field) or 0) * 60
+        except (ValueError, TypeError):
+            cap = 0.0
+        if cap > dissolver.get(elemental, {}).get("capacityPerMin", 0):
+            dissolver[elemental] = {"machine": id_to_name[ident], "capacityPerMin": cap}
 
-    if not flare_stack_name:
-        return {}
-
-    # Build reprocess map: byproduct_name → {recipe, produces}
-    reprocess_map: dict[str, dict] = {}
+    is_elemental: dict[str, bool] = {}
     for r in recipes:
-        for inp in r["ingredients"]:
-            if inp["item"] in byproduct_names:
-                byp = inp["item"]
-                if r["outputs"]:
-                    produces = r["outputs"][0]["item"]
-                    reprocess_map[byp] = {"recipe": r["name"], "produces": produces}
+        for o in r.get("outputs", []) + r.get("ingredients", []):
+            is_elemental.setdefault(o["item"], bool(o.get("is_elemental")))
+
+    byproduct_names = {o["item"] for r in recipes for o in r.get("outputs", [])[1:]}
 
     disposal: dict[str, dict] = {}
-    for bp_name in sorted(byproduct_names):
-        entry: dict = {
-            "machine": flare_stack_name,
-            "capacityPerMin": flare_capacity,
-        }
-        if bp_name in reprocess_map:
-            entry["reprocess"] = reprocess_map[bp_name]
-        disposal[bp_name] = entry
-
+    for bp in sorted(byproduct_names):
+        sink = dissolver.get(is_elemental.get(bp, False))
+        if not sink:
+            continue
+        entry: dict = dict(sink)
+        # Reprocessing = the ONLY recipe consuming the byproduct, and a pure
+        # conversion (byproduct = sole ingredient): Slag → Cement. The app then
+        # always reprocesses it. Byproducts with several consumers (Crude Olumite)
+        # just go into the app's supply pool; only the unused rest is disposed of.
+        consumers = [r for r in recipes
+                     if r.get("outputs") and any(i["item"] == bp for i in r.get("ingredients", []))]
+        rp = consumers[0] if len(consumers) == 1 and len(consumers[0]["ingredients"]) == 1 else None
+        if rp:
+            produces = rp["outputs"][0]["item"]
+            entry["reprocess"] = {"recipe": rp["name"], "produces": produces}
+            surplus = dissolver.get(is_elemental.get(produces, False))
+            if surplus:
+                entry["reprocess"]["surplus"] = dict(surplus)
+        disposal[bp] = entry
     return disposal
 
 
@@ -843,6 +955,76 @@ def detect_fluid_sources(templates_dir: Path, bots_raw: dict, id_to_name: dict) 
                 }
 
     return sources
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Modular buildings — speed bonus per optional module (in-game "Tower", "Vent")
+# ─────────────────────────────────────────────────────────────────────────────
+
+def detect_modular_buildings(bots_raw: dict, id_to_name: dict, item_ids: set) -> dict:
+    """
+    Returns {machine_name: {module, min, max, ignored, speedPerModule,
+             fluidPerModule, adjacencyPowerDecrease}}.
+    speed = 1 + (modules - ignored) × speedPerModule. Sources:
+      ResourceConverter: resourceConverter_speedBonusModules (+ adjacency power bonus)
+      BlastFurnace:      blastFurnace_towerModule_* (+ hot air increase per tower)
+    min/max come from modularBuildingLimits of the base building.
+    """
+    def module_info(base: dict, module_id: str):
+        lim = next((l for l in (base.get("modularBuildingLimits") or [])
+                    if l.get("bot_identifier") == module_id), None)
+        mod = bots_raw.get(module_id) or {}
+        name = mod.get("modularBuildingModule_descriptionName") or id_to_name.get(module_id, module_id)
+        return name, int((lim or {}).get("minAmount", 0) or 0), int((lim or {}).get("maxAmount", 0) or 0)
+
+    def num(v, default=0.0):
+        try:
+            return float(v)
+        except (TypeError, ValueError):
+            return default
+
+    result: dict[str, dict] = {}
+    for ident, v in bots_raw.items():
+        machine = id_to_name.get(ident, "")
+        if not machine or ident not in item_ids:  # skip debug/unbuildable templates
+            continue
+        entry = None
+        bonus = (v.get("resourceConverter_speedBonusModules") or [None])[0]
+        # type check: other modular templates carry a copied (inert) speed-bonus field
+        if bonus and bonus.get("bot_identifier") and v.get("type") in RC_TYPES:
+            name, mn, mx = module_info(v, bonus["bot_identifier"])
+            entry = {"module": name, "min": mn, "max": mx,
+                     "ignored": int(num(bonus.get("numberOfIgnoredModules"), mn)),
+                     "speedPerModule": num(bonus.get("speedBonus"))}
+        elif v.get("type") == "EndlessMiner" and v.get("endlessMiner_powerCoreSlots"):
+            # Xeno-Crystal / Xeno-Scrap Extractor: power cores in slots add speed,
+            # no extra power is listed per core (powerPerModule 0 → base power).
+            # Default 0: power cores are optional items (in-game base: 10/min crystals).
+            entry = {"module": "Power Core", "min": 0, "max": int(num(v.get("endlessMiner_powerCoreSlots"))),
+                     "ignored": 0, "speedPerModule": num(v.get("endlessMiner_speedIncreasePerPowerCore_str")),
+                     "powerPerModule": 0.0, "default": 0}
+        elif v.get("type") == "FrackingTower" and v.get("frackingTower_towerModuleBOT_identifier"):
+            # No speed: every tower module adds fluid throughput, every optional one power
+            name, mn, mx = module_info(v, v["frackingTower_towerModuleBOT_identifier"])
+            entry = {"module": name, "min": mn, "max": mx, "ignored": mn, "speedPerModule": 0.0,
+                     "throughputPerModule": num(v.get("frackingTower_fluidThroughputPerTowerPerSecond_str")) * SECONDS_PER_MIN,
+                     "powerPerModule": num(v.get("frackingTower_powerConsumptionPercentagePerOptionalTowerModule")) / 100,
+                     "basePowerKw": get_power_kw(v)}  # not in MACHINE_POWER_KW (no recipe)
+        elif v.get("blastFurnace_towerModuleBotIdentifier"):
+            name, mn, mx = module_info(v, v["blastFurnace_towerModuleBotIdentifier"])
+            hot_air = id_to_name.get(v.get("blastFurnace_hotAirTemplateIdentifier", ""), "")
+            entry = {"module": name, "min": mn, "max": mx, "ignored": mn,
+                     "speedPerModule": num(v.get("blastFurnace_towerModule_speedIncrease"))}
+            inc = num(v.get("blastFurnace_towerModule_hotAirConsumptionPercentIncrease"))
+            if hot_air and inc:
+                entry["fluidPerModule"] = {hot_air: inc}
+        if not entry or entry["max"] <= entry["ignored"] or not (
+                entry["speedPerModule"] or entry.get("throughputPerModule")):
+            continue
+        if str(v.get("resourceConverter_hasAdjacencyBonus")) == "True":
+            entry["adjacencyPowerDecrease"] = num(v.get("resourceConverter_powerDecreasePerAdjacentResourceConverter"))
+        result[machine] = entry
+    return result
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1084,6 +1266,7 @@ def parse_mining_recipes(templates_dir: Path, id_to_name: dict,
                 mining_machines[ident] = {
                     "name": name,
                     "cycle_time": round(speed / 60.0, 6),
+                    "drone": True,
                 }
         elif bot_type == "OreVeinMiner":
             ticks_raw = v.get("oreVeinMiner_ticksPerOre_str")
@@ -1100,16 +1283,26 @@ def parse_mining_recipes(templates_dir: Path, id_to_name: dict,
     if not mining_machines:
         return []
 
-    machines = {mdata["name"]: mdata["cycle_time"]
-                for mdata in mining_machines.values()}
+    vein_machines  = {m["name"]: m["cycle_time"] for m in mining_machines.values() if not m.get("drone")}
+    drone_machines = {m["name"]: m["cycle_time"] for m in mining_machines.values() if m.get("drone")}
 
     # Get mineable items from OreVeinTemplate → TerrainBlockType
     ore_mining_map = build_ore_mining_map(templates_dir)
+    # Drone Miners only dig regular ore blocks (TerrainBlockType flags "Ore",
+    # item in ore_yield_id). Telluxite exists only as a vein → Ore Vein Miner only.
+    drone_items = {t.get("ore_yield_id") for t in load_yaml_templates(templates_dir, "TerrainBlockType").values()
+                   if "Ore" in str(t.get("flags", "")).split("|") and t.get("ore_yield_id")}
     recipes = []
 
-    for rubble_id in sorted(ore_mining_map.keys()):
+    # Every ore that exists as a vein OR as a ground ore block
+    for rubble_id in sorted(set(ore_mining_map) | drone_items):
         rubble_name = id_to_name.get(rubble_id, rubble_id)
         if not rubble_name:
+            continue
+        machines = dict(vein_machines) if rubble_id in ore_mining_map else {}
+        if rubble_id in drone_items:
+            machines.update(drone_machines)
+        if not machines:
             continue
 
         recipes.append({
@@ -1193,7 +1386,7 @@ def parse_resource_converter_recipes(templates_dir: Path, id_to_name: dict,
     """
     Generate synthetic resource converter recipes for all ResourceConverter and
     NPP_CoolingTower type BOTs that are player-craftable (in ItemTemplate).
-    throughput_per_min = amount_str × TICKS_PER_MIN
+    throughput_per_min = amount_str × SECONDS_PER_MIN (base speed, no modules)
     """
     bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
     cat_name = category_map.get("_base_buildings", "Buildings")
@@ -1224,7 +1417,7 @@ def parse_resource_converter_recipes(templates_dir: Path, id_to_name: dict,
             inp_name = id_to_name.get(inp_id, inp_id)
             if inp_name and inp_id:
                 try:
-                    amt = float(amt_raw) * TICKS_PER_MIN
+                    amt = float(amt_raw) * SECONDS_PER_MIN
                 except (ValueError, TypeError):
                     amt = 0.0
                 ingredients.append({"item": inp_name, "amount": amt, "is_elemental": True})
@@ -1236,7 +1429,7 @@ def parse_resource_converter_recipes(templates_dir: Path, id_to_name: dict,
             out_name = id_to_name.get(out_id, out_id)
             if out_name and out_id:
                 try:
-                    amt = float(amt_raw) * TICKS_PER_MIN
+                    amt = float(amt_raw) * SECONDS_PER_MIN
                 except (ValueError, TypeError):
                     amt = 0.0
                 output_list.append({"item": out_name, "amount": amt, "chance": None,
@@ -1263,6 +1456,90 @@ def parse_resource_converter_recipes(templates_dir: Path, id_to_name: dict,
             "throughput_per_min": output_list[0]["amount"],
         })
 
+    return recipes
+
+
+def parse_endless_miner_recipes(templates_dir: Path, id_to_name: dict,
+                                category_map: dict) -> list[dict]:
+    """
+    Endless miners (type EndlessMiner: Xeno-Crystal / Xeno-Scrap Extractor)
+    as raw-material recipes: 1 item every endlessMiner_ticksPerItem ticks
+    (60 ticks/s) at base speed; power cores are handled as speed modules.
+    """
+    bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
+    item_ids = _build_item_bot_ids(templates_dir)
+    cat_name = category_map.get("_base_metallurgy", "Metallurgy")
+    recipes = []
+    for ident, v in bots_raw.items():
+        if v.get("type") != "EndlessMiner" or ident not in item_ids or not id_to_name.get(ident):
+            continue
+        out_name = id_to_name.get(v.get("endlessMiner_outputTemplateIdentifier", ""), "")
+        try:
+            seconds = float(v.get("endlessMiner_ticksPerItem") or 0) / (TICKS_PER_MIN / 60)
+        except (ValueError, TypeError):
+            seconds = 0.0
+        if not out_name or seconds <= 0:
+            continue
+        recipes.append({
+            "identifier": f"synthetic_endless_miner_{ident}",
+            "name": out_name,
+            "category_id": "_base_metallurgy",
+            "category_name": cat_name,
+            "rowgroup_id": "",
+            "rowgroup_title": "",
+            "rowgroup_sort": 0,
+            "sorting_in_rowgroup": 0,
+            "machines": {id_to_name[ident]: round(seconds, 6)},
+            "ingredients": [],
+            "outputs": [{"item": out_name, "amount": 1, "chance": None, "is_elemental": False}],
+            "unresolved_tags": [],
+        })
+    return recipes
+
+
+def parse_npp_reactor_recipes(templates_dir: Path, id_to_name: dict,
+                              category_map: dict) -> list[dict]:
+    """
+    Xeno Reactor (type NPP_Reactor) as a recipe, per minute at 100 % load:
+      Reactor Fuel Mix (maxInputPerTick) + Depleted Reactor Compound (looped
+      back from the Steam Generator, 1:1 with the output)
+      → Energized Reactor Compound (maxOutputPerTick).
+    Verified in-game: 43,200 L/min fuel → 180,000 L/min energized.
+    """
+    bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
+    item_ids = _build_item_bot_ids(templates_dir)
+    cat_name = category_map.get("_base_buildings", "Buildings")
+    recipes = []
+    for ident, v in bots_raw.items():
+        if v.get("type") != "NPP_Reactor" or ident not in item_ids or not id_to_name.get(ident):
+            continue
+        try:
+            fuel = float(v.get("nppReactor_maxInputPerTick_str") or 0) * TICKS_PER_MIN
+            out  = float(v.get("nppReactor_maxOutputPerTick_str") or 0) * TICKS_PER_MIN
+        except (ValueError, TypeError):
+            continue
+        fuel_name = id_to_name.get(v.get("nppReactor_input_elementalTemplate_identifier", ""), "")
+        out_name  = id_to_name.get(v.get("nppReactor_output_elementalTemplate_identifier", ""), "")
+        loop_name = id_to_name.get(v.get("nppReactor_steamGeneratorInput_elementalTemplate_identifier", ""), "")
+        if not (fuel and out and fuel_name and out_name):
+            continue
+        ingredients = [{"item": fuel_name, "amount": fuel, "is_elemental": True}]
+        if loop_name:
+            ingredients.append({"item": loop_name, "amount": out, "is_elemental": True})
+        recipes.append({
+            "identifier": f"synthetic_npp_reactor_{ident}",
+            "name": out_name,
+            "category_id": "_base_buildings",
+            "category_name": cat_name,
+            "rowgroup_id": "",
+            "rowgroup_title": "",
+            "rowgroup_sort": 0,
+            "sorting_in_rowgroup": 0,
+            "machines": {id_to_name[ident]: 60},
+            "ingredients": ingredients,
+            "outputs": [{"item": out_name, "amount": out, "chance": None, "is_elemental": True}],
+            "unresolved_tags": [],
+        })
     return recipes
 
 
@@ -1448,6 +1725,10 @@ def generate_game_data_js(version: str, recipes: list[dict],
                           fluid_sources: dict,
                           byproduct_disposal: dict,
                           machine_fluid_minimums: dict,
+                          modular_buildings: dict,
+                          vein_mining_fluids: dict,
+                          research_bonuses: dict,
+                          external_sources: dict,
                           power_data: dict | None = None) -> str:
     """Generate game-data.js content."""
 
@@ -1606,7 +1887,10 @@ def generate_game_data_js(version: str, recipes: list[dict],
             rp = info["reprocess"]
             lines.append(f"  '{item_name}': {{")
             lines.append(f"    machine: '{info['machine']}', capacityPerMin: {info['capacityPerMin']},")
-            lines.append(f"    reprocess: {{ recipe: '{rp['recipe']}', produces: '{rp['produces']}' }},")
+            surplus = rp.get("surplus")
+            surplus_js = (f", surplus: {{ machine: '{surplus['machine']}', capacityPerMin: {surplus['capacityPerMin']} }}"
+                          if surplus else "")
+            lines.append(f"    reprocess: {{ recipe: '{rp['recipe']}', produces: '{rp['produces']}'{surplus_js} }},")
             lines.append("  },")
         else:
             lines.append(f"  '{item_name}': {{ machine: '{info['machine']}', capacityPerMin: {info['capacityPerMin']} }},")
@@ -1619,6 +1903,33 @@ def generate_game_data_js(version: str, recipes: list[dict],
     for mach_name, fluids in sorted(machine_fluid_minimums.items()):
         fluids_js = ", ".join(f"'{k}': {v}" for k, v in fluids.items())
         lines.append(f"  '{mach_name}': {{ {fluids_js} }},")
+    lines.append("});")
+    lines.append("")
+
+    # VEIN_MINING_FLUIDS (dynamically detected)
+    lines.append("// ── Fluid per Ore Vein Miner once a vein is depleted (app setting) ──")
+    lines.append("const VEIN_MINING_FLUIDS = Object.freeze({")
+    for ore, info in sorted(vein_mining_fluids.items()):
+        lines.append(f"  '{ore}': {json.dumps(info)},")
+    lines.append("});")
+    lines.append("")
+
+    # EXTERNAL_SOURCES (items delivered from the orbital station)
+    lines.append("// ── Items without production, delivered from the space station ──")
+    lines.append(f"const EXTERNAL_SOURCES = Object.freeze({json.dumps(external_sources)});")
+    lines.append("")
+
+    # RESEARCH_BONUSES (parsed from endless research descriptions)
+    lines.append("// ── Endless research: bonus per level (parsed from descriptions) ──")
+    lines.append(f"const RESEARCH_BONUSES = Object.freeze({json.dumps(research_bonuses)});")
+    lines.append("")
+
+    # MODULAR_BUILDINGS (dynamically detected)
+    lines.append("// ── Modular buildings: speed per optional module ─────────────")
+    lines.append("// speed = 1 + (modules - ignored) × speedPerModule; values at base speed above.")
+    lines.append("const MODULAR_BUILDINGS = Object.freeze({")
+    for mach_name, info in sorted(modular_buildings.items()):
+        lines.append(f"  '{mach_name}': {json.dumps(info)},")
     lines.append("});")
     lines.append("")
 
@@ -1690,13 +2001,21 @@ def generate_game_data_js(version: str, recipes: list[dict],
             elif src_type == "npp_turbine":
                 lines.append(
                     f'  {{ id: "{id_esc}", name: "{name_esc}", type: "npp_turbine",'
-                    f' power_kw: {src["power_kw"]}, efficiency: {src["efficiency"]} }},'
+                    f' power_kw: {src["power_kw"]}, efficiency: {src["efficiency"]},'
+                    f' steam_lit_per_min: {src.get("steam_lit_per_min", 0)},'
+                    f' turbines_per_cooling_tower: {src.get("turbines_per_cooling_tower", 0)} }},'
                 )
             elif src_type == "npp_reactor":
                 fuel_esc = src.get("fuel_name", "").replace('"', '\\"')
                 lines.append(
                     f'  {{ id: "{id_esc}", name: "{name_esc}", type: "npp_reactor",'
-                    f' fuel_name: "{fuel_esc}", fuel_lit_per_min: {src["fuel_lit_per_min"]} }},'
+                    f' fuel_name: "{fuel_esc}", fuel_lit_per_min: {src["fuel_lit_per_min"]},'
+                    f' turbines_per_reactor: {src.get("turbines_per_reactor", 0)} }},'
+                )
+            elif src_type == "npp_cooling_tower":
+                lines.append(
+                    f'  {{ id: "{id_esc}", name: "{name_esc}", type: "npp_cooling_tower",'
+                    f' capacity_lit_per_min: {src["capacity_lit_per_min"]} }},'
                 )
         lines.append("]);")
         lines.append("")
@@ -2099,6 +2418,7 @@ def main():
     assembly_line_robots      = build_assembly_line_robots(templates_dir, id_to_name)
     fluid_sources = detect_fluid_sources(templates_dir, bots_raw, id_to_name)
     machine_fluid_minimums = detect_machine_fluid_minimums(bots_raw, id_to_name)
+    modular_buildings = detect_modular_buildings(bots_raw, id_to_name, _build_item_bot_ids(templates_dir))
     power_data = extract_power_data(templates_dir, id_to_name)
 
     print(f"  {len(id_to_name)} named identifiers, {len(tag_machines)} production tags, "
@@ -2107,6 +2427,7 @@ def main():
     print(f"  Assembly line: {assembly_line_composition['producer']['count']} producer stations")
     print(f"  Fluid sources: {len(fluid_sources)}")
     print(f"  Machine fluid minimums: {len(machine_fluid_minimums)} machines")
+    print(f"  Modular buildings with speed modules: {len(modular_buildings)}")
     print(f"  Power sources: {len(power_data['sources'])}, fuel items: {len(power_data['fuel_items'])}")
 
     # ── Parse recipes ─────────────────────────────────────────────────────────
@@ -2118,15 +2439,25 @@ def main():
     boiler_recipes = parse_boiler_recipe(templates_dir, id_to_name, category_map)
     rc_recipes     = parse_resource_converter_recipes(templates_dir, id_to_name, category_map)
     pj_recipes     = parse_pumpjack_recipes(templates_dir, id_to_name, category_map)
+    npp_recipes    = parse_npp_reactor_recipes(templates_dir, id_to_name, category_map)
+    endless_recipes = parse_endless_miner_recipes(templates_dir, id_to_name, category_map)
 
     recipes.extend(bf_recipes)
     recipes.extend(mining_recipes)
     recipes.extend(boiler_recipes)
     recipes.extend(rc_recipes)
     recipes.extend(pj_recipes)
+    recipes.extend(npp_recipes)
+    recipes.extend(endless_recipes)
 
     # Byproduct disposal (needs complete recipe list)
     byproduct_disposal = detect_byproducts_and_disposal(templates_dir, recipes, id_to_name)
+    external_sources = detect_external_sources(templates_dir, recipes, fluid_sources, id_to_name)
+    vein_mining_fluids = detect_vein_mining_fluids(templates_dir, bots_raw, id_to_name)
+    research_bonuses = detect_research_bonuses(templates_dir, bots_raw, id_to_name)
+    # A vein mining fluid is consumed (by miners), so it is no byproduct to dispose of
+    for info in vein_mining_fluids.values():
+        byproduct_disposal.pop(info["fluid"], None)
 
     recipes_with_todo = [r for r in recipes if r["unresolved_tags"]]
     print(f"  {len(recipes)} recipes parsed "
@@ -2180,8 +2511,8 @@ def main():
         version_tag, recipes, fluid_items, intermediate_items,
         bot_data, subgroups, templates_dir, id_to_name,
         assembly_line_composition, assembly_line_robots, fluid_sources,
-        byproduct_disposal, machine_fluid_minimums,
-        power_data)
+        byproduct_disposal, machine_fluid_minimums, modular_buildings,
+        vein_mining_fluids, research_bonuses, external_sources, power_data)
     game_data_path = out_dir / "game-data.js"
     game_data_path.write_text(game_data_content, encoding="utf-8")
     print(f"  Wrote {game_data_path}")

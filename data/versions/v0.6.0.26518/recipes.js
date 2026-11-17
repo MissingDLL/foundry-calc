@@ -1655,7 +1655,7 @@ const RECIPES = {
     ingredients: [{ item: I.TECHNUM_ORE, amount: 640 }, { item: I.COKED_IGNIUM, amount: 320 }, { item: I.MINERAL_ROCKS, amount: 128 }],
     output: [{ item: I.MOLTEN_TECHNUM, amount: 5760 }, { item: I.BLAST_FURNACE_SLAG, amount: 640 }],
     machines: {
-      [M.BLAST_FURNACE_BASE]: { cycleTime: 1 },
+      [M.BLAST_FURNACE_BASE]: { cycleTime: 60 },
     },
   },
   "Molten Xenoferrite": {
@@ -1663,7 +1663,7 @@ const RECIPES = {
     ingredients: [{ item: I.XENOFERRITE_ORE, amount: 640 }, { item: I.COKED_IGNIUM, amount: 320 }, { item: I.MINERAL_ROCKS, amount: 128 }],
     output: [{ item: I.MOLTEN_XENOFERRITE, amount: 5760 }, { item: I.BLAST_FURNACE_SLAG, amount: 640 }],
     machines: {
-      [M.BLAST_FURNACE_BASE]: { cycleTime: 1 },
+      [M.BLAST_FURNACE_BASE]: { cycleTime: 60 },
     },
   },
   "Mineral Rocks": {
@@ -1702,8 +1702,6 @@ const RECIPES = {
     output: { amount: 1 },
     machines: {
       [M.ORE_VEIN_MINER]: { cycleTime: 0.375 },
-      [M.DRONE_MINER_II]: { cycleTime: 0.666667 },
-      [M.DRONE_MINER_I]: { cycleTime: 1 },
     },
   },
   "Xenoferrite Ore Rubble": {
@@ -1714,6 +1712,22 @@ const RECIPES = {
       [M.ORE_VEIN_MINER]: { cycleTime: 0.375 },
       [M.DRONE_MINER_II]: { cycleTime: 0.666667 },
       [M.DRONE_MINER_I]: { cycleTime: 1 },
+    },
+  },
+  "Xeno-Crystal": {
+    category: CAT.METALLURGY,
+    ingredients: [],
+    output: { amount: 1 },
+    machines: {
+      [M.XENO_CRYSTAL_EXTRACTOR]: { cycleTime: 6 },
+    },
+  },
+  "Xeno-Scrap": {
+    category: CAT.METALLURGY,
+    ingredients: [],
+    output: { amount: 1 },
+    machines: {
+      [M.XENO_SCRAP_EXTRACTOR]: { cycleTime: 12 },
     },
   },
 
@@ -3646,31 +3660,31 @@ const RECIPES = {
   "Air": {
     category: CAT.STRUCTURES,
     ingredients: [],
-    output: { amount: 162000 },
+    output: { amount: 27000 },
     machines: {
       [M.AIR_INTAKE_BASE]: { cycleTime: 60 },
     },
   },
   "Hot Air": {
     category: CAT.STRUCTURES,
-    ingredients: [{ item: I.AIR, amount: 324000 }],
-    output: { amount: 324000 },
+    ingredients: [{ item: I.AIR, amount: 54000 }],
+    output: { amount: 54000 },
     machines: {
       [M.HOT_AIR_STOVE_BASE]: { cycleTime: 60 },
     },
   },
   "Low Density Olumite": {
     category: CAT.STRUCTURES,
-    ingredients: [{ item: I.WATER, amount: 64800 }],
-    output: { amount: 21600 },
+    ingredients: [{ item: I.WATER, amount: 10800 }],
+    output: { amount: 3600 },
     machines: {
       [M.COOLING_TOWER_BASE]: { cycleTime: 60 },
     },
   },
   "High-Pressure Steam": {
     category: CAT.STRUCTURES,
-    ingredients: [{ item: I.ENERGIZED_REACTOR_COMPOUND, amount: 1080000 }, { item: I.WATER, amount: 540000 }],
-    output: [{ item: I.HIGH_PRESSURE_STEAM, amount: 2160000 }, { item: I.DEPLETED_REACTOR_COMPOUND, amount: 1080000 }],
+    ingredients: [{ item: I.ENERGIZED_REACTOR_COMPOUND, amount: 180000 }, { item: I.WATER, amount: 90000 }],
+    output: [{ item: I.HIGH_PRESSURE_STEAM, amount: 360000 }, { item: I.DEPLETED_REACTOR_COMPOUND, amount: 180000 }],
     machines: {
       [M.STEAM_GENERATOR_BASE]: { cycleTime: 60 },
     },
@@ -3681,6 +3695,14 @@ const RECIPES = {
     output: { amount: 30 },
     machines: {
       [M.PUMPJACK_I]: { cycleTime: 1 },
+    },
+  },
+  "Energized Reactor Compound": {
+    category: CAT.STRUCTURES,
+    ingredients: [{ item: I.REACTOR_FUEL_MIX, amount: 43200 }, { item: I.DEPLETED_REACTOR_COMPOUND, amount: 180000 }],
+    output: { amount: 180000 },
+    machines: {
+      [M.XENO_REACTOR_BASE]: { cycleTime: 60 },
     },
   },
 

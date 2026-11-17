@@ -10570,7 +10570,7 @@
         }
       ],
       "machines": {
-        "Blast Furnace Base": 1
+        "Blast Furnace Base": 60
       }
     },
     "_base_bfm_xf": {
@@ -10603,7 +10603,7 @@
         }
       ],
       "machines": {
-        "Blast Furnace Base": 1
+        "Blast Furnace Base": 60
       }
     },
     "synthetic_mining__base_ore_mineral_rock": {
@@ -10619,9 +10619,9 @@
         }
       ],
       "machines": {
+        "Ore Vein Miner": 0.375,
         "Drone Miner I": 1.0,
-        "Drone Miner II": 0.666667,
-        "Ore Vein Miner": 0.375
+        "Drone Miner II": 0.666667
       }
     },
     "synthetic_mining__base_rubble_ignium": {
@@ -10637,9 +10637,9 @@
         }
       ],
       "machines": {
+        "Ore Vein Miner": 0.375,
         "Drone Miner I": 1.0,
-        "Drone Miner II": 0.666667,
-        "Ore Vein Miner": 0.375
+        "Drone Miner II": 0.666667
       }
     },
     "synthetic_mining__base_rubble_technum": {
@@ -10655,9 +10655,9 @@
         }
       ],
       "machines": {
+        "Ore Vein Miner": 0.375,
         "Drone Miner I": 1.0,
-        "Drone Miner II": 0.666667,
-        "Ore Vein Miner": 0.375
+        "Drone Miner II": 0.666667
       }
     },
     "synthetic_mining__base_rubble_telluxite": {
@@ -10673,8 +10673,6 @@
         }
       ],
       "machines": {
-        "Drone Miner I": 1.0,
-        "Drone Miner II": 0.666667,
         "Ore Vein Miner": 0.375
       }
     },
@@ -10691,9 +10689,9 @@
         }
       ],
       "machines": {
+        "Ore Vein Miner": 0.375,
         "Drone Miner I": 1.0,
-        "Drone Miner II": 0.666667,
-        "Ore Vein Miner": 0.375
+        "Drone Miner II": 0.666667
       }
     },
     "synthetic_boiler_steam": {
@@ -10726,7 +10724,7 @@
       "outputs": [
         {
           "id": "Air",
-          "amount": 162000.0
+          "amount": 27000.0
         }
       ],
       "machines": {
@@ -10741,13 +10739,13 @@
       "inputs": [
         {
           "id": "Air",
-          "amount": 324000.0
+          "amount": 54000.0
         }
       ],
       "outputs": [
         {
           "id": "Hot Air",
-          "amount": 324000.0
+          "amount": 54000.0
         }
       ],
       "machines": {
@@ -10762,13 +10760,13 @@
       "inputs": [
         {
           "id": "Water",
-          "amount": 64800.0
+          "amount": 10800.0
         }
       ],
       "outputs": [
         {
           "id": "Low Density Olumite",
-          "amount": 21600.0
+          "amount": 3600.0
         }
       ],
       "machines": {
@@ -10783,21 +10781,21 @@
       "inputs": [
         {
           "id": "Energized Reactor Compound",
-          "amount": 1080000.0
+          "amount": 180000.0
         },
         {
           "id": "Water",
-          "amount": 540000.0
+          "amount": 90000.0
         }
       ],
       "outputs": [
         {
           "id": "High-Pressure Steam",
-          "amount": 2160000.0
+          "amount": 360000.0
         },
         {
           "id": "Depleted Reactor Compound",
-          "amount": 1080000.0
+          "amount": 180000.0
         }
       ],
       "machines": {
@@ -10818,6 +10816,63 @@
       ],
       "machines": {
         "Pumpjack I": 1
+      }
+    },
+    "synthetic_npp_reactor__base_npp_reactor_base": {
+      "name": "Energized Reactor Compound",
+      "category_id": "_base_buildings",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Reactor Fuel Mix",
+          "amount": 43200.0
+        },
+        {
+          "id": "Depleted Reactor Compound",
+          "amount": 180000.0
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Energized Reactor Compound",
+          "amount": 180000.0
+        }
+      ],
+      "machines": {
+        "Xeno Reactor Base": 60
+      }
+    },
+    "synthetic_endless_miner__base_endless_miner_crystals_i": {
+      "name": "Xeno-Crystal",
+      "category_id": "_base_metallurgy",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "Xeno-Crystal",
+          "amount": 1
+        }
+      ],
+      "machines": {
+        "Xeno-Crystal-Extractor": 6.0
+      }
+    },
+    "synthetic_endless_miner__base_endless_miner_scrap_i": {
+      "name": "Xeno-Scrap",
+      "category_id": "_base_metallurgy",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "Xeno-Scrap",
+          "amount": 1
+        }
+      ],
+      "machines": {
+        "Xeno-Scrap-Extractor": 12.0
       }
     }
   },
