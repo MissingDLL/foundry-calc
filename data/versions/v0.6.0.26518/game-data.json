@@ -9499,25 +9499,6 @@
         "Advanced Smelter": 2.0
       }
     },
-    "_base_technum_rods_t1_primitive": {
-      "name": "Technum Rods",
-      "category_id": "",
-      "subgroup_id": "",
-      "time_ms": 0,
-      "inputs": [
-        {
-          "id": "Technum Ore Rubble",
-          "amount": 2
-        }
-      ],
-      "outputs": [
-        {
-          "id": "Technum Rods",
-          "amount": 1
-        }
-      ],
-      "machines": {}
-    },
     "_base_technum_rods_t2": {
       "name": "Technum Rods (Tier 2)",
       "category_id": "_base_metallurgy",
@@ -10476,25 +10457,6 @@
         "Smelter (Small)": 3.0,
         "Advanced Smelter": 2.0
       }
-    },
-    "_base_xf_plates_t1_primitive": {
-      "name": "Xenoferrite Plates",
-      "category_id": "",
-      "subgroup_id": "",
-      "time_ms": 0,
-      "inputs": [
-        {
-          "id": "Xenoferrite Ore Rubble",
-          "amount": 2
-        }
-      ],
-      "outputs": [
-        {
-          "id": "Xenoferrite Plates",
-          "amount": 1
-        }
-      ],
-      "machines": {}
     },
     "_base_xf_plates_t2": {
       "name": "Xenoferrite Plates (Tier 2)",

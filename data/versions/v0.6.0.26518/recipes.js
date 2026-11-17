@@ -3705,20 +3705,4 @@ const RECIPES = {
       [M.XENO_REACTOR_BASE]: { cycleTime: 60 },
     },
   },
-
-  // ── Unknown ──────────────────────────────────────────
-  "Technum Rods": {
-    category: "Unknown",
-    ingredients: [{ item: I.TECHNUM_ORE_RUBBLE, amount: 2 }],
-    output: { amount: 1 },
-    machines: {
-    },
-  },
-  "Xenoferrite Plates": {
-    category: "Unknown",
-    ingredients: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 2 }],
-    output: { amount: 1 },
-    machines: {
-    },
-  },
 };

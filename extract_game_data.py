@@ -1132,7 +1132,10 @@ def parse_recipes(templates_dir: Path, id_to_name: dict,
                     cycle_time = time_ms / 1000 / max(mod, 0.001)
                     machines[mname] = round(cycle_time, 6)
 
-        if not machines and not has_unresolved_tags:
+        # No machine at all → nothing can produce it in the calculator. E.g. the
+        # hidden "primitive" Xenoferrite Plates / Technum Rods (tag base_station,
+        # which no buildable carries) would otherwise appear as category "Unknown".
+        if not machines:
             continue
 
         # Resolve input items (solid + elemental)
