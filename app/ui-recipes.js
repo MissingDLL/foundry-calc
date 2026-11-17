@@ -440,6 +440,17 @@ function setRecipeForSale(idx, on) {
   calculateRecipes();
 }
 
+// Bots view "Sell all": toggles forSale on every selected bot line.
+function toggleBotsForSale() {
+  const bots = selectedRecipeList.filter(l => RECIPES[l.recipeName]?.category === 'Robots');
+  if (!bots.length) return;
+  const on = !bots.every(l => l.forSale);
+  bots.forEach(l => { l.forSale = on; });
+  renderSelectedRecipes();
+  saveSettings();
+  calculateRecipes();
+}
+
 function updateRecipeGoal(idx, val) {
   const parsed = parseFloat(val);
   if (isNaN(parsed) || parsed <= 0) {
@@ -466,6 +477,11 @@ function updateRecipeGoal(idx, val) {
 
 // ── Render selected list ──────────────────────────────────────
 function renderSelectedRecipes() {
+  const sellBtn = document.getElementById("botSellAllBtn");
+  if (sellBtn) {
+    const bots = selectedRecipeList.filter(l => RECIPES[l.recipeName]?.category === 'Robots');
+    sellBtn.textContent = bots.length && bots.every(l => l.forSale) ? "✗ Unsell all" : "Sell all";
+  }
   const el = document.getElementById("selectedRecipes");
   if (!selectedRecipeList.length) {
     el.innerHTML = `<div style="color:var(--color-text-disabled);font-size:13px;padding:20px 16px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:12px;text-align:center">

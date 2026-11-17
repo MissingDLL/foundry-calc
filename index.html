@@ -181,6 +181,9 @@
           <div style="display: flex; gap: 6px; margin-bottom: 8px">
             <button class="reset-btn" id="robotAllBtn_General" style="margin:0;padding:5px 10px;font-size:11px"
               onclick="toggleRecipeCategoryAll()">✓ All</button>
+            <button class="reset-btn" id="botSellAllBtn" style="margin:0;padding:5px 10px;font-size:11px"
+              title="Ship all selected bots up to the space station (for sale)"
+              onclick="toggleBotsForSale()">Sell all</button>
           </div>
           <div class="bot-list" id="botList"></div>
         </div>
@@ -674,7 +677,7 @@
   </script>
   <script src="app/state.js?v=29"></script>
   <script src="app/ui-settings.js?v=22"></script>
-  <script src="app/ui-recipes.js?v=22"></script>
+  <script src="app/ui-recipes.js?v=23"></script>
   <script src="app/calculation.js?v=41"></script>
   <script src="app/ui-nav.js?v=22"></script>
   <script src="app/visualization.js?v=41"></script>
