@@ -235,6 +235,7 @@ function exportPlan() {
       machineName: item.machineName,
       goal:        item.goal,
       wsOverride:  item.wsOverride,
+      forSale:     !!item.forSale,
     })),
     settings: {
       variantSettings,
@@ -246,6 +247,8 @@ function exportPlan() {
       modularSettings,
       adjacencyBonus,
       veinsDepleted,
+      shippingShip,
+      shippingFlightSec,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
     },
@@ -298,6 +301,7 @@ function _applyImportedPlan(plan) {
         machineName: item.machineName,
         goal:        item.goal       || 60,
         wsOverride:  item.wsOverride || null,
+        forSale:     !!item.forSale,
         wsExpanded:  false,
       }));
   }
@@ -316,6 +320,8 @@ function _applyImportedPlan(plan) {
   Object.keys(modularSettings).forEach(k => delete modularSettings[k]);
   adjacencyBonus = true;
   veinsDepleted  = false;
+  shippingShip = null;
+  shippingFlightSec = 26;
   MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
 
   // Restore settings from the imported plan
@@ -333,6 +339,8 @@ function _applyImportedPlan(plan) {
   });
   if (typeof s.adjacencyBonus === 'boolean') adjacencyBonus = s.adjacencyBonus;
   if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
+  if (typeof s.shippingShip === 'string') shippingShip = s.shippingShip;
+  if (typeof s.shippingFlightSec === 'number' && s.shippingFlightSec >= 0) shippingFlightSec = s.shippingFlightSec;
   _applyModularSpeeds();
   if (s.machineFamilyDefaults) {
     MACHINE_FAMILIES.forEach(f => {
@@ -380,6 +388,7 @@ function sharePlan() {
       machineName: item.machineName,
       goal:        item.goal,
       wsOverride:  item.wsOverride,
+      forSale:     !!item.forSale,
     })),
     settings: {
       variantSettings,
@@ -391,6 +400,8 @@ function sharePlan() {
       modularSettings,
       adjacencyBonus,
       veinsDepleted,
+      shippingShip,
+      shippingFlightSec,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
     },

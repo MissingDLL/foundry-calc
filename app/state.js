@@ -431,6 +431,11 @@ const botEfficiencyOverrides = {}; // { botName → efficiencyValue (%) }
 let miningEfficiencyLevel   = 0;
 let pumpjackEfficiencyLevel = 0;
 let depletedVeins           = 1; // depleted veins being mined → ≥ 1 Fracking Tower each
+// Planet <-> space station shipping. The flight time (lift-off + landing per
+// trip) is not in the game data; 20-26 s measured in-game (forum, 2 Jun 2025),
+// 26 s = building on the surface (conservative default).
+let shippingShip      = null; // ship name; null = biggest cargo ship
+let shippingFlightSec = 26;
 const researchBonus = (name) =>
   (typeof RESEARCH_BONUSES !== 'undefined' && RESEARCH_BONUSES.perLevel[name]) || 0;
 const modularSettings      = {}; // { machineName → number of speed modules (Tower/Vent) }
@@ -711,6 +716,8 @@ function _flushSaveSettings() {
       modularSettings,
       adjacencyBonus,
       veinsDepleted,
+      shippingShip,
+      shippingFlightSec,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
       // Save recipe list without UI-only state (wsExpanded)
@@ -720,6 +727,7 @@ function _flushSaveSettings() {
         machineName: item.machineName,
         goal:        item.goal,
         wsOverride:  item.wsOverride,
+        forSale:     !!item.forSale,
       })),
     }));
   } catch (e) {
@@ -747,6 +755,8 @@ function loadSettings() {
     });
     if (typeof s.adjacencyBonus === 'boolean') adjacencyBonus = s.adjacencyBonus;
     if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
+    if (typeof s.shippingShip === 'string') shippingShip = s.shippingShip;
+    if (typeof s.shippingFlightSec === 'number' && s.shippingFlightSec >= 0) shippingFlightSec = s.shippingFlightSec;
     if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))
       calcDepthMode = s.calcDepthMode;
 
@@ -789,6 +799,7 @@ function loadSettings() {
             machineName,
             goal,
             wsOverride: item.wsOverride || null,
+            forSale:    !!item.forSale,
             wsExpanded: false,
           };
         });

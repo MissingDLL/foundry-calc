@@ -654,6 +654,52 @@ def detect_research_bonuses(templates_dir: Path, bots_raw: dict, id_to_name: dic
     return out
 
 
+def detect_shipping_data(templates_dir: Path, id_to_name: dict) -> dict:
+    """
+    Planet <-> space station shipping (verified against a Steam forum measurement,
+    2 Jun 2025, and in-game panels):
+      ships:  cargo kg, required pad size, load/unload kg/s, hangar space
+      pads:   pad size, cargo kg, conveyor inputs/outputs, down-shipping allowed
+              (the Medium Assembly Line pad has no belts and only ships up)
+      conveyors: items/min per belt = slotsPerTick x 80 (I 160 ... IV 1280/min;
+              4 x IV on a medium pad = 5120/min as measured)
+      weights: item name -> kg (_baseWeightInGrams)
+    The flight time between pad and station is NOT in the game data (app setting).
+    """
+    bots = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
+    item_ids = _build_item_bot_ids(templates_dir)
+    num = lambda v: float(v) if str(v or "").strip() not in ("", "None") else 0.0
+    ships = []
+    for v in load_yaml_templates(templates_dir, "SpaceShipTemplate").values():
+        if v.get("spaceShipType") != "TransportShip":
+            continue
+        ships.append({"name": v.get("name", ""), "cargoKg": num(v.get("transportShip_cargoSpaceInKg")),
+                      "padSize": v.get("transportShip_requiredShippingPadSize", ""),
+                      "transferKgPerS": num(v.get("transportShip_itemTransferRate_kgPerS_str")),
+                      "hangarSpace": num(v.get("requiredHangarSpace"))})
+    pads, conveyors = [], {}
+    for ident, v in bots.items():
+        name = id_to_name.get(ident, "")
+        if not name or ident not in item_ids:
+            continue
+        if v.get("type") == "ShippingPad":
+            conns = v.get("ccm_connectionData") or []
+            pads.append({"name": name, "padSize": v.get("shippingPad_padSize", ""),
+                         "capacityKg": num(v.get("shippingPad_cargoCapacity_weightInKg_str")),
+                         "inputs": sum(1 for c in conns if c.get("isInput")),
+                         "outputs": sum(1 for c in conns if not c.get("isInput")),
+                         "downAllowed": str(v.get("shippingPad_spp_preventDownShipping")) != "True"})
+        elif v.get("type") == "Conveyor" and not v.get("conveyor_isSlope") and num(v.get("conveyor_speed_slotsPerTick")):
+            conveyors[name] = num(v.get("conveyor_speed_slotsPerTick")) * 80
+    weights = {}
+    for v in load_yaml_templates(templates_dir, "ItemTemplate").values():
+        g = num(v.get("_baseWeightInGrams"))
+        if g > 0 and v.get("name"):
+            weights[v["name"]] = g / 1000
+    return {"ships": sorted(ships, key=lambda x: x["cargoKg"]), "pads": sorted(pads, key=lambda x: x["capacityKg"]),
+            "conveyors": conveyors, "weights": weights}
+
+
 def detect_workstation_data(templates_dir: Path, id_to_name: dict) -> dict:
     """
     Workstation bonuses from game data (the old hand-written APPLIES_TO_MACHINES
@@ -1769,6 +1815,7 @@ def generate_game_data_js(version: str, recipes: list[dict],
                           research_bonuses: dict,
                           external_sources: dict,
                           workstation_data: dict,
+                          shipping_data: dict,
                           power_data: dict | None = None) -> str:
     """Generate game-data.js content."""
 
@@ -1952,6 +1999,12 @@ def generate_game_data_js(version: str, recipes: list[dict],
     for ore, info in sorted(vein_mining_fluids.items()):
         lines.append(f"  '{ore}': {json.dumps(info)},")
     lines.append("});")
+    lines.append("")
+
+    # SHIPPING (planet <-> station) and item weights
+    lines.append("// ── Shipping pads, cargo ships, conveyor speeds, item weights (kg) ──")
+    lines.append(f"const SHIPPING = Object.freeze({json.dumps({k: shipping_data[k] for k in ('ships', 'pads', 'conveyors')})});")
+    lines.append(f"const ITEM_WEIGHTS_KG = Object.freeze({json.dumps(shipping_data['weights'], sort_keys=True)});")
     lines.append("")
 
     # WORKSTATION_CATEGORIES / WORKSTATION_EFFECTS (robot bonuses per machine group)
@@ -2500,6 +2553,7 @@ def main():
     byproduct_disposal = detect_byproducts_and_disposal(templates_dir, recipes, id_to_name)
     external_sources = detect_external_sources(templates_dir, recipes, fluid_sources, id_to_name)
     workstation_data = detect_workstation_data(templates_dir, id_to_name)
+    shipping_data = detect_shipping_data(templates_dir, id_to_name)
     vein_mining_fluids = detect_vein_mining_fluids(templates_dir, bots_raw, id_to_name)
     research_bonuses = detect_research_bonuses(templates_dir, bots_raw, id_to_name)
     # A vein mining fluid is consumed (by miners), so it is no byproduct to dispose of
@@ -2559,7 +2613,7 @@ def main():
         bot_data, subgroups, templates_dir, id_to_name,
         assembly_line_composition, assembly_line_robots, fluid_sources,
         byproduct_disposal, machine_fluid_minimums, modular_buildings,
-        vein_mining_fluids, research_bonuses, external_sources, workstation_data, power_data)
+        vein_mining_fluids, research_bonuses, external_sources, workstation_data, shipping_data, power_data)
     game_data_path = out_dir / "game-data.js"
     game_data_path.write_text(game_data_content, encoding="utf-8")
     print(f"  Wrote {game_data_path}")

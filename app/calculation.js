@@ -136,6 +136,64 @@ function frackingTowerPlan(liquidPerMin) {
   return { machine, count, capacity, powerKw: machinesPowerKw(machine, count) };
 }
 
+// Items/min of the conveyor tier chosen in settings (game data; I 160 … IV 1280).
+function conveyorItemsPerMin() {
+  const fam = MACHINE_FAMILIES.find(f => f.label === 'Conveyor Belt');
+  const type = fam?.defaultChoice || fam?.machines[0] || 'Conveyor I';
+  return (typeof SHIPPING !== 'undefined' && SHIPPING.conveyors[type]) || 160;
+}
+
+// Shipping pads planet <-> space station for ONE item in ONE direction (a pad
+// is set to one item and one direction in-game, so pads are counted per item).
+// Per pad: ship cycle = load/transfer rate + flight time (setting), capped by
+// the pad's belts (inputs when shipping up, outputs when down) at the chosen
+// conveyor tier. Assembly Line items going up use the Assembly Line pad
+// (fed directly, no belts). One ship serves one pad.
+function shippingPlan(item, perMin, direction, viaAssemblyLine) {
+  if (typeof SHIPPING === 'undefined' || typeof ITEM_WEIGHTS_KG === 'undefined') return null;
+  const kgEach = ITEM_WEIGHTS_KG[item];
+  const ship = SHIPPING.ships.find(sh => sh.name === shippingShip) || SHIPPING.ships[SHIPPING.ships.length - 1];
+  if (!kgEach || !ship || !(perMin > 0)) return null;
+  const fits = SHIPPING.pads.filter(p => p.padSize === ship.padSize && (direction === 'up' || p.downAllowed));
+  const pad = (viaAssemblyLine && direction === 'up' && fits.find(p => !p.inputs)) ||
+              fits.find(p => (direction === 'up' ? p.inputs : p.outputs) > 0);
+  if (!pad) return null;
+  const load = Math.min(ship.cargoKg, pad.capacityKg);
+  const shipKgPerMin = load / (load / ship.transferKgPerS + shippingFlightSec) * 60;
+  const belts = direction === 'up' ? pad.inputs : pad.outputs;
+  const beltKgPerMin = belts ? belts * conveyorItemsPerMin() * kgEach : Infinity;
+  const padKgPerMin = Math.min(shipKgPerMin, beltKgPerMin);
+  const kgPerMin = perMin * kgEach;
+  const count = ceilMachines(kgPerMin / padKgPerMin);
+  // Belts needed in total (not rounded up per pad: 6,000/min on 2 pads with
+  // Conveyor IV = 5 belts as 3 + 2, not 2 x 3), at least one per pad, at most
+  // all connections. Assembly Line pad: none.
+  const totalBelts = belts ? Math.min(count * belts, Math.max(count, ceilMachines(perMin / conveyorItemsPerMin()))) : 0;
+  const beltsPerPad = belts ? Math.ceil(totalBelts / count) : 0;
+  const padsX = (n, b) => `${n} pad${n > 1 ? 's' : ''} × ${b}`;
+  const rest = belts ? totalBelts % count : 0;
+  const beltSplit = rest ? `${padsX(rest, beltsPerPad)} + ${padsX(count - rest, beltsPerPad - 1)}` : '';
+  // Alternative: fill pads one after another. A pad only uses as many belts as
+  // its ship can carry away (heavy items: often 1 belt saturates the ship), so
+  // "full" = min(connections, belts the ship cycle can absorb).
+  let fillSplit = '', fillBelts = 0;
+  if (belts) {
+    const perBelt = conveyorItemsPerMin();
+    const useful = Math.min(belts, Math.max(1, ceilMachines(shipKgPerMin / (perBelt * kgEach))));
+    const padMax = Math.min(useful * perBelt, shipKgPerMin / kgEach); // items/min one full pad moves
+    let full = Math.min(count, Math.floor(perMin / padMax + 1e-9));
+    const left = perMin - full * padMax;
+    let lastBelts = left > 1e-9 ? ceilMachines(left / perBelt) : 0;
+    if (lastBelts === useful) { full++; lastBelts = 0; } // last pad is full too
+    fillBelts = full * useful + lastBelts;
+    fillSplit = [full ? padsX(full, useful) : '', lastBelts ? padsX(1, lastBelts) : ''].filter(Boolean).join(' + ');
+    if (!lastBelts && full === count && useful === beltsPerPad && !rest) fillSplit = ''; // same as even
+  }
+  return { item, direction, perMin, kgEach, kgPerMin, pad: pad.name, ship: ship.name, count,
+           padKgPerMin, limit: beltKgPerMin < shipKgPerMin ? 'belts' : 'ship',
+           belts, beltsPerPad, totalBelts, beltSplit, fillSplit, fillBelts, hangar: count * ship.hangarSpace };
+}
+
 // Fluid each running machine needs regardless of utilisation, scaled by its
 // modules — the Blast Furnace burns Hot Air to hold temperature (it cools down
 // and slows without it), so this is per rounded-up machine, never proportional.
@@ -837,6 +895,20 @@ function calculateRecipes() {
                                recipeName: name, byproduct: true, order: 1000000 };
     });
   }
+  // ── Space station shipping: lines marked "for sale" go up, items delivered
+  // by the station (EXTERNAL_SOURCES, e.g. Firmarlite Bar) come down.
+  const shipping = [];
+  lines.filter(l => l.forSale).forEach(l => {
+    const p = shippingPlan(l.itemName, l.goal, 'up', l.machineName === M.ASSEMBLY_LINE);
+    if (p) shipping.push(p);
+  });
+  if (typeof EXTERNAL_SOURCES !== 'undefined') {
+    Object.keys(EXTERNAL_SOURCES).forEach(item => {
+      const amount = resolvedTotals[item]?.amount ?? directTotals[item]?.amount ?? 0;
+      const p = shippingPlan(item, amount, 'down', false);
+      if (p) shipping.push(p);
+    });
+  }
   const frackPlan = frackingTowerPlan(
     typeof VEIN_MINING_FLUIDS !== 'undefined' && veinsDepleted
       ? fixedFluids[Object.values(VEIN_MINING_FLUIDS)[0]?.fluid] || 0 : 0);
@@ -935,7 +1007,7 @@ function calculateRecipes() {
   // ── Conveyor throughput (for Full Detail mode) ───────────────
   const conveyorFamily  = MACHINE_FAMILIES.find(f => f.label === 'Conveyor Belt');
   const conveyorType    = conveyorFamily?.defaultChoice || conveyorFamily?.machines[0] || 'Conveyor I';
-  const conveyorThroughput = RECIPES[conveyorType]?.items_per_min || 160;
+  const conveyorThroughput = conveyorItemsPerMin(); // was a missing data field → always 160
 
   // ── Full Detail: compact Factorio-calc-style rows ─────────────
   function buildFullDetailRows(totalsMap) {
@@ -1277,6 +1349,38 @@ function calculateRecipes() {
             </span>`;
           }).join('')}
         </div>
+      </div>
+    </div>` : ''}
+
+    ${shipping.length ? `
+    <div class="collapsible-section">
+      <div class="collapsible-header" onclick="toggleSection(this)">
+        <span class="ch-title">Space Station Shipping</span>
+        <span style="display:flex;align-items:center;gap:12px">
+          <span class="ch-meta">${shipping.reduce((a, p) => a + p.count, 0)} pads · ${shipping.reduce((a, p) => a + p.count, 0)} ships (${shipping[0].ship}) · hangar ${shipping.reduce((a, p) => a + p.hangar, 0)} · flight ${shippingFlightSec}s</span>
+          <span class="ch-arrow">▼</span>
+        </span>
+      </div>
+      <div class="collapsible-body">
+        <table class="results-table">
+          <thead><tr><th>Item</th><th>Direction</th><th style="text-align:right">/min</th><th style="text-align:right">kg/item</th><th style="text-align:right">kg/min</th><th>Pad</th><th style="text-align:right">Pads</th><th>Belts</th><th>Limited by</th></tr></thead>
+          <tbody>${shipping.map(p => `
+            <tr>
+              <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(p.item, 48)}<span class="label">${p.item}</span></div></td>
+              <td style="padding:6px 12px">${p.direction === 'up' ? '↑ to station (sale)' : '↓ from station'}</td>
+              <td class="num">${fmt(p.perMin)}</td>
+              <td class="num">${fmt(p.kgEach)}</td>
+              <td class="num">${fmt(Math.round(p.kgPerMin))}</td>
+              <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(p.pad, 48)}<span class="label">${p.pad}</span></div></td>
+              <td class="num">${p.count}</td>
+              <td style="padding:6px 12px">${p.belts
+                ? `<div style="display:flex;align-items:center;gap:6px">${iconBox(conveyorType, 32)}<span>${p.totalBelts} × ${conveyorType}</span><span style="font-size:11px;color:var(--text-dim)" title="Belts per pad / conveyor connections of a pad">(${p.beltSplit || p.beltsPerPad + ' per pad'} · max ${p.belts} ${p.direction === 'up' ? 'inputs' : 'outputs'})</span></div>${p.fillSplit && p.fillSplit !== p.beltSplit
+                  ? `<div style="font-size:11px;color:var(--text-dim);margin-top:3px" title="Fill one pad completely before using the next">or fill pads first: ${p.fillBelts} × ${conveyorType} (${p.fillSplit})</div>` : ''}`
+                : '<span style="font-size:12px;color:var(--text-dim)">fed by Assembly Line</span>'}</td>
+              <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${p.limit === 'belts' ? 'conveyor belts' : 'ship cycle'} · ${fmt(Math.round(p.padKgPerMin))} kg/min per pad</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
       </div>
     </div>` : ''}
 

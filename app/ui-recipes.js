@@ -431,6 +431,15 @@ function updateRecipeVariant(idx, variantName) {
   renderSelectedRecipes();
   if (selectedRecipeList.length) calculateRecipes();
 }
+// "Sell" toggle: the line's output is shipped up to the space station.
+function setRecipeForSale(idx, on) {
+  const item = selectedRecipeList[idx];
+  if (!item) return;
+  item.forSale = !!on;
+  saveSettings();
+  calculateRecipes();
+}
+
 function updateRecipeGoal(idx, val) {
   const parsed = parseFloat(val);
   if (isNaN(parsed) || parsed <= 0) {
@@ -538,6 +547,11 @@ function renderSelectedRecipes() {
               onchange="updateRecipeGoal(this.dataset.idx, this.value)"
               style="width:64px;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;text-align:right;outline:none">
           </div>
+          <label title="Ship this item up to the space station (for sale) — counts shipping pads"
+            style="display:flex;align-items:center;gap:3px;font-size:10px;color:var(--text-dim);cursor:pointer;flex-shrink:0">
+            <input type="checkbox" data-idx="${idx}" ${item.forSale ? "checked" : ""}
+              onchange="setRecipeForSale(this.dataset.idx, this.checked)">Sell
+          </label>
         </div>
         ${Array.isArray(r.output) && r.output.length > 1
           ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:5px">

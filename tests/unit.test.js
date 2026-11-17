@@ -222,6 +222,30 @@ describe('machineOpm() / ceilMachines()', () => {
 });
 
 
+describe('Space station shipping (game data + forum measurement)', () => {
+  it('Medium T2, 20 s flight, Conveyor IV: ~9,160 kg/min per pad (forum: 9,230)', () => {
+    shippingShip = 'Medium Cargo Ship T2'; shippingFlightSec = 20;
+    MACHINE_FAMILIES.find(f => f.label === 'Conveyor Belt').defaultChoice = 'Conveyor IV'; // belts not limiting
+    const p = shippingPlan('Firmarlite Bar', 60, 'down', false);
+    expect(p.pad).toBe('Shipping Pad (Medium)');
+    expect(p.padKgPerMin).toBeCloseTo(10000 / (10000 / 220 + 20) * 60, 0);
+    expect(p.count).toBe(1);
+  });
+  it('robots from the Assembly Line go up on the belt-less Assembly Line pad', () => {
+    shippingShip = 'Medium Cargo Ship T2'; shippingFlightSec = 26;
+    const p = shippingPlan('Personal Assistant Robot', 60, 'up', true);
+    expect(p.pad).toBe('Shipping Pad (Medium, Assembly Line)');
+    expect(p.count).toBe(2); // 10,800 kg/min
+  });
+  it('light items are limited by the belts (4 x Conveyor I = 640 items/min)', () => {
+    shippingShip = 'Medium Cargo Ship T2'; shippingFlightSec = 26;
+    const p = shippingPlan('Firmarlite Bar', 2000, 'down', false); // 20,000 kg/min
+    expect(p.limit).toBe('belts');
+    expect(p.padKgPerMin).toBeCloseTo(4 * 160 * 10, 0);
+  });
+});
+
+
 describe('Workstations (in-game values, Technum Rods T3 / Casting Machine)', () => {
   const r = RECIPES['Technum Rods (Tier 3)'];
   const item = (robots) => ({ itemName: 'Technum Rods', machineName: 'Casting Machine',

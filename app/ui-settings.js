@@ -348,6 +348,49 @@ function renderSettingsContent(targetId) {
     el.appendChild(veins);
   }
 
+  // ── Section: Space station shipping ────────────────────────────
+  if (typeof SHIPPING !== "undefined" && SHIPPING.ships.length) {
+    const shSep = document.createElement("div");
+    shSep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
+    el.appendChild(shSep);
+    const shTitle = document.createElement("div");
+    shTitle.style.cssText =
+      "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
+    shTitle.textContent = "Space Station Shipping";
+    el.appendChild(shTitle);
+    const shDesc = document.createElement("div");
+    shDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
+    shDesc.textContent =
+      "Cargo ship used for planetary shipping and the flight time per trip (lift-off + landing; not in game data — measured 20 s on the top build layer, 26 s on the surface).";
+    el.appendChild(shDesc);
+
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--text)";
+    const sel = document.createElement("select");
+    const current = SHIPPING.ships.find(s => s.name === shippingShip) || SHIPPING.ships[SHIPPING.ships.length - 1];
+    SHIPPING.ships.forEach(s => {
+      const opt = new Option(`${s.name} — ${fmt(s.cargoKg)} kg, ${s.padSize} pad`, s.name);
+      opt.selected = s === current;
+      sel.appendChild(opt);
+    });
+    sel.onchange = () => { shippingShip = sel.value; saveSettings(); calculateRecipes(); };
+    row.appendChild(sel);
+    const fl = document.createElement("label");
+    fl.style.cssText = "display:flex;align-items:center;gap:6px";
+    fl.appendChild(document.createTextNode("Flight time per trip (s):"));
+    const inp = document.createElement("input");
+    inp.type = "number"; inp.min = "0"; inp.step = "1"; inp.value = shippingFlightSec;
+    inp.style.cssText = "width:60px;padding:3px 6px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--accent3);border-radius:8px;text-align:right";
+    inp.oninput = () => {
+      const v = parseFloat(inp.value);
+      shippingFlightSec = isNaN(v) || v < 0 ? 26 : v;
+      saveSettings(); calculateRecipes();
+    };
+    fl.appendChild(inp);
+    row.appendChild(fl);
+    el.appendChild(row);
+  }
+
   // ── Section: Modular buildings (speed modules + adjacency) ────────
   if (typeof MODULAR_BUILDINGS !== "undefined" && Object.keys(MODULAR_BUILDINGS).length) {
     const modSep = document.createElement("div");
