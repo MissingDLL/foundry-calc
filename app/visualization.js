@@ -193,7 +193,7 @@ function buildSankeyGraph() {
 
     // Recurse into each ingredient at the computed rate
     r.ingredients.forEach(ing => {
-      const ingRate  = runs * ing.amount * (60 / md.cycleTime);
+      const ingRate  = runs * ing.amount * (60 / wsCycleTime(r, { itemName: resolved, machineName }));
       const ingLabel = expand(ing.item, ingRate, nextPath);
       if (ingLabel) addEdge(ingLabel, resolved, ingRate);
     });
@@ -203,7 +203,7 @@ function buildSankeyGraph() {
     if (Array.isArray(r.output) && r.output.length > 1) {
       for (let i = 1; i < r.output.length; i++) {
         const sec     = r.output[i];
-        addByproduct(resolved, sec.item, runs * (sec.amount * (sec.chance ?? 1)) * (60 / md.cycleTime));
+        addByproduct(resolved, sec.item, runs * (sec.amount * (sec.chance ?? 1)) * (60 / wsCycleTime(r, { itemName: resolved, machineName })));
       }
     }
 
@@ -215,7 +215,7 @@ function buildSankeyGraph() {
     const r = RECIPES[item.recipeName || item.name];
     if (!r || !r.machines[item.machineName]) return;
 
-    const ct  = r.machines[item.machineName].cycleTime;
+    const ct  = wsCycleTime(r, item); // incl. workstation speed
 
     const opm      = machineOpm(r, item);
     const machines = ceilMachines(item.goal / opm); // rounded-up integer
@@ -274,7 +274,7 @@ function buildSankeyGraph() {
       let leftover = Math.min(byproductNode.rate, pool[itemName] ?? byproductNode.rate);
       if (repMachine) {
         // Only what the chain took from the pool is reprocessed (Slag → Cement)
-        const inPerMachine  = (60 / repRecipe.machines[repMachine].cycleTime) * repRecipe.ingredients[0].amount;
+        const inPerMachine  = (60 / wsCycleTime(repRecipe, { itemName: rp.produces, machineName: repMachine })) * repRecipe.ingredients[0].amount;
         const outPerMachine = machineOpm(repRecipe, { itemName: rp.produces, machineName: repMachine });
         const usedOut = Math.max(0, (_lastSupply[rp.produces] || 0) - (pool[rp.produces] || 0));
         const usedIn  = Math.min(byproductNode.rate, usedOut / outPerMachine * inPerMachine);

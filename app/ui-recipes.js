@@ -491,7 +491,7 @@ function renderSelectedRecipes() {
         })
         .join("");
 
-      const ct = r.machines[item.machineName].cycleTime;
+      const ct = wsCycleTime(r, item); // incl. workstation speed
       const opm = machineOpm(r, item);
       const machinesNeeded = ceilMachines(item.goal / opm);
       const actualOpm = machinesNeeded * opm;
@@ -543,7 +543,7 @@ function renderSelectedRecipes() {
           ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:5px">
           <span style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">By-products:</span>
           ${r.output.slice(1).map(op => {
-            const byOpm = (60 / r.machines[item.machineName].cycleTime) * op.amount * machinesNeeded;
+            const byOpm = (item.goal / opm) * (60 / ct) * op.amount * (op.chance ?? 1); // goal-based like the tables
             return `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(op.item, 14)}${op.item}: <span style="color:var(--warn)">${fmt(byOpm)}</span></span>`;
           }).join(' <span style="color:var(--color-text-disabled)">·</span> ')}
         </div>`

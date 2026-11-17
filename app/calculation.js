@@ -53,14 +53,21 @@ function getOutputLabel(recipe) {
 // entry, or { itemName, machineName } for items deeper in the chain.
 // Single source of truth: table, chain resolution, sidebar and Sankey all use it.
 function machineOpm(recipe, item) {
-  const ct = recipe.machines[item.machineName].cycleTime;
+  const ct = wsCycleTime(recipe, item);
   const parent = item.itemName?.match(/^(.+)\s+(?:Arm|Head|Leg|Torso)$/)?.[1];
   const eff = botEfficiencyOverrides[item.itemName] ?? botEfficiencyOverrides[parent] ?? recipe.efficiency ?? 0;
   const pumpjackBonus = typeof RESEARCH_BONUSES !== 'undefined' && RESEARCH_BONUSES.pumpjacks.includes(item.machineName)
     ? pumpjackEfficiencyLevel * researchBonus('Pumpjack Efficiency') : 0;
   // All bonuses stack additively in the productivity bracket.
   return (60 / ct) * getOutputAmount(recipe) * (1 + eff / 100)
-       * (1 + pumpjackBonus + getItemWsBonus(item));
+       * (1 + pumpjackBonus + getItemWsEffect(item).eff);
+}
+
+// Effective cycle time incl. workstation SPEED: a faster machine needs fewer
+// units but scales input and output alike, so every flow derived from the
+// cycle time (ingredients, byproducts) must use this, never the raw value.
+function wsCycleTime(recipe, item) {
+  return recipe.machines[item.machineName].cycleTime / (1 + getItemWsEffect(item).speed);
 }
 
 // Byproduct supply pool of the last calculation (item → per min), read by the
@@ -105,7 +112,7 @@ function getMachinePowerKw(machineName) {
 // buildings of a type stand side by side in one row: the two ends have one
 // neighbour, inner ones two; each neighbour cuts `adjacencyPowerDecrease`
 // (in-game: Hot Air Stove 10 MW → 7.5 MW with one neighbour).
-function machinesPowerKw(machine, count) {
+function machinesPowerKw(machine, count, item = { machineName: machine }) {
   const mb = _modular(machine);
   // Fracking Tower: power grows per optional module (+100 % each), not with speed
   const factor = mb?.powerPerModule != null ? 1 + (modularModules(machine) - mb.ignored) * mb.powerPerModule
@@ -113,7 +120,8 @@ function machinesPowerKw(machine, count) {
   const each = (getMachinePowerKw(machine) || mb?.basePowerKw || 0) * factor;
   const dec  = adjacencyBonus ? (mb?.adjacencyPowerDecrease || 0) : 0;
   const neighbourSlots = count > 1 ? 2 * (count - 1) : 0;
-  return Math.max(0, each * (count - dec * neighbourSlots));
+  // + workstation power consumption (e.g. +80 % with 3 Screen Bots + core)
+  return Math.max(0, each * (1 + getItemWsEffect(item).power) * (count - dec * neighbourSlots));
 }
 
 // Fracking Towers for depleted veins: one tower feeds one vein, so at least
@@ -279,7 +287,7 @@ function calculateRecipes() {
 
       if (!r.machines[item.machineName]) return null;
 
-      const ct = r.machines[item.machineName].cycleTime; // seconds per cycle
+      const ct = wsCycleTime(r, item); // seconds per cycle (incl. workstation speed)
 
       const opm = machineOpm(r, item);
 
@@ -335,7 +343,7 @@ function calculateRecipes() {
   lines.forEach(line => {
     const r = RECIPES[line.recipeName || line.name];
     if (!Array.isArray(r?.output) || r.output.length < 2) return;
-    const ct = r.machines[line.machineName].cycleTime;
+    const ct = wsCycleTime(r, line);
     for (let i = 1; i < r.output.length; i++) {
       const sec = r.output[i];
       const apm = line.runs * (60 / ct) * sec.amount * (sec.chance ?? 1);
@@ -366,7 +374,8 @@ function calculateRecipes() {
       ? preferredMachineFor(recipe) : null;
     const md = machine && recipe.machines[machine];
     if (!md) return out;
-    const runsPerUnit = (60 / md.cycleTime) / machineOpm(recipe, { itemName: resolved, machineName: machine });
+    const chainItem = { itemName: resolved, machineName: machine };
+    const runsPerUnit = (60 / wsCycleTime(recipe, chainItem)) / machineOpm(recipe, chainItem);
     if (Array.isArray(recipe.output)) {
       recipe.output.slice(1).forEach(sec => {
         out[sec.item] = (out[sec.item] || 0) + runsPerUnit * sec.amount * (sec.chance ?? 1);
@@ -404,7 +413,7 @@ function calculateRecipes() {
     const repRecipe  = rp && RECIPES[rp.recipe];
     const repMachine = repRecipe && preferredMachineFor(repRecipe);
     if (!repMachine) { supply[name] = (supply[name] || 0) + info.amount; return; }
-    const inPerMachine  = (60 / repRecipe.machines[repMachine].cycleTime) * repRecipe.ingredients[0].amount;
+    const inPerMachine  = (60 / wsCycleTime(repRecipe, { itemName: rp.produces, machineName: repMachine })) * repRecipe.ingredients[0].amount;
     const outPerMachine = machineOpm(repRecipe, { itemName: rp.produces, machineName: repMachine });
     const potential = (info.amount / inPerMachine) * outPerMachine;
     supply[rp.produces] = (supply[rp.produces] || 0) + potential;
@@ -424,12 +433,12 @@ function calculateRecipes() {
     const recipe = RECIPES[line.recipeName || line.name];
     const nSolid  = countSolidConnections(recipe, line.itemName);
     const loaders = calcLoadersForMachine(line.machineName, nSolid);
-    const machPwr = machinesPowerKw(line.machineName, 1); // per machine, same rules as totals
+    const machPwr = machinesPowerKw(line.machineName, 1, line); // per machine, incl. the line's own WS
 
     const key = line.machineName;
     if (!infraByMachine[key]) {
       infraByMachine[key] = {
-        machineName: key, count: 0,
+        machineName: key, count: 0, line, // first line of this machine type (its WS for power)
         machPwrKw: machPwr,
         totalMachPwrKw: 0,
         loaderCount: 0, secondLaneCount: 0, thirdLaneCount: 0,
@@ -445,7 +454,7 @@ function calculateRecipes() {
   });
 
   // Adjacency needs the whole count per type, so total power is set per type
-  Object.values(infraByMachine).forEach(e => { e.totalMachPwrKw = machinesPowerKw(e.machineName, e.count); });
+  Object.values(infraByMachine).forEach(e => { e.totalMachPwrKw = machinesPowerKw(e.machineName, e.count, e.line); });
   const totalMachPwrKw  = Object.values(infraByMachine).reduce((s, e) => s + e.totalMachPwrKw,   0);
   const totalLoaderPwrKw = Object.values(infraByMachine).reduce((s, e) => s + e.totalLoaderPwrKw, 0);
   const totalPwrKw       = totalMachPwrKw + totalLoaderPwrKw;
@@ -518,7 +527,7 @@ function calculateRecipes() {
   const overviewRows = lines
     .map((r) => {
       const recipe = RECIPES[r.recipeName || r.name];
-      const ct  = recipe.machines[r.machineName].cycleTime;
+      const ct  = wsCycleTime(recipe, r);
       const rid = 'rrow_' + (rowIdx++); // unique ID for collapsible detail row
 
       // Build ingredient pills for this recipe's detail row
@@ -675,7 +684,7 @@ function calculateRecipes() {
       // Crafted item: add it, then recurse into ingredients
       const machine = preferredMachineFor(recipe);
       const machData = recipe.machines[machine];
-      const ct  = machData.cycleTime;
+      const ct  = wsCycleTime(recipe, { itemName: resolved, machineName: machine });
       const opm = machineOpm(recipe, { itemName: resolved, machineName: machine });
       addItem(machine);
 
@@ -785,7 +794,7 @@ function calculateRecipes() {
       // Recurse into sub-ingredients, tracking the machine used at this level
       const machineName = preferredMachineFor(recipe);
       const machData    = recipe.machines[machineName];
-      const ct  = machData.cycleTime;
+      const ct  = wsCycleTime(recipe, { itemName: resolved, machineName });
       const opm = machineOpm(recipe, { itemName: resolved, machineName });
       const runsPerMin = amountPerMin / opm;
 
@@ -1033,7 +1042,7 @@ function calculateRecipes() {
               ingPills = rec.ingredients.map((ing) => {
                 // Use demand-proportional rate (val = needed output/min), not machine-capacity × count.
                 // This avoids showing a higher number than the row above due to Math.ceil rounding.
-                const ipm  = (val / opm) * (60 / md.cycleTime) * ing.amount;
+                const ipm  = (val / opm) * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * ing.amount;
                 const warn = ipm > 100;
                 return `<span style="display:inline-flex;align-items:center;gap:5px;
                     background:${warn ? 'var(--color-warning-bg)' : 'var(--color-success-bg)'};
@@ -1051,7 +1060,7 @@ function calculateRecipes() {
             // Add byproduct pills for secondary outputs of this recipe
             if (Array.isArray(rec.output) && rec.output.length > 1) {
               ingPills += rec.output.slice(1).map(sec => {
-                const bpm = (val / opm) * (60 / md.cycleTime) * sec.amount * (sec.chance ?? 1);
+                const bpm = (val / opm) * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * sec.amount * (sec.chance ?? 1);
                 return `<span style="display:inline-flex;align-items:center;gap:5px;
                     background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);
                     border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">

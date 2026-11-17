@@ -222,6 +222,31 @@ describe('machineOpm() / ceilMachines()', () => {
 });
 
 
+describe('Workstations (in-game values, Technum Rods T3 / Casting Machine)', () => {
+  const r = RECIPES['Technum Rods (Tier 3)'];
+  const item = (robots) => ({ itemName: 'Technum Rods', machineName: 'Casting Machine',
+                              wsOverride: { tier: 3, robots, chargedCore: true } });
+  const inPerMin = (it) => (60 / wsCycleTime(r, it)) * r.ingredients[0].amount;
+
+  it('no bots: 120 molten → 40 rods per minute', () => {
+    const it0 = { itemName: 'Technum Rods', machineName: 'Casting Machine', wsOverride: null };
+    expect(inPerMin(it0)).toBeCloseTo(120, 0);
+    expect(machineOpm(r, it0)).toBeCloseTo(40, 0);
+  });
+  it('3 Screen Bots + core = +120 % SPEED: 264 in → 88 out (same ratio)', () => {
+    const it = item(['Screen Bot', 'Screen Bot', 'Screen Bot']);
+    expect(inPerMin(it)).toBeCloseTo(264, 0);
+    expect(machineOpm(r, it)).toBeCloseTo(88, 0);
+    expect(getItemWsEffect(it).power).toBeCloseTo(0.8); // +80 % power
+  });
+  it('3 Cleaning Bots + core = +8 % EFFICIENCY: input stays 120, output +8 %', () => {
+    const it = item(['Cleaning Bot', 'Cleaning Bot', 'Cleaning Bot']);
+    expect(inPerMin(it)).toBeCloseTo(120, 0);
+    expect(machineOpm(r, it)).toBeCloseTo(43.2, 1);
+  });
+});
+
+
 describe('Xeno Power Plant (in-game values)', () => {
   it('reactor: 43,200 L/min fuel + depleted loop → 180,000 L/min energized', () => {
     const r = RECIPES['Energized Reactor Compound'];
