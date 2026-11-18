@@ -113,6 +113,13 @@ function buildSankeyGraph() {
       else supplySource[b] = byproductKey(b);
     });
   }
+  // Recycler lines (chanceOutputs): every output is a product node of its own,
+  // and the chain takes from it like from a byproduct (same pool as the calc).
+  const chanceLabel = (item, machine) => `${item} (${machine})`;
+  selectedRecipeList.forEach(line => {
+    const r = RECIPES[line.recipeName];
+    if (r?.chanceOutputs) r.output.forEach(o => { supplySource[o.item] = chanceLabel(o.item, line.machineName); });
+  });
   const take = (item, amount) => {
     const t = supplySource[item] ? Math.min(pool[item] || 0, amount) : 0;
     if (t > 0) pool[item] -= t;
@@ -175,7 +182,18 @@ function buildSankeyGraph() {
 
   function expand(itemName, rateNeeded, visitedPath) {
     const resolved = resolveRecipeName(itemName);
-    if (visitedPath.has(resolved)) return null; // cycle — stop expanding
+    if (visitedPath.has(resolved)) {
+      // Self-feeding loop of an excavated item (Greenhouse Biomass): the input
+      // comes from excavation — own source node, like in the results table.
+      if (typeof EXCAVATION !== 'undefined' && EXCAVATION.items?.includes(itemName)) {
+        const n = getNode(`${itemName} (Excavation)`, 'raw');
+        n.icon = itemName;
+        n.machineName = excavationSource();
+        n.rate += rateNeeded;
+        return n.label;
+      }
+      return null; // cycle — stop expanding
+    }
     if (visitedPath.size > 50)    return null; // secondary safety cap
 
     const raw  = isRaw(resolved);
@@ -217,6 +235,7 @@ function buildSankeyGraph() {
 
     // Recurse into each ingredient at the computed rate
     r.ingredients.forEach(ing => {
+      if (r.selfLoop?.item === ing.item) return; // closed loop: fed from its own output
       feed(ing.item, runs * ing.amount * (60 / wsCycleTime(r, { itemName: resolved, machineName })), resolved, nextPath);
     });
 
@@ -239,7 +258,7 @@ function buildSankeyGraph() {
 
     const ct  = wsCycleTime(r, item); // incl. workstation speed
 
-    const opm      = machineOpm(r, item);
+    const opm      = lineOpm(r, item); // gross for self-feeding loops (goal = machine output)
     const machines = ceilMachines(item.goal / opm); // rounded-up integer
     const runs     = item.goal / opm; // fractional machine-equivalents for the goal
 
@@ -253,9 +272,18 @@ function buildSankeyGraph() {
     // Seed the visited path with the final product itself so that any
     // ingredient cycle back to it is caught immediately.
     r.ingredients.forEach(ing => {
+      if (r.selfLoop?.item === ing.item) return; // closed loop: fed from its own output
       feed(ing.item, (60 / ct) * ing.amount * runs, item.itemName, new Set([item.itemName]));
     });
 
+    if (r.chanceOutputs) {
+      r.output.forEach(o => {
+        const n = getNode(chanceLabel(o.item, item.machineName), 'final');
+        n.icon = o.item;
+        n.rate += (60 / ct) * o.amount * runs;
+        addEdge(item.itemName, n.label, (60 / ct) * o.amount * runs);
+      });
+    } else
     // Secondary outputs of the final product — connect from the
     // primary product itself so byproducts appear downstream of it.
     if (Array.isArray(r.output) && r.output.length > 1) {

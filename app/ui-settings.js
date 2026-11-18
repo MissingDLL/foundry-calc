@@ -212,7 +212,7 @@ function renderSettingsContent(targetId) {
 
   const burnDesc = document.createElement("div");
   burnDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
-  burnDesc.textContent = "Which fuel should be used for each burnable recipe (e.g. Boiler → Steam)?";
+  burnDesc.textContent = "Fuel burned by the Boiler for Steam (items flagged burnable in the game data). The fuel is added to the material list.";
   el.appendChild(burnDesc);
 
   const burnGrid = document.createElement("div");
@@ -238,12 +238,13 @@ function renderSettingsContent(targetId) {
         (isActive
           ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
           : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);");
-      btn.innerHTML = getIcon(variant, 20) + "<span>" + shortName + "</span>";
+      btn.innerHTML = getIcon(RECIPES[variant]?.fuel || variant, 20) + "<span>" + shortName + "</span>"; // fuel icon
       btn.dataset.group = group.label;
       btn.dataset.variant = variant;
       btn.onclick = function () {
         variantSettings[group.label] = variant;
         saveSettings();
+        if (selectedRecipeList.length) calculateRecipes();
         row.querySelectorAll("button").forEach((b) => {
           const active = b.dataset.variant === variant;
           b.style.background = active ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)";
@@ -346,6 +347,37 @@ function renderSettingsContent(targetId) {
     veins.appendChild(document.createTextNode("Depleted veins in use (1 Fracking Tower per vein):"));
     veins.appendChild(veinsInp);
     el.appendChild(veins);
+  }
+
+  // ── Section: Excavation source ──────────────────────────────────
+  if (typeof EXCAVATION !== "undefined" && EXCAVATION.tools?.length) {
+    const sep = document.createElement("div");
+    sep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
+    el.appendChild(sep);
+    const row = document.createElement("label");
+    row.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--text)";
+    row.appendChild(document.createTextNode("Excavated items (Dirt, Sand, Biomass, seeds …) come from:"));
+    const sel = document.createElement("select");
+    EXCAVATION.tools.forEach(t => sel.appendChild(new Option(t, t, false, t === excavationSource())));
+    sel.onchange = () => { excavationTool = sel.value; saveSettings(); if (selectedRecipeList.length) calculateRecipes(); };
+    row.appendChild(sel);
+    el.appendChild(row);
+  }
+
+  // ── Section: Deluxe Edition content ─────────────────────────────
+  {
+    const sep = document.createElement("div");
+    sep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";
+    el.appendChild(sep);
+    const lbl = document.createElement("label");
+    lbl.style.cssText = "display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);cursor:pointer";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = ownsDeluxe;
+    cb.onchange = () => { ownsDeluxe = cb.checked; saveSettings(); renderRecipeBrowser(); };
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode("I own the Deluxe Edition (Marble, office decor recipes)"));
+    el.appendChild(lbl);
   }
 
   // ── Section: Space station shipping ────────────────────────────
@@ -548,12 +580,12 @@ function renderSettingsContent(targetId) {
   const effTitle = document.createElement("div");
   effTitle.style.cssText =
     "font-size:11px;font-weight:600;color:var(--color-text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px";
-  effTitle.textContent = "Bot Efficiency Bonuses";
+  effTitle.textContent = "R&D Lab: Production Efficiency / Product Weight";
   el.appendChild(effTitle);
 
   const effDesc = document.createElement("div");
   effDesc.style.cssText = "font-size:11px;color:var(--color-text-secondary);margin-bottom:12px";
-  effDesc.textContent = "Adjust the displayed efficiency percentages per bot (e.g. via in-game upgrades).";
+  effDesc.textContent = "Per product as shown in the R&D Lab: production efficiency (+% output) and weight reduction (−% shipping weight).";
   el.appendChild(effDesc);
 
   const effGrid = document.createElement("div");
@@ -621,13 +653,38 @@ function renderSettingsContent(targetId) {
     resetBtn.textContent = "↺";
     resetBtn.onclick = function () {
       delete botEfficiencyOverrides[name];
+      delete botWeightReductions[name];
       inp.value = baseEff;
+      wInp.value = 0;
       buildRecipeCategoryList();
       saveSettings();
     };
 
+    // Weight reduction (R&D "Product Weight"), only for products with a real weight
+    const wInp = document.createElement("input");
+    wInp.type = "number"; wInp.min = "0"; wInp.max = "100"; wInp.step = "1";
+    wInp.value = botWeightReductions[name] ?? 0;
+    wInp.title = "Product weight reduction (%)";
+    wInp.style.cssText = inp.style.cssText;
+    wInp.oninput = function () {
+      const val = parseFloat(this.value);
+      if (!isNaN(val) && val > 0 && val <= 100) botWeightReductions[name] = val;
+      else delete botWeightReductions[name];
+      saveSettings();
+      if (selectedRecipeList.length) calculateRecipes();
+    };
+    const effLbl = document.createElement("span");
+    effLbl.style.cssText = "font-size:10px;color:var(--text-dim)";
+    effLbl.textContent = "Eff";
+    const wLbl = effLbl.cloneNode(); wLbl.textContent = "−kg";
+    inputWrap.appendChild(effLbl);
     inputWrap.appendChild(inp);
     inputWrap.appendChild(pct);
+    if (typeof ITEM_WEIGHTS_KG !== "undefined" && ITEM_WEIGHTS_KG[name] > 1) {
+      inputWrap.appendChild(wLbl);
+      inputWrap.appendChild(wInp);
+      inputWrap.appendChild(pct.cloneNode(true));
+    }
     inputWrap.appendChild(resetBtn);
     cell.appendChild(icon);
     cell.appendChild(lbl);

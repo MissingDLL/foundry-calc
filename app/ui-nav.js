@@ -241,6 +241,7 @@ function exportPlan() {
       variantSettings,
       minerSettings,
       botEfficiencyOverrides,
+      botWeightReductions,
       miningEfficiencyLevel,
       pumpjackEfficiencyLevel,
       depletedVeins,
@@ -314,6 +315,7 @@ function _applyImportedPlan(plan) {
   Object.keys(variantSettings).forEach(k => delete variantSettings[k]);
   Object.keys(minerSettings).forEach(k => delete minerSettings[k]);
   Object.keys(botEfficiencyOverrides).forEach(k => delete botEfficiencyOverrides[k]);
+  Object.keys(botWeightReductions).forEach(k => delete botWeightReductions[k]);
   Object.keys(workstationConfigs).forEach(k => delete workstationConfigs[k]);
   miningEfficiencyLevel   = 0;
   pumpjackEfficiencyLevel = 0;
@@ -331,6 +333,9 @@ function _applyImportedPlan(plan) {
   if (s.variantSettings)        Object.assign(variantSettings,        s.variantSettings);
   if (s.minerSettings)          Object.assign(minerSettings,          s.minerSettings);
   if (s.botEfficiencyOverrides) Object.assign(botEfficiencyOverrides, s.botEfficiencyOverrides);
+  if (s.botWeightReductions) Object.entries(s.botWeightReductions).forEach(([k, v]) => {
+    if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 100) botWeightReductions[k] = v;
+  });
   const lvl = (v, min = 0) => (typeof v === 'number' && isFinite(v)) ? Math.max(min, Math.floor(v)) : null;
   miningEfficiencyLevel   = lvl(s.miningEfficiencyLevel)   ?? 0;
   pumpjackEfficiencyLevel = lvl(s.pumpjackEfficiencyLevel) ?? 0;
@@ -397,6 +402,7 @@ function sharePlan() {
       variantSettings,
       minerSettings,
       botEfficiencyOverrides,
+      botWeightReductions,
       miningEfficiencyLevel,
       pumpjackEfficiencyLevel,
       depletedVeins,

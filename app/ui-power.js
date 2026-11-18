@@ -28,8 +28,11 @@ function _buildPowerGenerators() {
     'Technum Ore Rubble', 'Telluxite Ore Rubble', 'Xenoferrite Ore Rubble',
     'Ignium Powder',
   ]);
+  // Current data marks burnable items (flags: BURNABLE); older data versions
+  // have no flag and keep the hand-made blacklist.
+  const hasFlag = Object.values(POWER_FUEL_ITEMS).some(f => 'burnable' in f);
   const allSolidFuels = Object.entries(POWER_FUEL_ITEMS)
-    .filter(([name, f]) => f.type === 'solid' && !_PRACTICAL_FUEL_BLACKLIST.has(name))
+    .filter(([name, f]) => f.type === 'solid' && (hasFlag ? f.burnable : !_PRACTICAL_FUEL_BLACKLIST.has(name)))
     .map(([name]) => name)
     .sort((a, b) => (POWER_FUEL_ITEMS[a].mj - POWER_FUEL_ITEMS[b].mj));
 
@@ -73,8 +76,8 @@ function _buildPowerGenerators() {
     const turbineLitPerSec = steamKjPerL > 0 ? turbine.power_kw / steamKjPerL : 0;
 
     // Determine which solid fuels work in the classic boiler
-    // (hasFuelManagerSolid, no lock → all practical fuels excluding Biomass)
-    const boilerFuels = allSolidFuels.filter(f => f !== 'Biomass');
+    // (hasFuelManagerSolid, no lock → all burnable fuels)
+    const boilerFuels = allSolidFuels; // Biomass works too (tested in-game)
 
     for (const boiler of boilers) {
       if (boiler.requires_vent) {

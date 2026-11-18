@@ -43,7 +43,9 @@ BLAST_FURNACE_CYCLE_TIME = 60
 # Production machine types — these resolve to recipe machines
 PROD_TYPES = {"Producer", "AutoProducer", "ModularEntityProducer"}
 # Resource converter types — generate synthetic fluid conversion recipes
-RC_TYPES = {"ResourceConverter", "NPP_CoolingTower"}
+# NPP_CoolingTower is not a producer: its resourceConverter_* data (water ->
+# Low Density Olumite) is unused in-game; its cooling is handled in POWER_SOURCES.
+RC_TYPES = {"ResourceConverter"}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -162,7 +164,15 @@ def extract_power_data(templates_dir: Path, id_to_name: dict) -> dict:
         name = v.get("name", "")
         if not name:
             continue
-        fuel_items[name] = {"mj": round(kj / 1000, 6), "type": "solid"}
+        # Only items flagged BURNABLE go into boilers / burners; the others carry
+        # a fuel value but cannot be burned (Xenoferrite Ore Rubble, Firmarlite Bar …).
+        # JET_PACK_FUEL = "Only usable for jetpack" (in-game tooltip), so excluded.
+        flags = str(v.get("flags") or "").split("|")
+        residual = id_to_name.get(v.get("burnable_residualItemTemplate_str") or "", "")
+        fuel_items[name] = {"mj": round(kj / 1000, 6), "type": "solid",
+                            "burnable": "BURNABLE" in flags and "JET_PACK_FUEL" not in flags,
+                            "residual": residual,
+                            "residualCount": int(float(v.get("burnable_residualItemTemplate_count") or 0)) if residual else 0}
 
     # Elemental (liquid) fuels from ElementTemplate (fuel_fuelValueKJPerL_str)
     for ident, v in load_yaml_templates(templates_dir, "ElementTemplate").items():
@@ -418,7 +428,12 @@ def get_power_kw(v: dict) -> float:
         return 0.0
     kw = v.get("energyConsumptionKW_str") or v.get("resourceConverter_powerConsumption_kjPerSec", 0)
     try:
-        return float(kw or 0)
+        kw = float(kw or 0)
+        if not kw and v.get("type") == "OreVeinMiner":
+            # base + mining (in-game: 500 kW while mining, 100 kW when the belt is full)
+            kw = float(v.get("oreVeinMiner_powerConsumptionBase_kjPerSec") or 0) \
+               + float(v.get("oreVeinMiner_powerConsumptionMining_kjPerSec") or 0)
+        return kw
     except (ValueError, TypeError):
         return 0.0
 
@@ -766,6 +781,39 @@ def detect_external_sources(templates_dir: Path, recipes: list[dict],
     return out
 
 
+def detect_excavation(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> dict:
+    """
+    Items gathered from the world instead of produced: digging terrain
+    (TerrainBlockType yieldItemOnDig: Dirt, Sand, Stone …) and mining world
+    objects (worldDecor_miningYield: Biomass, Xeno-Scrap …; worldDecor_specialDrops:
+    seeds with a chance). Tools: handhelds MINING_TOOL / MINING_DRONE_CONTROLLER
+    and the Construction Ship Port (mines what the drone controller marked).
+    Returns {"source": <port>, "tools": [...], "items": [...]}.
+    """
+    items = set()
+    for v in load_yaml_templates(templates_dir, "TerrainBlockType").values():
+        n = id_to_name.get(v.get("yieldItemOnDig") or "", "")
+        if n:
+            items.add(n)
+    for v in bots_raw.values():
+        if v.get("type") != "WorldDecorMineAble":
+            continue
+        for entry in (v.get("worldDecor_miningYield") or []) + (v.get("worldDecor_specialDrops") or []):
+            n = id_to_name.get(entry.get("it_identifier") or "", "")
+            if n:
+                items.add(n)
+    tools, port = [], ""
+    for v in load_yaml_templates(templates_dir, "ItemTemplate").values():
+        if v.get("handheldSubType") in ("MINING_TOOL", "MINING_DRONE_CONTROLLER") and not v.get("isHiddenItem") \
+                and "PREVIEW" not in (v.get("name") or ""):
+            tools.append(v.get("name"))
+    item_ids = _build_item_bot_ids(templates_dir)
+    for ident, v in bots_raw.items():
+        if v.get("type") == "ConstructionDronePort" and ident in item_ids and id_to_name.get(ident):
+            port = id_to_name[ident]
+    return {"source": port, "tools": sorted(tools) + ([port] if port else []), "items": sorted(items)}
+
+
 def detect_vein_mining_fluids(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> dict:
     """
     Returns {ore_item_name: {fluid, perMinerPerMin, machines}} — fluid an Ore Vein
@@ -855,6 +903,66 @@ def build_assembly_line_robots(templates_dir: Path, id_to_name: dict) -> dict:
             result[name] = counts
 
     return result
+
+
+def build_assembly_line_energy(templates_dir: Path) -> dict:
+    """
+    Energy (kJ) the Assembly Line spends per finished robot. The stations draw
+    power per task, not continuously (in-game they charge a buffer and drop
+    back to 0), so average power = energy per robot / cycle time.
+      Start:    alStart_requiredPowerPerAction_kj_str (once per robot)
+      Producer: per non-initial part one attach + one weld action
+                (AssemblyLineProducerActionTemplate powerCost_kj_str)
+      Painter:  requiredPowerForPainting_kj_str of every part
+                (in-game: Personal Assistant Robot 50 + 5 x 75 = 425 kJ)
+    Returns { robot_name: kJ }.
+    """
+    bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
+    al_objects = load_yaml_templates(templates_dir, "AssemblyLineObjectTemplate")
+    actions = load_yaml_templates(templates_dir, "AssemblyLineProducerActionTemplate")
+    num = lambda x: float(x) if str(x or "").strip() not in ("", "None") else 0.0
+    start_kj = max((num(v.get("alStart_requiredPowerPerAction_kj_str")) for v in bots_raw.values()
+                    if v.get("type") == "AL_Start"), default=0.0)
+    # Which action belongs to which robot lives in a Unity .asset (not YAML), so
+    # use the attach (needs an item) / weld (no item) cost. Same for all robots
+    # in current data. ponytail: max per kind; per-robot costs need the .asset.
+    attach_kj = max((num(a.get("powerCost_kj_str")) for a in actions.values() if a.get("requiredItems")), default=0.0)
+    weld_kj = max((num(a.get("powerCost_kj_str")) for a in actions.values() if not a.get("requiredItems")), default=0.0)
+    out = {}
+    for robot in al_objects.values():
+        parts = robot.get("objectParts") or []
+        name = robot.get("name", "")
+        if not name or not parts:
+            continue
+        added = sum(1 for p in parts if not p.get("isInitialPart", False))
+        paint = sum(num(p.get("requiredPowerForPainting_kj_str")) for p in parts)
+        out[name] = start_kj + added * (attach_kj + weld_kj) + paint
+    return out
+
+
+def build_assembly_line_paint(templates_dir: Path, id_to_name: dict) -> dict:
+    """
+    Paint per robot: every part must be painted (a colour is always chosen;
+    unpainted robots cannot be shipped for sale). Per part the colour variants
+    name the liquid and litres; the default variant has none, the colours share
+    one amount (Personal Assistant Robot: torso 30 + 4 x 15 arms/legs + head 10
+    = 100 L, in-game). Returns { robot_name: { item, litres } }.
+    """
+    al_objects = load_yaml_templates(templates_dir, "AssemblyLineObjectTemplate")
+    out = {}
+    for robot in al_objects.values():
+        name, litres, liquid = robot.get("name", ""), 0.0, ""
+        for part in robot.get("objectParts") or []:
+            amounts = [(float(c.get("amountLiquidRequired_l_str")), c.get("paintElementTemplate_identifier", ""))
+                       for c in part.get("colorVariants") or []
+                       if str(c.get("amountLiquidRequired_l_str") or "").strip() not in ("", "None")]
+            if amounts:
+                amt, ident = max(amounts)
+                litres += amt
+                liquid = liquid or id_to_name.get(ident, ident)
+        if name and litres:
+            out[name] = {"item": liquid, "litres": litres}
+    return out
 
 
 def build_assembly_line_composition(templates_dir: Path) -> dict:
@@ -1239,6 +1347,7 @@ def parse_recipes(templates_dir: Path, id_to_name: dict,
             "ingredients": ingredients,
             "outputs": outputs,
             "unresolved_tags": has_unresolved_tags,
+            "dlc": r.get("entitlementIdentifier", "") or "",  # e.g. _deluxe_edition
         })
 
     return recipes
@@ -1418,7 +1527,8 @@ def parse_boiler_recipe(templates_dir: Path, id_to_name: dict,
     """
     Generate Boiler (Steam) recipe from BOT boiler_* fields.
     Detects all Boiler-type BOTs dynamically.
-    cycleTime=60, water=consumptionPerSecond, steam=outputPerSecond.
+    cycleTime=1: water=consumptionPerSecond, steam=outputPerSecond (in-game
+    Boiler panel: 1,200 L/min water -> 3,600 L/min steam).
     """
     bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
     cat_name = category_map.get("_base_components", "Components")
@@ -1460,7 +1570,7 @@ def parse_boiler_recipe(templates_dir: Path, id_to_name: dict,
             "rowgroup_title": "",
             "rowgroup_sort": 0,
             "sorting_in_rowgroup": 0,
-            "machines": {name: 60},
+            "machines": {name: 1},
             "ingredients": [{"item": water_name, "amount": water_amt, "is_elemental": True}],
             "outputs": [{"item": steam_name, "amount": steam_amt, "chance": None,
                           "is_elemental": True}],
@@ -1581,6 +1691,70 @@ def parse_endless_miner_recipes(templates_dir: Path, id_to_name: dict,
             "machines": {id_to_name[ident]: round(seconds, 6)},
             "ingredients": [],
             "outputs": [{"item": out_name, "amount": 1, "chance": None, "is_elemental": False}],
+            "unresolved_tags": [],
+        })
+    return recipes
+
+
+def parse_recycler_recipes(templates_dir: Path, id_to_name: dict,
+                           category_map: dict) -> list[dict]:
+    """
+    Recyclers (type Recycler: Scrap Recycler, Resource Separator) take items
+    whose recycling_hashIdentifier matches their recycler_hashIdentifier and
+    turn each into the recyclingData outputs with a chance (Xeno-Scrap ->
+    65 % Advanced Machinery Parts / 35 % Electronic Components). Speed:
+    recycler_itemsPerMinute input items. Outputs as expected amounts, most
+    likely first; recipes whose only output is the input itself are skipped.
+    The game has no recipe name for these: "<recycler>: <input>". Biomass
+    recycles into Biomass and is listed in-game, so it is kept.
+    """
+    bots_raw = load_yaml_templates(templates_dir, "BuildableObjectTemplate")
+    items_raw = load_yaml_templates(templates_dir, "ItemTemplate")
+    item_ids = _build_item_bot_ids(templates_dir)
+    cat_name = category_map.get("_base_components", "Components")
+    recyclers = {}
+    for ident, v in bots_raw.items():
+        if v.get("type") == "Recycler" and ident in item_ids and id_to_name.get(ident):
+            try:
+                ipm = float(v.get("recycler_itemsPerMinute") or 0)
+            except (ValueError, TypeError):
+                ipm = 0.0
+            if ipm > 0:
+                recyclers[v.get("recycler_hashIdentifier", "")] = (id_to_name[ident], ipm)
+    recipes = []
+    for ident, v in items_raw.items():
+        machine = recyclers.get(v.get("recycling_hashIdentifier") or "")
+        in_name = v.get("name", "")
+        if not machine or not in_name:
+            continue
+        outs = []
+        for d in v.get("recyclingData") or []:
+            try:
+                chance = float(d.get("chance_str") or 0)
+            except (ValueError, TypeError):
+                chance = 0.0
+            out_name = id_to_name.get(d.get("itemTemplateIdentifier", ""), "")
+            if out_name and chance > 0:
+                outs.append({"item": out_name, "amount": round(chance, 6), "chance": None, "is_elemental": False})
+        outs.sort(key=lambda o: -o["amount"])
+        if not outs:
+            continue
+        mname, ipm = machine
+        recipes.append({
+            "identifier": f"synthetic_recycling_{ident}",
+            "name": f"{mname}: {in_name}",
+            "category_id": "_base_components",
+            "category_name": cat_name,
+            "rowgroup_id": "",
+            "rowgroup_title": "",
+            "rowgroup_sort": 0,
+            "sorting_in_rowgroup": 0,
+            "machines": {mname: round(60 / ipm, 6)},
+            "icon_identifier": v.get("icon_identifier", ""),  # the game shows the input item
+            "chance_outputs": True,  # all outputs are equal products with a chance, none is "main"
+            "dlc": v.get("entitlementIdentifier", "") or "",
+            "ingredients": [{"item": in_name, "amount": 1, "is_elemental": False}],
+            "outputs": outs,
             "unresolved_tags": [],
         })
     return recipes
@@ -1782,6 +1956,27 @@ def detect_fluid_items(templates_dir: Path, id_to_name: dict) -> set[str]:
 # JS name conversion
 # ─────────────────────────────────────────────────────────────────────────────
 
+def rename_unique_recipes_to_item(recipes: list[dict]) -> None:
+    """
+    The game names some recipes differently from the item they make
+    ("Loader, 2nd Lane" makes "Loader (2nd Lane)", "Ceiling Light" makes
+    "Ceiling Light I"). A recipe that is the only producer of its item takes the
+    item's name, so recipes and items match everywhere. Recipes sharing an item
+    keep their own names (Tier 1/2/3 …), they are the choice between them.
+    """
+    producers: dict[str, int] = {}
+    for r in recipes:
+        if r["outputs"]:
+            producers[r["outputs"][0]["item"]] = producers.get(r["outputs"][0]["item"], 0) + 1
+    taken = {r["name"] for r in recipes}
+    for r in recipes:
+        item = r["outputs"][0]["item"] if r["outputs"] else ""
+        if item and r["name"] != item and producers[item] == 1 and item not in taken:
+            print(f"  recipe renamed to its item: {r['name']!r} -> {item!r}")
+            taken.add(item)
+            r["name"] = item
+
+
 def to_const_key(name: str) -> str:
     """Convert display name to JS constant key: 'Advanced Smelter' → 'ADVANCED_SMELTER'."""
     s = re.sub(r"[^\w\s]", " ", name)
@@ -1908,6 +2103,10 @@ def generate_game_data_js(version: str, recipes: list[dict],
     lines.append(f'  painter:    {{ count: {al["painter"]["count"]},  name: "{al["painter"]["name"]}"  }},')
     lines.append(f'  cycle_time: {al["cycle_time"]},  // seconds per complete robot')
     lines.append("});")
+    lines.append("// Energy per finished robot (kJ): start + attach/weld per part + painting")
+    lines.append(f"const ASSEMBLY_LINE_ENERGY_KJ = Object.freeze({json.dumps(al.get('energy_kj', {}), sort_keys=True)});")
+    lines.append("// Paint per robot (every part painted, litres from the colour variants)")
+    lines.append(f"const ASSEMBLY_LINE_PAINT = Object.freeze({json.dumps(al.get('paint', {}), sort_keys=True)});")
     lines.append("")
 
     # ASSEMBLY_LINE_ROBOT_PARTS (part counts per robot, from AssemblyLineObjectTemplate)
@@ -2029,6 +2228,8 @@ def generate_game_data_js(version: str, recipes: list[dict],
     # EXTERNAL_SOURCES (items delivered from the orbital station)
     lines.append("// ── Items without production, delivered from the space station ──")
     lines.append(f"const EXTERNAL_SOURCES = Object.freeze({json.dumps(external_sources)});")
+    lines.append("// Gathered from the world (digging terrain, mining world objects): start of a chain")
+    lines.append(f"const EXCAVATION = Object.freeze({json.dumps(shipping_data.get('excavation', {}))});")
     lines.append("")
 
     # RESEARCH_BONUSES (parsed from endless research descriptions)
@@ -2137,7 +2338,12 @@ def generate_game_data_js(version: str, recipes: list[dict],
         for fname, fdata in sorted(power_data.get("fuel_items", {}).items()):
             fname_esc = fname.replace('"', '\\"')
             mj_str = str(fdata["mj"]) if fdata["mj"] != int(fdata["mj"]) else str(int(fdata["mj"]))
-            lines.append(f'  "{fname_esc}": {{ mj: {mj_str}, type: "{fdata["type"]}" }},')
+            extra = ""
+            if fdata["type"] == "solid":
+                extra = f', burnable: {"true" if fdata.get("burnable") else "false"}'
+                if fdata.get("residual"):
+                    extra += f', residual: "{fdata["residual"]}", residualCount: {fdata["residualCount"]}'
+            lines.append(f'  "{fname_esc}": {{ mj: {mj_str}, type: "{fdata["type"]}"{extra} }},')
         lines.append("});")
         lines.append("")
 
@@ -2198,7 +2404,7 @@ def generate_recipes_js(version: str, recipes: list[dict],
             outputs = r["outputs"]
             if len(outputs) == 0:
                 out_str = "{ amount: 1 }"
-            elif len(outputs) == 1:
+            elif len(outputs) == 1 and outputs[0]["item"] == recipe_name:
                 amt = outputs[0]["amount"]
                 amt_str = str(int(amt)) if float(amt) == int(float(amt)) else str(amt)
                 if outputs[0]["chance"]:
@@ -2230,6 +2436,10 @@ def generate_recipes_js(version: str, recipes: list[dict],
             else:
                 lines.append("    ingredients: [],")
             lines.append(f"    output: {out_str},")
+            if r.get("chance_outputs"):
+                lines.append("    chanceOutputs: true,")
+            if r.get("dlc"):
+                lines.append(f'    dlc: "{r["dlc"]}",')
             lines.append("    machines: {")
             for mpart in mach_parts:
                 lines.append(f"      {mpart},")
@@ -2527,6 +2737,8 @@ def main():
 
     # Dynamic detections
     assembly_line_composition = build_assembly_line_composition(templates_dir)
+    assembly_line_composition["energy_kj"] = build_assembly_line_energy(templates_dir)
+    assembly_line_composition["paint"] = build_assembly_line_paint(templates_dir, id_to_name)
     assembly_line_robots      = build_assembly_line_robots(templates_dir, id_to_name)
     fluid_sources = detect_fluid_sources(templates_dir, bots_raw, id_to_name)
     machine_fluid_minimums = detect_machine_fluid_minimums(bots_raw, id_to_name)
@@ -2553,6 +2765,7 @@ def main():
     pj_recipes     = parse_pumpjack_recipes(templates_dir, id_to_name, category_map)
     npp_recipes    = parse_npp_reactor_recipes(templates_dir, id_to_name, category_map)
     endless_recipes = parse_endless_miner_recipes(templates_dir, id_to_name, category_map)
+    recycler_recipes = parse_recycler_recipes(templates_dir, id_to_name, category_map)
 
     recipes.extend(bf_recipes)
     recipes.extend(mining_recipes)
@@ -2561,12 +2774,16 @@ def main():
     recipes.extend(pj_recipes)
     recipes.extend(npp_recipes)
     recipes.extend(endless_recipes)
+    recipes.extend(recycler_recipes)
+    rename_unique_recipes_to_item(recipes)
 
     # Byproduct disposal (needs complete recipe list)
     byproduct_disposal = detect_byproducts_and_disposal(templates_dir, recipes, id_to_name)
     external_sources = detect_external_sources(templates_dir, recipes, fluid_sources, id_to_name)
+    shipping_excavation = detect_excavation(templates_dir, bots_raw, id_to_name)
     workstation_data = detect_workstation_data(templates_dir, id_to_name)
     shipping_data = detect_shipping_data(templates_dir, id_to_name)
+    shipping_data["excavation"] = shipping_excavation  # rides along to the JS writer
     vein_mining_fluids = detect_vein_mining_fluids(templates_dir, bots_raw, id_to_name)
     research_bonuses = detect_research_bonuses(templates_dir, bots_raw, id_to_name)
     # A vein mining fluid is consumed (by miners), so it is no byproduct to dispose of

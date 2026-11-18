@@ -143,7 +143,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 20 },
     },
   },
-  "Long Range Scanner Base": {
+  "Long Range Scanner": {
     category: CAT.BUILDINGS,
     ingredients: [{ item: I.CONCRETE, amount: 25 }, { item: I.STEEL_BEAMS, amount: 50 }, { item: I.MACHINERY_PARTS, amount: 25 }, { item: I.ELECTRONIC_COMPONENTS, amount: 50 }],
     output: { amount: 1 },
@@ -185,14 +185,14 @@ const RECIPES = {
   "Xenoferrite Plates (Barrel Recycle)": {
     category: CAT.COMPONENTS,
     ingredients: [{ item: I.BARREL_EMPTY, amount: 1 }],
-    output: { amount: 1 },
+    output: [{ item: I.XENOFERRITE_PLATES, amount: 1 }],
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
       [M.ASSEMBLER_I]: { cycleTime: 3 },
     },
   },
-  "Olumite Refining: Olumite Gas": {
+  "Olumite Gas": {
     category: CAT.COMPONENTS,
     ingredients: [{ item: I.CRUDE_OLUMITE, amount: 100 }],
     output: [{ item: I.OLUMITE_GAS, amount: 90 }, { item: I.WASTE_GAS, amount: 10 }],
@@ -200,7 +200,7 @@ const RECIPES = {
       [M.DISTILLATION_COLUMN]: { cycleTime: 4 },
     },
   },
-  "Olumite Refining: Low Density Olumite": {
+  "Low Density Olumite": {
     category: CAT.COMPONENTS,
     ingredients: [{ item: I.CRUDE_OLUMITE, amount: 100 }],
     output: [{ item: I.LOW_DENSITY_OLUMITE, amount: 100 }, { item: I.WASTE_GAS, amount: 25 }],
@@ -208,7 +208,7 @@ const RECIPES = {
       [M.DISTILLATION_COLUMN]: { cycleTime: 4 },
     },
   },
-  "Olumite Refining: Liquid Polymer": {
+  "Liquid Polymer": {
     category: CAT.COMPONENTS,
     ingredients: [{ item: I.CRUDE_OLUMITE, amount: 100 }],
     output: [{ item: I.LIQUID_POLYMER, amount: 75 }, { item: I.WASTE_GAS, amount: 50 }],
@@ -236,7 +236,7 @@ const RECIPES = {
   "Cement (Slag Reprocessing)": {
     category: CAT.COMPONENTS,
     ingredients: [{ item: I.BLAST_FURNACE_SLAG, amount: 36 }],
-    output: { amount: 1 },
+    output: [{ item: I.CEMENT, amount: 1 }],
     machines: {
       [M.CHEMICAL_PROCESSOR]: { cycleTime: 12 },
     },
@@ -337,7 +337,7 @@ const RECIPES = {
   "Explosives (Primitive)": {
     category: CAT.COMPONENTS,
     ingredients: [{ item: I.IGNIUM_ORE_RUBBLE, amount: 2 }, { item: I.TECHNUM_ORE_RUBBLE, amount: 2 }, { item: I.BIOMASS, amount: 1 }],
-    output: { amount: 1 },
+    output: [{ item: I.EXPLOSIVES, amount: 1 }],
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
       [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
@@ -375,7 +375,7 @@ const RECIPES = {
   "Steam from Geothermal Vent": {
     category: CAT.COMPONENTS,
     ingredients: [{ item: I.IGNIUM_ENRICHED_WATER, amount: 36 }],
-    output: { amount: 120 },
+    output: [{ item: I.STEAM, amount: 120 }],
     machines: {
       [M.GEOTHERMAL_BOILER]: { cycleTime: 1 },
     },
@@ -702,7 +702,207 @@ const RECIPES = {
     ingredients: [{ item: I.WATER, amount: 20 }],
     output: { amount: 60 },
     machines: {
-      [M.BOILER]: { cycleTime: 60 },
+      [M.BOILER]: { cycleTime: 1 },
+    },
+  },
+  "Scrap Recycler: Xeno-Scrap": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.XENO_SCRAP, amount: 1 }],
+    output: [{ item: I.ADVANCED_MACHINERY_PARTS, amount: 0.65 }, { item: I.ELECTRONIC_COMPONENTS, amount: 0.35 }],
+    chanceOutputs: true,
+    machines: {
+      [M.SCRAP_RECYCLER]: { cycleTime: 0.375 },
+    },
+  },
+  "Resource Separator: Biomass": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.BIOMASS, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Forest Seed (Plants)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.FOREST_SEED_PLANTS, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Forest Seed (Trees)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.FOREST_SEED_TREES, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Concrete": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.CONCRETE, amount: 1 }],
+    output: [{ item: I.MINERAL_ROCKS, amount: 0.25 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Hazard Concrete": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.HAZARD_CONCRETE, amount: 1 }],
+    output: [{ item: I.MINERAL_ROCKS, amount: 0.25 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Dirt": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.DIRT, amount: 1 }],
+    output: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 0.05 }, { item: I.TECHNUM_ORE_RUBBLE, amount: 0.05 }, { item: I.IGNIUM_ORE_RUBBLE, amount: 0.05 }, { item: I.MINERAL_ROCKS, amount: 0.05 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Marble (Black)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.MARBLE_BLACK, amount: 1 }],
+    output: [{ item: I.MINERAL_ROCKS, amount: 0.25 }],
+    chanceOutputs: true,
+    dlc: "_deluxe_edition",
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Marble (White)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.MARBLE_WHITE, amount: 1 }],
+    output: [{ item: I.MINERAL_ROCKS, amount: 0.25 }],
+    chanceOutputs: true,
+    dlc: "_deluxe_edition",
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Rocky Desert Dirt": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.ROCKY_DESERT_DIRT, amount: 1 }],
+    output: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 0.05 }, { item: I.TECHNUM_ORE_RUBBLE, amount: 0.05 }, { item: I.IGNIUM_ORE_RUBBLE, amount: 0.05 }, { item: I.MINERAL_ROCKS, amount: 0.05 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Rocky Desert Seed (Plants)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.ROCKY_DESERT_SEED_PLANTS, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Rocky Desert Seed (Trees)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.ROCKY_DESERT_SEED_TREES, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Sand": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.SAND, amount: 1 }],
+    output: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 0.05 }, { item: I.TECHNUM_ORE_RUBBLE, amount: 0.05 }, { item: I.IGNIUM_ORE_RUBBLE, amount: 0.05 }, { item: I.MINERAL_ROCKS, amount: 0.05 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Sandy Desert Seed (Plants)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.SANDY_DESERT_SEED_PLANTS, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Sandy Desert Seed (Trees)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.SANDY_DESERT_SEED_TREES, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Stone": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.STONE, amount: 1 }],
+    output: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 0.05 }, { item: I.TECHNUM_ORE_RUBBLE, amount: 0.05 }, { item: I.IGNIUM_ORE_RUBBLE, amount: 0.05 }, { item: I.MINERAL_ROCKS, amount: 0.05 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Tropical Rainforest Dirt": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.TROPICAL_RAINFOREST_DIRT, amount: 1 }],
+    output: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 0.05 }, { item: I.TECHNUM_ORE_RUBBLE, amount: 0.05 }, { item: I.IGNIUM_ORE_RUBBLE, amount: 0.05 }, { item: I.MINERAL_ROCKS, amount: 0.05 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Tropical Rainforest Seed (Plants)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.TROPICAL_RAINFOREST_SEED_PLANTS, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Tropical Rainforest Seed (Trees)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.TROPICAL_RAINFOREST_SEED_TREES, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Tundra Dirt": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.TUNDRA_DIRT, amount: 1 }],
+    output: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 0.05 }, { item: I.TECHNUM_ORE_RUBBLE, amount: 0.05 }, { item: I.IGNIUM_ORE_RUBBLE, amount: 0.05 }, { item: I.MINERAL_ROCKS, amount: 0.05 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Tundra Seed (Plants)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.TUNDRA_SEED_PLANTS, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
+    },
+  },
+  "Resource Separator: Tundra Seed (Trees)": {
+    category: CAT.COMPONENTS,
+    ingredients: [{ item: I.TUNDRA_SEED_TREES, amount: 1 }],
+    output: [{ item: I.BIOMASS, amount: 0.1 }],
+    chanceOutputs: true,
+    machines: {
+      [M.RESOURCE_SEPARATOR]: { cycleTime: 0.1875 },
     },
   },
 
@@ -822,7 +1022,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
   },
-  "Decor (Modular Windows Slope)": {
+  "Decor (Windows Modular Slope)": {
     category: CAT.DECOR,
     ingredients: [{ item: I.GLASS, amount: 1 }],
     output: { amount: 1 },
@@ -833,7 +1033,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
   },
-  "Decor (Modular Windows Slope Edge)": {
+  "Decor (Windows Modular Slope Edge)": {
     category: CAT.DECOR,
     ingredients: [{ item: I.GLASS, amount: 1 }],
     output: { amount: 1 },
@@ -844,7 +1044,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 1 },
     },
   },
-  "Decor (Modular Windows Wedge)": {
+  "Decor (Windows Modular Wedge)": {
     category: CAT.DECOR,
     ingredients: [{ item: I.GLASS, amount: 1 }],
     output: { amount: 1 },
@@ -888,7 +1088,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 5 },
     },
   },
-  "Ceiling Light": {
+  "Ceiling Light I": {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 2 }, { item: I.ELECTRONIC_COMPONENTS, amount: 1 }],
     output: { amount: 1 },
@@ -899,7 +1099,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 2 },
     },
   },
-  "Ceiling Light (Large)": {
+  "Ceiling Light II": {
     category: CAT.DECOR,
     ingredients: [{ item: I.STEEL_BEAMS, amount: 5 }, { item: I.ELECTRONIC_COMPONENTS, amount: 5 }],
     output: { amount: 1 },
@@ -921,7 +1121,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 3 },
     },
   },
-  "Wall Light": {
+  "Wall Light I": {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 2 }, { item: I.ELECTRONIC_COMPONENTS, amount: 1 }],
     output: { amount: 1 },
@@ -1035,6 +1235,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.BIOMASS, amount: 1 }],
     output: { amount: 5 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 2.5 },
       [M.ASSEMBLER_II]: { cycleTime: 3.333333 },
@@ -1057,6 +1258,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 1 }, { item: I.BIOMASS, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1079,6 +1281,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 2 }, { item: I.BIOMASS, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1101,6 +1304,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 2 }, { item: I.ELECTRONIC_COMPONENTS, amount: 1 }, { item: I.BIOMASS, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1123,6 +1327,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 2 }, { item: I.BIOMASS, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1134,6 +1339,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.MINERAL_ROCKS, amount: 1 }, { item: I.CRUDE_OLUMITE, amount: 5 }],
     output: { amount: 2 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.FLUID_ASSEMBLER_I]: { cycleTime: 3 },
     },
@@ -1142,6 +1348,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.MINERAL_ROCKS, amount: 1 }, { item: I.WATER, amount: 5 }],
     output: { amount: 2 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.FLUID_ASSEMBLER_I]: { cycleTime: 3 },
     },
@@ -1150,6 +1357,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1172,6 +1380,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 1 }, { item: I.BIOMASS, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1183,6 +1392,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 3 }, { item: I.BIOMASS, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1205,6 +1415,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 2 }, { item: I.BIOMASS, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1216,6 +1427,7 @@ const RECIPES = {
     category: CAT.DECOR,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 1 }, { item: I.BIOMASS, amount: 1 }],
     output: { amount: 1 },
+    dlc: "_deluxe_edition",
     machines: {
       [M.ASSEMBLER_III]: { cycleTime: 1.5 },
       [M.ASSEMBLER_II]: { cycleTime: 2 },
@@ -1393,7 +1605,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 10 },
     },
   },
-  "Ore Scanner (Handheld)": {
+  "Ore Scanner": {
     category: CAT.HANDHELDS,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 4 }, { item: I.ELECTRONIC_COMPONENTS, amount: 20 }],
     output: { amount: 1 },
@@ -1521,7 +1733,7 @@ const RECIPES = {
   "Technum Ore (Alternative)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.TECHNUM_ORE_RUBBLE, amount: 2 }, { item: I.XENO_CRYSTAL, amount: 1 }],
-    output: { amount: 3 },
+    output: [{ item: I.TECHNUM_ORE, amount: 3 }],
     machines: {
       [M.CRUSHER_II]: { cycleTime: 2.25 },
       [M.CRUSHER_I]: { cycleTime: 4.5 },
@@ -1548,7 +1760,7 @@ const RECIPES = {
   "Xenoferrite Ore (Alternative)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 2 }, { item: I.XENO_CRYSTAL, amount: 1 }],
-    output: { amount: 3 },
+    output: [{ item: I.XENOFERRITE_ORE, amount: 3 }],
     machines: {
       [M.CRUSHER_II]: { cycleTime: 2.25 },
       [M.CRUSHER_I]: { cycleTime: 4.5 },
@@ -1566,7 +1778,7 @@ const RECIPES = {
   "Steel Beams (Tier 1)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.XENOFERRITE_IGNIUM_ORE_BLEND, amount: 1 }],
-    output: { amount: 1 },
+    output: [{ item: I.STEEL_BEAMS, amount: 1 }],
     machines: {
       [M.ADVANCED_SMELTER]: { cycleTime: 4 },
       [M.SMELTER_SMALL]: { cycleTime: 6 },
@@ -1575,7 +1787,7 @@ const RECIPES = {
   "Steel Beams (Tier 2)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.ADVANCED_XENOFERRITE_IGNIUM_ORE_BLEND, amount: 1 }],
-    output: { amount: 2 },
+    output: [{ item: I.STEEL_BEAMS, amount: 2 }],
     machines: {
       [M.ADVANCED_SMELTER]: { cycleTime: 4 },
     },
@@ -1591,7 +1803,7 @@ const RECIPES = {
   "Technum Rods (Tier 1)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.TECHNUM_ORE_RUBBLE, amount: 1 }],
-    output: { amount: 1 },
+    output: [{ item: I.TECHNUM_RODS, amount: 1 }],
     machines: {
       [M.ADVANCED_SMELTER]: { cycleTime: 2 },
       [M.SMELTER_SMALL]: { cycleTime: 3 },
@@ -1600,7 +1812,7 @@ const RECIPES = {
   "Technum Rods (Tier 2)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.TECHNUM_ORE, amount: 2 }],
-    output: { amount: 3 },
+    output: [{ item: I.TECHNUM_RODS, amount: 3 }],
     machines: {
       [M.ADVANCED_SMELTER]: { cycleTime: 4 },
       [M.SMELTER_SMALL]: { cycleTime: 6 },
@@ -1609,7 +1821,7 @@ const RECIPES = {
   "Technum Rods (Tier 3)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.MOLTEN_TECHNUM, amount: 15 }],
-    output: { amount: 5 },
+    output: [{ item: I.TECHNUM_RODS, amount: 5 }],
     machines: {
       [M.HEAVY_CASTER_BASE]: { cycleTime: 0.234375 },
       [M.CASTING_MACHINE]: { cycleTime: 7.5 },
@@ -1626,7 +1838,7 @@ const RECIPES = {
   "Xenoferrite Plates (Tier 1)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.XENOFERRITE_ORE_RUBBLE, amount: 1 }],
-    output: { amount: 1 },
+    output: [{ item: I.XENOFERRITE_PLATES, amount: 1 }],
     machines: {
       [M.ADVANCED_SMELTER]: { cycleTime: 2 },
       [M.SMELTER_SMALL]: { cycleTime: 3 },
@@ -1635,7 +1847,7 @@ const RECIPES = {
   "Xenoferrite Plates (Tier 2)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.XENOFERRITE_ORE, amount: 2 }],
-    output: { amount: 3 },
+    output: [{ item: I.XENOFERRITE_PLATES, amount: 3 }],
     machines: {
       [M.ADVANCED_SMELTER]: { cycleTime: 4 },
       [M.SMELTER_SMALL]: { cycleTime: 6 },
@@ -1644,7 +1856,7 @@ const RECIPES = {
   "Xenoferrite Plates (Tier 3)": {
     category: CAT.METALLURGY,
     ingredients: [{ item: I.MOLTEN_XENOFERRITE, amount: 15 }],
-    output: { amount: 5 },
+    output: [{ item: I.XENOFERRITE_PLATES, amount: 5 }],
     machines: {
       [M.HEAVY_CASTER_BASE]: { cycleTime: 0.234375 },
       [M.CASTING_MACHINE]: { cycleTime: 7.5 },
@@ -2351,7 +2563,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 8 },
     },
   },
-  "Fluid-Assembler I": {
+  "Fluid Assembler I": {
     category: CAT.STRUCTURES,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 15 }, { item: I.ADVANCED_MACHINERY_PARTS, amount: 10 }, { item: I.CIRCUIT_BOARD, amount: 5 }, { item: I.POLYMER_BOARD, amount: 10 }],
     output: { amount: 1 },
@@ -3088,7 +3300,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 3 },
     },
   },
-  "Loader, 2nd Lane": {
+  "Loader (2nd Lane)": {
     category: CAT.STRUCTURES,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 8 }, { item: I.MACHINERY_PARTS, amount: 4 }, { item: I.ELECTRONIC_COMPONENTS, amount: 2 }],
     output: { amount: 1 },
@@ -3099,7 +3311,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 3 },
     },
   },
-  "Loader, 3rd Lane": {
+  "Loader (3rd Lane)": {
     category: CAT.STRUCTURES,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 12 }, { item: I.MACHINERY_PARTS, amount: 4 }, { item: I.ELECTRONIC_COMPONENTS, amount: 2 }],
     output: { amount: 1 },
@@ -3492,7 +3704,7 @@ const RECIPES = {
       [M.ASSEMBLER_I]: { cycleTime: 1.5 },
     },
   },
-  "Tank": {
+  "Tank I": {
     category: CAT.STRUCTURES,
     ingredients: [{ item: I.XENOFERRITE_PLATES, amount: 10 }, { item: I.STEEL_BEAMS, amount: 20 }, { item: I.ADVANCED_MACHINERY_PARTS, amount: 5 }],
     output: { amount: 1 },
@@ -3671,14 +3883,6 @@ const RECIPES = {
     output: { amount: 54000 },
     machines: {
       [M.HOT_AIR_STOVE_BASE]: { cycleTime: 60 },
-    },
-  },
-  "Low Density Olumite": {
-    category: CAT.STRUCTURES,
-    ingredients: [{ item: I.WATER, amount: 10800 }],
-    output: { amount: 3600 },
-    machines: {
-      [M.COOLING_TOWER_BASE]: { cycleTime: 60 },
     },
   },
   "High-Pressure Steam": {

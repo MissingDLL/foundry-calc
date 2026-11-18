@@ -68,6 +68,7 @@ function renderRecipeBrowser() {
     if (shown.has(name)) return; // skip if already shown as canonical
     if (VARIANT_GROUPS.some((g) => g.variants.includes(name))) return; // skip variant entries
     if (burnableVariants.has(name)) return; // skip fuel recipes
+    if (!recipeAvailable(RECIPES[name])) return; // Deluxe Edition not owned
     const r = RECIPES[name];
     const catMatch =
       activeBrowserCat === "Alle" || r.category === activeBrowserCat;
@@ -223,6 +224,7 @@ function filterRecipesInline(query) {
   Object.keys(RECIPES).forEach((name) => {
     if (shown.has(name)) return;
     if (VARIANT_GROUPS.some((g) => g.variants.includes(name))) return;
+    if (!recipeAvailable(RECIPES[name])) return; // Deluxe Edition not owned
     if (q && !name.toLowerCase().includes(q)) return;
     const r = RECIPES[name];
     matches.push({
@@ -461,7 +463,7 @@ function renderWhereUsed(query) {
   const item = allItemNames().find(n => n.toLowerCase() === (query || "").trim().toLowerCase());
   if (!item) return;
   const users = Object.entries(RECIPES)
-    .filter(([, r]) => (r.ingredients || []).some(i => i.item === item))
+    .filter(([, r]) => recipeAvailable(r) && (r.ingredients || []).some(i => i.item === item))
     .sort(([a], [b]) => a.localeCompare(b));
   if (!users.length) {
     el.innerHTML = '<div style="font-size:11px;color:var(--color-text-disabled)">Not used in any recipe</div>';
@@ -604,7 +606,7 @@ function renderSelectedRecipes() {
         .join("");
 
       const ct = wsCycleTime(r, item); // incl. workstation speed
-      const opm = machineOpm(r, item);
+      const opm = lineOpm(r, item); // gross for self-feeding loops (goal = machine output)
       const machinesNeeded = ceilMachines(item.goal / opm);
       const actualOpm = machinesNeeded * opm;
 
@@ -622,7 +624,7 @@ function renderSelectedRecipes() {
           ${getIcon(item.itemName, 28)}
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.itemName}</div>
-            <div style="font-size:10px;color:var(--text-dim)">${hasVariants ? item.recipeName : r.category}</div>
+            <div style="font-size:10px;color:var(--text-dim)">${hasVariants ? item.recipeName : r.category}${Array.isArray(r.output) && !r.chanceOutputs && r.output[0]?.item !== item.itemName && r.output[0]?.item !== item.recipeName ? ' → ' + r.output[0].item : ''}</div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--accent);line-height:1">${machinesNeeded}</div>
@@ -656,21 +658,21 @@ function renderSelectedRecipes() {
               onchange="setRecipeForSale(this.dataset.idx, this.checked)">Sell
           </label>
         </div>
-        ${Array.isArray(r.output) && r.output.length > 1
+        ${r.selfLoop
+          ? `<div style="margin-top:5px;font-size:11px;color:var(--text-dim)" title="Part of the output feeds the machines again; the first items come from excavation once">↻ ${fmt(item.goal - item.goal * machineOpm(r, item) / opm)}/min back into the loop · <span style="color:var(--accent3)">net +${fmt(item.goal * machineOpm(r, item) / opm)}/min</span></div>`
+          : ""}
+        ${r.chanceOutputs
+          ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:5px">
+          <span style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">Products:</span>
+          ${r.output.map(op => `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(op.item, 14)}${op.item}: <span style="color:var(--accent3)">${fmt(item.goal / (r.ingredients[0]?.amount || 1) * op.amount)}</span> (${Math.round(op.amount * 100)} %)</span>`).join(' <span style="color:var(--color-text-disabled)">·</span> ')}
+        </div>`
+          : Array.isArray(r.output) && r.output.length > 1
           ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:5px">
           <span style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">By-products:</span>
           ${r.output.slice(1).map(op => {
             const byOpm = (item.goal / opm) * (60 / ct) * op.amount * (op.chance ?? 1); // goal-based like the tables
             return `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(op.item, 14)}${op.item}: <span style="color:var(--warn)">${fmt(byOpm)}</span></span>`;
           }).join(' <span style="color:var(--color-text-disabled)">·</span> ')}
-        </div>`
-          : ""
-        }
-        ${!Array.isArray(r.output) && r.output && r.output.chance != null && r.output.chance < 1
-          ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;align-items:center;gap:5px">
-          <span style="font-size:10px;color:var(--color-warning);letter-spacing:1px;text-transform:uppercase">⚡ Chance output:</span>
-          <span style="font-size:11px;color:var(--text-dim)">${getOutputLabel(r)} per cycle</span>
-          <span style="font-size:10px;color:var(--text-dim);opacity:0.7">(avg ${(r.output.amount * r.output.chance).toFixed(1)}/cycle)</span>
         </div>`
           : ""
         }

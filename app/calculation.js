@@ -27,6 +27,9 @@
 //   [{ item, amount, chance? }]  – multi-output (only index 0 is counted)
 function getOutputAmount(recipe) {
   if (!recipe.output) return 0;
+  // Recyclers: no main product; the rate is the input processed (in-game
+  // "Items per minute: 160"), every output is a product with a chance.
+  if (recipe.chanceOutputs) return recipe.ingredients[0]?.amount || 1;
   if (Array.isArray(recipe.output)) {
     const o = recipe.output[0];
     return o.amount * (o.chance != null ? o.chance : 1);
@@ -52,6 +55,26 @@ function getOutputLabel(recipe) {
 // `item` needs { machineName, itemName? , wsOverride? } — a selectedRecipeList
 // entry, or { itemName, machineName } for items deeper in the chain.
 // Single source of truth: table, chain resolution, sidebar and Sankey all use it.
+// Self-feeding recipes of excavated items (Greenhouse: 1 Biomass → 2): part of
+// the output goes straight back in. The loop is closed: the rate is the NET
+// output, the returned share is no demand per minute, only a one-time start
+// fill gathered by excavation. recipe.selfLoop = { item, amount per cycle }.
+(function _markSelfLoops() {
+  if (typeof EXCAVATION === 'undefined' || typeof RECIPES === 'undefined') return;
+  Object.entries(RECIPES).forEach(([key, r]) => {
+    const product = Array.isArray(r.output) ? r.output[0]?.item : key;
+    const ing = EXCAVATION.items?.includes(product) && r.ingredients?.find(i => i.item === product);
+    if (ing) r.selfLoop = { item: product, amount: ing.amount };
+  });
+})();
+const isSelfLoopInput = (recipe, item) => recipe?.selfLoop?.item === item;
+// Output rate of a SELECTED line: the goal is the machine's gross output as the
+// game shows it (Greenhouse 0.3/min Forest Seeds; 0.2 go back, +0.1 net).
+// Demand inside the chain uses machineOpm (net), the loop must cover it.
+function lineOpm(recipe, item) {
+  return machineOpm(recipe, item) + (recipe.selfLoop ? (60 / wsCycleTime(recipe, item)) * recipe.selfLoop.amount : 0);
+}
+
 function machineOpm(recipe, item) {
   const ct = wsCycleTime(recipe, item);
   const parent = item.itemName?.match(/^(.+)\s+(?:Arm|Head|Leg|Torso)$/)?.[1];
@@ -59,8 +82,8 @@ function machineOpm(recipe, item) {
   const pumpjackBonus = typeof RESEARCH_BONUSES !== 'undefined' && RESEARCH_BONUSES.pumpjacks.includes(item.machineName)
     ? pumpjackEfficiencyLevel * researchBonus('Pumpjack Efficiency') : 0;
   // All bonuses stack additively in the productivity bracket.
-  return (60 / ct) * getOutputAmount(recipe) * (1 + eff / 100)
-       * (1 + pumpjackBonus + getItemWsEffect(item).eff);
+  const gross = getOutputAmount(recipe) * (1 + eff / 100) * (1 + pumpjackBonus + getItemWsEffect(item).eff);
+  return (60 / ct) * (gross - (recipe.selfLoop?.amount || 0)); // net for self-feeding loops
 }
 
 // Effective cycle time incl. workstation SPEED: a faster machine needs fewer
@@ -92,8 +115,15 @@ function wsBadge(item) {
 
 // Returns the power consumption of a machine in kW.
 // Checks the machine's own recipe first; falls back to MACHINE_POWER_KW.
-function getMachinePowerKw(machineName) {
-  // Assembly Line power = sum of its sub-machines
+function getMachinePowerKw(machineName, itemName) {
+  // Assembly Line: its stations draw power per task, so the average power is
+  // the energy per robot over the cycle time (game data; ≈ 2.1 MW per line).
+  if (machineName === M.ASSEMBLY_LINE && typeof ASSEMBLY_LINE_ENERGY_KJ !== 'undefined') {
+    const kj = ASSEMBLY_LINE_ENERGY_KJ[itemName]
+      ?? Math.max(0, ...Object.values(ASSEMBLY_LINE_ENERGY_KJ)); // no robot given: same for all robots today
+    return kj / ASSEMBLY_LINE_COMPOSITION.cycle_time;
+  }
+  // Older data versions: sum of its sub-machines
   if (machineName === M.ASSEMBLY_LINE) {
     return getMachinePowerKw(ASSEMBLY_LINE_COMPOSITION.start.name)    * ASSEMBLY_LINE_COMPOSITION.start.count
          + getMachinePowerKw(ASSEMBLY_LINE_COMPOSITION.producer.name) * ASSEMBLY_LINE_COMPOSITION.producer.count
@@ -119,7 +149,7 @@ function machinesPowerKw(machine, count, item = { machineName: machine }) {
   // Fracking Tower: power grows per optional module (+100 % each), not with speed
   const factor = mb?.powerPerModule != null ? 1 + (modularModules(machine) - mb.ignored) * mb.powerPerModule
                                             : modularSpeed(machine);
-  const each = (getMachinePowerKw(machine) || mb?.basePowerKw || 0) * factor;
+  const each = (getMachinePowerKw(machine, item.itemName) || mb?.basePowerKw || 0) * factor;
   const dec  = adjacencyBonus ? (mb?.adjacencyPowerDecrease || 0) : 0;
   const neighbourSlots = count > 1 ? 2 * (count - 1) : 0;
   // + workstation power consumption (e.g. +80 % with 3 Screen Bots + core)
@@ -157,6 +187,28 @@ function chainPowerKw() {
   return { machines, loaders };
 }
 
+// Product pills of a recycler (chanceOutputs): all outputs are equal products
+// with a chance. `inputPerMin` = items processed per minute.
+function chanceProductPills(recipe, inputPerMin, iconBox, size = 48) {
+  const perInput = 1 / (recipe.ingredients[0]?.amount || 1);
+  return recipe.output.map(o => `<span style="display:inline-flex;align-items:center;gap:5px;
+      background:var(--color-success-bg);border:1px solid var(--color-success-border);
+      border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
+      ${iconBox(o.item, size)}<span style="color:var(--text)">${o.item}</span>
+      <span style="font-family:'Share Tech Mono',monospace;color:var(--accent3)">${fmt(inputPerMin * perInput * o.amount)}<span style="color:var(--text-dim);font-size:10px">/min</span></span>
+      <span style="font-size:10px;color:var(--text-dim)">${Math.round(o.amount * 100)} %</span>
+    </span>`).join('');
+}
+
+// "→ product" note when a recipe is named differently from what it makes
+// (Scrap Recycler: Xeno-Scrap → Advanced Machinery Parts).
+function productNote(recipeKey, shownName, size = 32) {
+  const r = RECIPES[recipeKey];
+  const out = Array.isArray(r?.output) && !r.chanceOutputs ? r.output[0]?.item : null;
+  if (!out || out === recipeKey || out === shownName) return '';
+  return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--text-dim);margin-left:6px">→ ${getIcon(out, size)}${out}</span>`;
+}
+
 // Items/min of the conveyor tier chosen in settings (game data; I 160 … IV 1280).
 function conveyorItemsPerMin() {
   const fam = MACHINE_FAMILIES.find(f => f.label === 'Conveyor Belt');
@@ -172,7 +224,8 @@ function conveyorItemsPerMin() {
 // (fed directly, no belts). One ship serves one pad.
 function shippingPlan(item, perMin, direction, viaAssemblyLine) {
   if (typeof SHIPPING === 'undefined' || typeof ITEM_WEIGHTS_KG === 'undefined') return null;
-  const kgEach = ITEM_WEIGHTS_KG[item];
+  // R&D Lab "Product Weight" reduction (setting per product)
+  const kgEach = ITEM_WEIGHTS_KG[item] * (1 - (botWeightReductions[item] || 0) / 100);
   const ship = SHIPPING.ships.find(sh => sh.name === shippingShip) || SHIPPING.ships[SHIPPING.ships.length - 1];
   if (!kgEach || !ship || !(perMin > 0)) return null;
   const fits = SHIPPING.pads.filter(p => p.padSize === ship.padSize && (direction === 'up' || p.downAllowed));
@@ -360,6 +413,9 @@ function calculateRecipes() {
 
   // totals[itemName] = total items/min consumed across all selected recipes
   const totals = {};
+  // A line's own excavated product as its input (Greenhouse: Biomass → Biomass)
+  // comes from excavation directly, not from the line itself.
+  const selfExcavated = {};
 
   // ── Per-recipe line calculation ────────────────────────────
   const lines = selectedRecipeList
@@ -371,7 +427,7 @@ function calculateRecipes() {
 
       const ct = wsCycleTime(r, item); // seconds per cycle (incl. workstation speed)
 
-      const opm = machineOpm(r, item);
+      const opm = lineOpm(r, item); // gross for self-feeding loops (goal = machine output)
 
       // Machines needed: always round up (you can't run half a machine)
       const machines   = ceilMachines(item.goal / opm);
@@ -386,6 +442,10 @@ function calculateRecipes() {
       r.ingredients.forEach((ing) => {
         // ipm = ingredient items consumed per minute
         const ipm = (60 / ct) * ing.amount * runs;
+        if (isSelfLoopInput(r, ing.item)) {
+          selfExcavated[ing.item] = (selfExcavated[ing.item] || 0) + ipm;
+          return;
+        }
         totals[ing.item] = (totals[ing.item] || 0) + ipm;
       });
 
@@ -422,8 +482,16 @@ function calculateRecipes() {
   // ── Byproducts from selected recipes ────────────────────────
   // Computed from lines directly — independent of depth mode.
   const byproductTotals = {}; // itemName → { amount, machine }
+  const chanceProducts  = {}; // recycler line products: usable by the chain, nothing to dispose of
   lines.forEach(line => {
     const r = RECIPES[line.recipeName || line.name];
+    if (r?.chanceOutputs) {
+      const ct = wsCycleTime(r, line);
+      r.output.filter(o => !r.ingredients.some(i => i.item === o.item)).forEach(o => {
+        chanceProducts[o.item] = (chanceProducts[o.item] || 0) + line.runs * (60 / ct) * o.amount;
+      });
+      return;
+    }
     if (!Array.isArray(r?.output) || r.output.length < 2) return;
     const ct = wsCycleTime(r, line);
     for (let i = 1; i < r.output.length; i++) {
@@ -470,15 +538,52 @@ function calculateRecipes() {
     });
     return out;
   }
-  Object.entries(totals).forEach(([name, val]) => {
-    Object.entries(byproductsPerUnit(name, new Set())).forEach(([b, perUnit]) => {
-      if (!byproductTotals[b]) {
-        const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[b] : null;
-        byproductTotals[b] = { amount: 0, machine: disposal ? disposal.machine : null };
-      }
-      byproductTotals[b].amount += perUnit * val;
-    });
-  });
+  const addByproduct = (b, amt) => {
+    if (!byproductTotals[b]) {
+      const disposal = typeof BYPRODUCT_DISPOSAL !== 'undefined' ? BYPRODUCT_DISPOSAL[b] : null;
+      byproductTotals[b] = { amount: 0, machine: disposal ? disposal.machine : null };
+    }
+    byproductTotals[b].amount += amt;
+  };
+  // Existing stock replaces production, so it makes no byproducts either
+  // (Conveyor II from stock → no slag / waste gas from its steel chain).
+  // Subtrees without a stock item use the memo; paths with one go level by level.
+  const bpStock = { ...stockItems };
+  const stockMemo = new Map();
+  function subtreeHasStock(itemName, path) {
+    const resolved = resolveRecipeName(itemName);
+    if (stockItems[itemName] > 0 || stockItems[resolved] > 0) return true;
+    if (path.has(resolved) || path.size > 50) return false;
+    if (stockMemo.has(resolved)) return stockMemo.get(resolved);
+    stockMemo.set(resolved, false);
+    const next = new Set(path).add(resolved);
+    const has = (RECIPES[resolved]?.ingredients || []).some(i => subtreeHasStock(i.item, next));
+    stockMemo.set(resolved, has);
+    return has;
+  }
+  function chainByproducts(itemName, amount, path) {
+    const t = Math.min(bpStock[itemName] || 0, amount);
+    if (t > 0) { bpStock[itemName] -= t; amount -= t; }
+    if (amount < STOCK_TOLERANCE) return;
+    const resolved = resolveRecipeName(itemName);
+    if (!subtreeHasStock(itemName, new Set())) {
+      Object.entries(byproductsPerUnit(itemName, path)).forEach(([b, perUnit]) => addByproduct(b, perUnit * amount));
+      return;
+    }
+    if (path.has(resolved) || path.size > 50) return;
+    const recipe = RECIPES[resolved];
+    const machine = recipe?.ingredients?.length && Object.keys(recipe.machines || {}).length
+      ? preferredMachineFor(recipe) : null;
+    if (!machine || !recipe.machines[machine]) return;
+    const chainItem = { itemName: resolved, machineName: machine };
+    const runs = amount * (60 / wsCycleTime(recipe, chainItem)) / machineOpm(recipe, chainItem);
+    if (Array.isArray(recipe.output)) {
+      recipe.output.slice(1).forEach(sec => addByproduct(sec.item, runs * sec.amount * (sec.chance ?? 1)));
+    }
+    const next = new Set(path).add(resolved);
+    recipe.ingredients.forEach(ing => chainByproducts(ing.item, runs * ing.amount, next));
+  }
+  Object.entries(totals).forEach(([name, val]) => chainByproducts(name, val, new Set()));
 
   // ── Byproduct supply pool ────────────────────────────────────
   // Byproducts are real output: wherever the chain needs that item again it is
@@ -501,6 +606,7 @@ function calculateRecipes() {
     supply[rp.produces] = (supply[rp.produces] || 0) + potential;
     info.reprocessed = { machine: repMachine, produces: rp.produces, potential, inPerMachine, outPerMachine };
   });
+  Object.entries(chanceProducts).forEach(([item, amt]) => { supply[item] = (supply[item] || 0) + amt; });
   _lastSupply = { ...supply }; // for the Sankey/Boxes graph
   // Takes up to `amount` of `item` from `pool`; returns what still has to be made.
   const takeFrom = (pool, item, amount) => {
@@ -647,6 +753,9 @@ function calculateRecipes() {
           </span>`;
       }).join('');
 
+      if (recipe.chanceOutputs) {
+        ingPills += chanceProductPills(recipe, r.goal, iconBox, 64);
+      } else
       // Add byproduct pills if the recipe has secondary outputs
       if (Array.isArray(recipe.output) && recipe.output.length > 1) {
         const byproductPills = recipe.output.slice(1).map(sec => {
@@ -675,7 +784,7 @@ function calculateRecipes() {
     <tr class="recipe-main-row" onclick="toggleRecipeRow('${rid}')">
       <td style="padding:7px 12px"><div style="display:flex;align-items:center;gap:6px">
         <span class="row-expand-arrow" id="arr_${rid}">▶</span>
-        ${iconBox(r.displayName, 64)}<span class="label">${r.displayName}</span>
+        ${iconBox(r.displayName, 64)}<span class="label">${r.displayName}</span>${productNote(r.recipeName, r.displayName)}${recipe.selfLoop ? `<span style="font-size:11px;color:var(--accent3);margin-left:6px" title="${fmt(r.goal - r.goal * machineOpm(recipe, r) / lineOpm(recipe, r))}/min go back into the loop">net +${fmt(r.goal * machineOpm(recipe, r) / lineOpm(recipe, r))}/min</span>` : ''}
         ${r.recipeName !== r.itemName && r.itemName ? '<span style="font-size:10px;color:var(--text-dim);margin-left:4px">' + (r.recipeName || "") + "</span>" : ""}
       </div></td>
       <td style="padding:7px 12px">
@@ -740,7 +849,18 @@ function calculateRecipes() {
   // Source shown for a raw item without a producing machine: fluid intake or
   // an external delivery (Firmarlite Bar ← Space Station).
   const rawSource = (item) => fluidProducerMap[item.toLowerCase().replace(/\s+/g, '_')]
-    || (typeof EXTERNAL_SOURCES !== 'undefined' && EXTERNAL_SOURCES[item]) || null;
+    || (typeof EXTERNAL_SOURCES !== 'undefined' && EXTERNAL_SOURCES[item])
+    || (typeof EXCAVATION !== 'undefined' && EXCAVATION.items?.includes(item) && excavationSource()) || null;
+
+  // Self-feeding recipes (Greenhouse: 1 Biomass → 2) of excavated items: the
+  // input that closes the loop comes from excavation — own row, like Water.
+  const isExcavated = (item) => typeof EXCAVATION !== 'undefined' && EXCAVATION.items?.includes(item);
+  const excavationKey = (item) => `${item} (Excavation)`;
+  const addExcavationInput = (item, amount) => {
+    const key = excavationKey(item);
+    if (!resolvedTotals[key]) resolvedTotals[key] = { amount: 0, machine: excavationSource(), icon: item, excavated: true, initial: true };
+    resolvedTotals[key].amount += amount;
+  };
 
   // Always compute direct-level materials (mode-0 view) — used for Direct Materials
   // section in modes 0 and 1.
@@ -757,6 +877,10 @@ function calculateRecipes() {
       : recipe.ingredients?.length ? preferredMachineFor(recipe) : preferredMinerFor(resolved, recipe);
     directTotals[name] = { amount: val, machine: machine || rawSource(resolved), recipeName: resolved };
   });
+  Object.entries(selfExcavated).forEach(([item, amt]) => {
+    directTotals[excavationKey(item)] = { amount: amt, machine: excavationSource(), icon: item, excavated: true, initial: true };
+  });
+  const addSelfExcavated = () => Object.entries(selfExcavated).forEach(([item, amt]) => addExcavationInput(item, amt));
 
   if (calcDepthMode === 0) {
     Object.assign(resolvedTotals, directTotals);
@@ -798,6 +922,7 @@ function calculateRecipes() {
       const nextPath = new Set(visitedPath);
       nextPath.add(resolved);
       recipe.ingredients.forEach(ing => {
+        if (isSelfLoopInput(recipe, ing.item)) { addExcavationInput(ing.item, (amountPerMin / opm) * ing.amount * (60 / ct)); return; }
         resolveAllLevels(ing.item, (amountPerMin / opm) * ing.amount * (60 / ct), nextPath);
       });
     }
@@ -809,6 +934,7 @@ function calculateRecipes() {
       if (!resolvedTotals[key]) resolvedTotals[key] = { amount: 0, machine: line.machineName, recipeName: line.recipeName || line.name };
       resolvedTotals[key].amount += line.goal;
     });
+    addSelfExcavated();
     Object.entries(totals).forEach(([name, val]) => resolveAllLevels(name, val, new Set()));
     {
       const lineKeys = new Set(lines.map(l => l.displayName || l.itemName)); // already in totals
@@ -908,10 +1034,12 @@ function calculateRecipes() {
 
       recipe.ingredients.forEach(ing => {
         const ingPerMin = runsPerMin * ing.amount * (60 / ct);
+        if (isSelfLoopInput(recipe, ing.item)) { if (calcDepthMode !== 1) addExcavationInput(ing.item, ingPerMin); return; }
         resolveIngredient(ing.item, ingPerMin, nextPath);
       });
     }
 
+    if (calcDepthMode !== 1) addSelfExcavated(); // mode 1 lists no raw materials
     Object.entries(totals).forEach(([name, val]) => {
       resolveIngredient(name, val, new Set());
     });
@@ -960,6 +1088,14 @@ function calculateRecipes() {
   const frackPlan = frackingTowerPlan(
     typeof VEIN_MINING_FLUIDS !== 'undefined' && veinsDepleted
       ? fixedFluids[Object.values(VEIN_MINING_FLUIDS)[0]?.fluid] || 0 : 0);
+
+  // Machine runs of a results row: the selected line's share at its gross rate
+  // (lineOpm), any further chain demand at the net rate (self-feeding loops).
+  function rowRunsOf(rec, item, name, val) {
+    if (!rec.selfLoop) return val / machineOpm(rec, item);
+    const lineGoal = Math.min(val, lines.filter(l => (l.displayName || l.itemName) === name).reduce((a, l) => a + l.goal, 0));
+    return lineGoal / lineOpm(rec, item) + (val - lineGoal) / machineOpm(rec, item);
+  }
 
   // ── Material table builder (shared by Direct + resolved sections) ───────────
   function buildMaterialRows(totalsMap) {
@@ -1025,9 +1161,9 @@ function calculateRecipes() {
         }
         return `
       <tr>
-        <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${iconBox(name, 64)}<span class="label">${name}</span></div></td>
-        <td class="${cls}">${fmt(val)}</td>
-        <td class="num">${fmt(val / 60)}/s</td>
+        <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:10px">${iconBox(info.icon || name, 64)}<span class="label">${name}</span></div></td>
+        <td class="${cls}">${info.initial ? `${fmt(val)} <span style="font-size:10px;color:var(--text-dim)" title="One-time start fill; afterwards the loop feeds itself">once</span>` : fmt(val)}</td>
+        <td class="num">${info.initial ? '—' : `${fmt(val / 60)}/s`}</td>
         ${machineTd}
       </tr>`;
       }).join('');
@@ -1131,11 +1267,15 @@ function calculateRecipes() {
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
             if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
           } else if (!md) {
-            // No capacity data — show machine name only (e.g. Air Intake Base)
-            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span></div>`;
+            // No capacity data — show machine name only (e.g. Air Intake Base).
+            // Excavated items (Dirt, Sand, Stone …): list every way to gather them.
+            const excavation = typeof EXCAVATION !== 'undefined' && EXCAVATION.tools.includes(machine)
+              ? `<span style="font-size:10px;color:var(--text-dim);margin-left:4px" title="Gathered from the world">excavation: ${EXCAVATION.tools.join(' / ')}</span>` : '';
+            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span>${excavation}</div>`;
           } else if (md) {
             const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine });
-            const count       = ceilMachines(val / opm);
+            const rowRuns     = rowRunsOf(rec, { itemName: info.recipeName || name, machineName: machine }, name, val);
+            const count       = ceilMachines(rowRuns);
             const machPwrKw   = machinesPowerKw(machine, count);
             const nSolid      = countSolidConnections(rec, name);
             const loaders     = calcLoadersForMachine(machine, nSolid);
@@ -1165,7 +1305,7 @@ function calculateRecipes() {
               ingPills = rec.ingredients.map((ing) => {
                 // Use demand-proportional rate (val = needed output/min), not machine-capacity × count.
                 // This avoids showing a higher number than the row above due to Math.ceil rounding.
-                const ipm  = (val / opm) * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * ing.amount;
+                const ipm  = rowRuns * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * ing.amount;
                 const warn = ipm > 100;
                 return `<span style="display:inline-flex;align-items:center;gap:5px;
                     background:${warn ? 'var(--color-warning-bg)' : 'var(--color-success-bg)'};
@@ -1180,10 +1320,13 @@ function calculateRecipes() {
               }).join('');
             }
 
+            if (rec.chanceOutputs) {
+              ingPills += chanceProductPills(rec, val, iconBox, 48);
+            } else
             // Add byproduct pills for secondary outputs of this recipe
             if (Array.isArray(rec.output) && rec.output.length > 1) {
               ingPills += rec.output.slice(1).map(sec => {
-                const bpm = (val / opm) * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * sec.amount * (sec.chance ?? 1);
+                const bpm = rowRuns * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * sec.amount * (sec.chance ?? 1);
                 return `<span style="display:inline-flex;align-items:center;gap:5px;
                     background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);
                     border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
@@ -1210,9 +1353,9 @@ function calculateRecipes() {
       <tr class="recipe-main-row" onclick="${hasDetail ? `toggleRecipeRow('${rid}')` : ''}" style="border-bottom:1px solid var(--color-border);${hasDetail ? 'cursor:pointer' : ''}${rowBg}">
         <td style="padding:5px 12px"><div style="display:flex;align-items:center;gap:6px">
           ${hasDetail ? `<span class="row-expand-arrow" id="arr_${rid}">▶</span>` : '<span style="display:inline-block;width:14px"></span>'}
-          ${iconBox(name, 48)}<span class="label" style="font-size:13px">${name}</span>${byproductBadge}
+          ${iconBox(info.icon || name, 48)}<span class="label" style="font-size:13px">${name}</span>${info.byproduct || info.excavated ? '' : productNote(info.recipeName || name, name, 24)}${byproductBadge}
         </div></td>
-        <td class="${cls}" style="font-size:13px">${fmt(val)}/min</td>
+        <td class="${cls}" style="font-size:13px">${info.initial ? `${fmt(val)} <span style="font-size:10px;color:var(--text-dim)" title="One-time start fill; afterwards the loop feeds itself">once</span>` : `${fmt(val)}/min`}</td>
         <td style="padding:5px 12px">${machineCell}</td>
         <td style="padding:5px 12px">${conveyorCell}</td>
         <td style="padding:5px 12px">${loaderCell}</td>

@@ -92,7 +92,8 @@ function resolveRecipeName(canonicalName) {
   const group = VARIANT_GROUPS.find((g) => g.label === canonicalName)
              || BURNABLE_GROUPS.find((g) => g.label === canonicalName);
   if (group) {
-    return variantSettings[canonicalName] || group.variants[0];
+    const choice = variantSettings[canonicalName];
+    return choice && RECIPES[choice] ? choice : group.variants[0]; // saved choice may not exist in this data version
   }
   if (RECIPES[canonicalName]) return canonicalName;
   return _producerOf(canonicalName) || canonicalName;
@@ -261,7 +262,10 @@ function _injectSyntheticRobotRecipes() {
 
     RECIPES[robotName] = {
       category:    "Robots",
-      ingredients: [...ingredients, { item: paintName, amount: 100 }],
+      // Paint per robot from the game data (older data versions: 100 L)
+      ingredients: [...ingredients, typeof ASSEMBLY_LINE_PAINT !== "undefined" && ASSEMBLY_LINE_PAINT[robotName]
+        ? { item: ASSEMBLY_LINE_PAINT[robotName].item, amount: ASSEMBLY_LINE_PAINT[robotName].litres }
+        : { item: paintName, amount: 100 }],
       output:      { amount: 1 },
       machines:    { [alMachineName]: { cycleTime: alCycleTime } },
       _synthetic:  true,
@@ -425,6 +429,9 @@ function buildRecipeCategoryList() {
 const variantSettings      = {}; // { canonicalLabel → preferred variant key }
 const minerSettings        = {}; // { oreRubbleName → preferred miner machine }
 const botEfficiencyOverrides = {}; // { botName → efficiencyValue (%) }
+// R&D Lab "Product Weight" per product (%, in-game e.g. Combat Drone 50 % → 90 kg
+// becomes 45 kg). Only the shipping weight uses it.
+const botWeightReductions = {}; // { productName → weight reduction (%) }
 // Endless research levels (in-game "Mining Efficiency (11)" → 11).
 // Mining Efficiency does NOT raise output per minute (free ore, vein lasts
 // longer) — it only cuts fracking liquid per ore on depleted veins.
@@ -440,6 +447,14 @@ let shippingFlightSec = 26;
 // Materials already produced in the existing factory (item → per min). The
 // chain uses them after byproducts; only the missing rest is calculated.
 let stockItems = {};
+// Deluxe Edition content (game data entitlementIdentifier: Marble, office decor)
+// is hidden unless owned.
+let ownsDeluxe = false;
+// Tool shown as source of excavated items (Dirt, Biomass, seeds …); null = game data default
+let excavationTool = null;
+const excavationSource = () => (typeof EXCAVATION === 'undefined' ? null
+  : (EXCAVATION.tools.includes(excavationTool) ? excavationTool : EXCAVATION.source));
+const recipeAvailable = (r) => !r?.dlc || ownsDeluxe;
 
 // Every item name in the game data (ingredients + outputs), sorted.
 let _allItemNames = null;
@@ -670,18 +685,38 @@ function preferredMinerFor(itemName, recipe) {
 // ── Burnable item / fuel variant groups ───────────────────────
 // Items that can be produced with different fuel choices.
 // Uses the same variantSettings dict as VARIANT_GROUPS.
-const BURNABLE_GROUPS = [
-  {
-    label: "Steam",
-    variants: [
-      "Steam",
-      "Steam (Portable Fuel)",
-      "Steam (Jetpack Fuel)",
-      "Steam (Coked Ignium)",
-      "Steam (Ignium Fuel Rod)",
-    ],
-  },
-];
+// Built from the game data: one Steam recipe per BURNABLE item. A Boiler burns
+// energy_kj_per_sec of fuel (in-game: 216 MJ/min) for its steam output; the
+// fuel's residual (Fuel Rod Casing, empty Barrel) leaves as byproduct.
+const BURNABLE_GROUPS = [];
+(function _injectBoilerFuelRecipes() {
+  if (typeof POWER_SOURCES === 'undefined' || typeof POWER_FUEL_ITEMS === 'undefined') return;
+  POWER_SOURCES.filter(src => src.type === 'steam_boiler' && src.energy_kj_per_sec > 0).forEach(boiler => {
+    const [key, base] = Object.entries(RECIPES).find(([, r]) => r.machines?.[boiler.name]) || [];
+    if (!base) return;
+    const cycle = base.machines[boiler.name].cycleTime; // s
+    const variants = [key];
+    Object.entries(POWER_FUEL_ITEMS)
+      .filter(([, f]) => f.type === 'solid' && f.burnable) // older data: no flag → no variants
+      .sort((a, b) => a[1].mj - b[1].mj)
+      .forEach(([fuel, f]) => {
+        const perCycle = boiler.energy_kj_per_sec * cycle / (f.mj * 1000);
+        const outAmount = Array.isArray(base.output) ? base.output[0].amount : base.output.amount;
+        const name = `${key} (${fuel})`;
+        RECIPES[name] = {
+          ...base,
+          ingredients: [...base.ingredients, { item: fuel, amount: perCycle }],
+          output: f.residual
+            ? [{ item: key, amount: outAmount }, { item: f.residual, amount: perCycle * f.residualCount }]
+            : base.output,
+          machines: { [boiler.name]: { ...base.machines[boiler.name] } },
+          fuel,
+        };
+        variants.push(name);
+      });
+    if (variants.length > 1) BURNABLE_GROUPS.push({ label: key, variants });
+  });
+})();
 
 const VARIANT_GROUPS = [
   {
@@ -740,6 +775,7 @@ function _flushSaveSettings() {
       variantSettings,
       minerSettings,
       botEfficiencyOverrides,
+      botWeightReductions,
       miningEfficiencyLevel,
       pumpjackEfficiencyLevel,
       depletedVeins,
@@ -750,6 +786,8 @@ function _flushSaveSettings() {
       shippingShip,
       shippingFlightSec,
       stockItems,
+      ownsDeluxe,
+      excavationTool,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
       // Save recipe list without UI-only state (wsExpanded)
@@ -790,9 +828,16 @@ function loadSettings() {
     if (typeof s.shippingShip === 'string') shippingShip = s.shippingShip;
     if (typeof s.shippingFlightSec === 'number' && s.shippingFlightSec >= 0) shippingFlightSec = s.shippingFlightSec;
     stockItems = sanitizeStock(s.stockItems);
+    if (typeof s.ownsDeluxe === 'boolean') ownsDeluxe = s.ownsDeluxe;
+    if (typeof s.excavationTool === 'string') excavationTool = s.excavationTool;
     if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))
       calcDepthMode = s.calcDepthMode;
 
+    if (s.botWeightReductions) {
+      Object.entries(s.botWeightReductions).forEach(([k, v]) => {
+        if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 100) botWeightReductions[k] = v;
+      });
+    }
     // Only keep bot efficiency overrides that are finite numbers in [0, 200]
     if (s.botEfficiencyOverrides) {
       Object.entries(s.botEfficiencyOverrides).forEach(([k, v]) => {

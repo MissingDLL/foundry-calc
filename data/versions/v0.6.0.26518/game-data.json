@@ -673,7 +673,7 @@
       }
     },
     "_base_assembler_fluid_i": {
-      "name": "Fluid-Assembler I",
+      "name": "Fluid Assembler I",
       "category_id": "_base_buildings",
       "subgroup_id": "_base_buildings_processing",
       "time_ms": 0,
@@ -933,7 +933,7 @@
       }
     },
     "_base_basic_refining_gas": {
-      "name": "Olumite Refining: Olumite Gas",
+      "name": "Olumite Gas",
       "category_id": "_base_components",
       "subgroup_id": "_base_components_chemical",
       "time_ms": 0,
@@ -958,7 +958,7 @@
       }
     },
     "_base_basic_refining_ldo": {
-      "name": "Olumite Refining: Low Density Olumite",
+      "name": "Low Density Olumite",
       "category_id": "_base_components",
       "subgroup_id": "_base_components_chemical",
       "time_ms": 0,
@@ -983,7 +983,7 @@
       }
     },
     "_base_basic_refining_liquid_polymer": {
-      "name": "Olumite Refining: Liquid Polymer",
+      "name": "Liquid Polymer",
       "category_id": "_base_components",
       "subgroup_id": "_base_components_chemical",
       "time_ms": 0,
@@ -2798,7 +2798,7 @@
       }
     },
     "_base_decor_window_modular_slope": {
-      "name": "Decor (Modular Windows Slope)",
+      "name": "Decor (Windows Modular Slope)",
       "category_id": "_base_decor",
       "subgroup_id": "_base_decor_structures",
       "time_ms": 0,
@@ -2822,7 +2822,7 @@
       }
     },
     "_base_decor_window_modular_slope_edge": {
-      "name": "Decor (Modular Windows Slope Edge)",
+      "name": "Decor (Windows Modular Slope Edge)",
       "category_id": "_base_decor",
       "subgroup_id": "_base_decor_structures",
       "time_ms": 0,
@@ -2846,7 +2846,7 @@
       }
     },
     "_base_decor_window_modular_wedge": {
-      "name": "Decor (Modular Windows Wedge)",
+      "name": "Decor (Windows Modular Wedge)",
       "category_id": "_base_decor",
       "subgroup_id": "_base_decor_structures",
       "time_ms": 0,
@@ -4539,7 +4539,7 @@
       }
     },
     "_base_light_ceiling_i": {
-      "name": "Ceiling Light",
+      "name": "Ceiling Light I",
       "category_id": "_base_decor",
       "subgroup_id": "_base_decor_lights",
       "time_ms": 0,
@@ -4567,7 +4567,7 @@
       }
     },
     "_base_light_ceiling_ii": {
-      "name": "Ceiling Light (Large)",
+      "name": "Ceiling Light II",
       "category_id": "_base_decor",
       "subgroup_id": "_base_decor_lights",
       "time_ms": 0,
@@ -4627,7 +4627,7 @@
       }
     },
     "_base_light_wall_i": {
-      "name": "Wall Light",
+      "name": "Wall Light I",
       "category_id": "_base_decor",
       "subgroup_id": "_base_decor_lights",
       "time_ms": 0,
@@ -4825,7 +4825,7 @@
       }
     },
     "_base_loader_2nd_i": {
-      "name": "Loader, 2nd Lane",
+      "name": "Loader (2nd Lane)",
       "category_id": "_base_buildings",
       "subgroup_id": "_base_buildings_loaders",
       "time_ms": 0,
@@ -4857,7 +4857,7 @@
       }
     },
     "_base_loader_3rd_i": {
-      "name": "Loader, 3rd Lane",
+      "name": "Loader (3rd Lane)",
       "category_id": "_base_buildings",
       "subgroup_id": "_base_buildings_loaders",
       "time_ms": 0,
@@ -6758,7 +6758,7 @@
       }
     },
     "_base_ore_scanner_hh": {
-      "name": "Ore Scanner (Handheld)",
+      "name": "Ore Scanner",
       "category_id": "_base_handhelds",
       "subgroup_id": "_base_handhelds_general",
       "time_ms": 0,
@@ -8511,7 +8511,7 @@
       }
     },
     "_base_scanning_entity_i": {
-      "name": "Long Range Scanner Base",
+      "name": "Long Range Scanner",
       "category_id": "_base_super_buildings",
       "subgroup_id": "_base_super_buildings_modular_buildings",
       "time_ms": 0,
@@ -9446,7 +9446,7 @@
       }
     },
     "_base_tank": {
-      "name": "Tank",
+      "name": "Tank I",
       "category_id": "_base_buildings",
       "subgroup_id": "_base_buildings_storage",
       "time_ms": 0,
@@ -10674,7 +10674,7 @@
         }
       ],
       "machines": {
-        "Boiler": 60
+        "Boiler": 1
       }
     },
     "synthetic_resource_converter__base_air_intake_1": {
@@ -10712,27 +10712,6 @@
       ],
       "machines": {
         "Hot Air Stove Base": 60
-      }
-    },
-    "synthetic_resource_converter__base_npp_cooling_tower_base": {
-      "name": "Low Density Olumite",
-      "category_id": "_base_buildings",
-      "subgroup_id": "",
-      "time_ms": 0,
-      "inputs": [
-        {
-          "id": "Water",
-          "amount": 10800.0
-        }
-      ],
-      "outputs": [
-        {
-          "id": "Low Density Olumite",
-          "amount": 3600.0
-        }
-      ],
-      "machines": {
-        "Cooling Tower Base": 60
       }
     },
     "synthetic_resource_converter__base_npp_steam_generator_base": {
@@ -10835,6 +10814,544 @@
       ],
       "machines": {
         "Xeno-Scrap-Extractor": 12.0
+      }
+    },
+    "synthetic_recycling__base_alien_scrap_i": {
+      "name": "Scrap Recycler: Xeno-Scrap",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Xeno-Scrap",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Advanced Machinery Parts",
+          "amount": 0.65
+        },
+        {
+          "id": "Electronic Components",
+          "amount": 0.35
+        }
+      ],
+      "machines": {
+        "Scrap Recycler": 0.375
+      }
+    },
+    "synthetic_recycling__base_biomass": {
+      "name": "Resource Separator: Biomass",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Biomass",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 1.0
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_boreal_forest_seed_plants": {
+      "name": "Resource Separator: Forest Seed (Plants)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Forest Seed (Plants)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_boreal_forest_seed_trees": {
+      "name": "Resource Separator: Forest Seed (Trees)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Forest Seed (Trees)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_concrete": {
+      "name": "Resource Separator: Concrete",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Concrete",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.25
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_construction_hazard_block": {
+      "name": "Resource Separator: Hazard Concrete",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Hazard Concrete",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.25
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_dirt": {
+      "name": "Resource Separator: Dirt",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Dirt",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Xenoferrite Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Technum Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Ignium Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.05
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_office_marble_black_deluxe": {
+      "name": "Resource Separator: Marble (Black)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Marble (Black)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.25
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_office_marble_white_deluxe": {
+      "name": "Resource Separator: Marble (White)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Marble (White)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.25
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_rocky_desert_dirt": {
+      "name": "Resource Separator: Rocky Desert Dirt",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Rocky Desert Dirt",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Xenoferrite Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Technum Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Ignium Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.05
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_rocky_desert_seed_plants": {
+      "name": "Resource Separator: Rocky Desert Seed (Plants)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Rocky Desert Seed (Plants)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_rocky_desert_seed_trees": {
+      "name": "Resource Separator: Rocky Desert Seed (Trees)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Rocky Desert Seed (Trees)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_sand": {
+      "name": "Resource Separator: Sand",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Sand",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Xenoferrite Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Technum Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Ignium Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.05
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_sandy_desert_seed_plants": {
+      "name": "Resource Separator: Sandy Desert Seed (Plants)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Sandy Desert Seed (Plants)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_sandy_desert_seed_trees": {
+      "name": "Resource Separator: Sandy Desert Seed (Trees)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Sandy Desert Seed (Trees)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_stone": {
+      "name": "Resource Separator: Stone",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Stone",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Xenoferrite Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Technum Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Ignium Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.05
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_tropical_rainforest_dirt": {
+      "name": "Resource Separator: Tropical Rainforest Dirt",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Tropical Rainforest Dirt",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Xenoferrite Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Technum Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Ignium Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.05
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_tropical_rainforest_seed_plants": {
+      "name": "Resource Separator: Tropical Rainforest Seed (Plants)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Tropical Rainforest Seed (Plants)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_tropical_rainforest_seed_trees": {
+      "name": "Resource Separator: Tropical Rainforest Seed (Trees)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Tropical Rainforest Seed (Trees)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_tundra_dirt": {
+      "name": "Resource Separator: Tundra Dirt",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Tundra Dirt",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Xenoferrite Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Technum Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Ignium Ore Rubble",
+          "amount": 0.05
+        },
+        {
+          "id": "Mineral Rocks",
+          "amount": 0.05
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_tundra_seed_plants": {
+      "name": "Resource Separator: Tundra Seed (Plants)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Tundra Seed (Plants)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
+      }
+    },
+    "synthetic_recycling__base_tundra_seed_trees": {
+      "name": "Resource Separator: Tundra Seed (Trees)",
+      "category_id": "_base_components",
+      "subgroup_id": "",
+      "time_ms": 0,
+      "inputs": [
+        {
+          "id": "Tundra Seed (Trees)",
+          "amount": 1
+        }
+      ],
+      "outputs": [
+        {
+          "id": "Biomass",
+          "amount": 0.1
+        }
+      ],
+      "machines": {
+        "Resource Separator": 0.1875
       }
     }
   },
@@ -11101,20 +11618,6 @@
     "Casting Machine": {
       "name": "Casting Machine",
       "icon_id": "_base_casting_machine",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Ceiling Light": {
-      "name": "Ceiling Light",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Ceiling Light (Large)": {
-      "name": "Ceiling Light (Large)",
-      "icon_id": "",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -11448,27 +11951,6 @@
       "is_fluid": false,
       "is_intermediate": false
     },
-    "Decor (Modular Windows Slope Edge)": {
-      "name": "Decor (Modular Windows Slope Edge)",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Decor (Modular Windows Slope)": {
-      "name": "Decor (Modular Windows Slope)",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Decor (Modular Windows Wedge)": {
-      "name": "Decor (Modular Windows Wedge)",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
     "Decor (Modular Windows)": {
       "name": "Decor (Modular Windows)",
       "icon_id": "_base_decor_window_center",
@@ -11537,6 +12019,13 @@
       "icon_id": "_base_npp_reactor_compound_depleted",
       "icon_path": "",
       "is_fluid": true,
+      "is_intermediate": false
+    },
+    "Dirt": {
+      "name": "Dirt",
+      "icon_id": "_base_terrain_dirt",
+      "icon_path": "",
+      "is_fluid": false,
       "is_intermediate": false
     },
     "Distillation Column": {
@@ -11787,13 +12276,6 @@
     "Fluid Assembler I": {
       "name": "Fluid Assembler I",
       "icon_id": "_base_assembler_fluid_i",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Fluid-Assembler I": {
-      "name": "Fluid-Assembler I",
-      "icon_id": "",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -12197,20 +12679,6 @@
       "is_fluid": false,
       "is_intermediate": false
     },
-    "Loader, 2nd Lane": {
-      "name": "Loader, 2nd Lane",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Loader, 3rd Lane": {
-      "name": "Loader, 3rd Lane",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
     "Logistic Container I": {
       "name": "Logistic Container I",
       "icon_id": "_base_logistic_container_i",
@@ -12235,13 +12703,6 @@
     "Long Range Scanner": {
       "name": "Long Range Scanner",
       "icon_id": "_base_scanning_entity_i",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Long Range Scanner Base": {
-      "name": "Long Range Scanner Base",
-      "icon_id": "",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -12512,27 +12973,6 @@
       "is_fluid": true,
       "is_intermediate": false
     },
-    "Olumite Refining: Liquid Polymer": {
-      "name": "Olumite Refining: Liquid Polymer",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Olumite Refining: Low Density Olumite": {
-      "name": "Olumite Refining: Low Density Olumite",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Olumite Refining: Olumite Gas": {
-      "name": "Olumite Refining: Olumite Gas",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
     "Omni-Analyzer": {
       "name": "Omni-Analyzer",
       "icon_id": "_base_exploration_analyzer",
@@ -12585,13 +13025,6 @@
     "Ore Scanner": {
       "name": "Ore Scanner",
       "icon_id": "_base_ore_vein_scanner",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Ore Scanner (Handheld)": {
-      "name": "Ore Scanner (Handheld)",
-      "icon_id": "",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -12820,6 +13253,153 @@
       "is_fluid": false,
       "is_intermediate": false
     },
+    "Resource Separator: Biomass": {
+      "name": "Resource Separator: Biomass",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Concrete": {
+      "name": "Resource Separator: Concrete",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Dirt": {
+      "name": "Resource Separator: Dirt",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Forest Seed (Plants)": {
+      "name": "Resource Separator: Forest Seed (Plants)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Forest Seed (Trees)": {
+      "name": "Resource Separator: Forest Seed (Trees)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Hazard Concrete": {
+      "name": "Resource Separator: Hazard Concrete",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Marble (Black)": {
+      "name": "Resource Separator: Marble (Black)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Marble (White)": {
+      "name": "Resource Separator: Marble (White)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Rocky Desert Dirt": {
+      "name": "Resource Separator: Rocky Desert Dirt",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Rocky Desert Seed (Plants)": {
+      "name": "Resource Separator: Rocky Desert Seed (Plants)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Rocky Desert Seed (Trees)": {
+      "name": "Resource Separator: Rocky Desert Seed (Trees)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Sand": {
+      "name": "Resource Separator: Sand",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Sandy Desert Seed (Plants)": {
+      "name": "Resource Separator: Sandy Desert Seed (Plants)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Sandy Desert Seed (Trees)": {
+      "name": "Resource Separator: Sandy Desert Seed (Trees)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Stone": {
+      "name": "Resource Separator: Stone",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Tropical Rainforest Dirt": {
+      "name": "Resource Separator: Tropical Rainforest Dirt",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Tropical Rainforest Seed (Plants)": {
+      "name": "Resource Separator: Tropical Rainforest Seed (Plants)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Tropical Rainforest Seed (Trees)": {
+      "name": "Resource Separator: Tropical Rainforest Seed (Trees)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Tundra Dirt": {
+      "name": "Resource Separator: Tundra Dirt",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Tundra Seed (Plants)": {
+      "name": "Resource Separator: Tundra Seed (Plants)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Resource Separator: Tundra Seed (Trees)": {
+      "name": "Resource Separator: Tundra Seed (Trees)",
+      "icon_id": "",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
     "Robot Parts": {
       "name": "Robot Parts",
       "icon_id": "_base_robot_parts_i",
@@ -12848,6 +13428,13 @@
       "is_fluid": false,
       "is_intermediate": false
     },
+    "Rocky Desert Dirt": {
+      "name": "Rocky Desert Dirt",
+      "icon_id": "_base_terrain_rocky_desert_dirt",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
     "Rocky Desert Seed (Plants)": {
       "name": "Rocky Desert Seed (Plants)",
       "icon_id": "_base_rocky_desert_seed_plants",
@@ -12865,6 +13452,13 @@
     "Rubber": {
       "name": "Rubber",
       "icon_id": "_base_rubber_i",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Sand": {
+      "name": "Sand",
+      "icon_id": "_base_terrain_sand",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -12984,6 +13578,13 @@
     "Scrap Recycler": {
       "name": "Scrap Recycler",
       "icon_id": "_base_recycler_scrap",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Scrap Recycler: Xeno-Scrap": {
+      "name": "Scrap Recycler: Xeno-Scrap",
+      "icon_id": "",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -13135,19 +13736,19 @@
       "is_fluid": false,
       "is_intermediate": false
     },
+    "Stone": {
+      "name": "Stone",
+      "icon_id": "_base_terrain_stone_i",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
     "Superalloy": {
       "name": "Superalloy",
       "icon_id": "_base_super_alloy_plate_i",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": true
-    },
-    "Tank": {
-      "name": "Tank",
-      "icon_id": "",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
     },
     "Tank I": {
       "name": "Tank I",
@@ -13317,6 +13918,13 @@
       "is_fluid": false,
       "is_intermediate": false
     },
+    "Tropical Rainforest Dirt": {
+      "name": "Tropical Rainforest Dirt",
+      "icon_id": "_base_terrain_tropical_rainforest_dirt",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
     "Tropical Rainforest Seed (Plants)": {
       "name": "Tropical Rainforest Seed (Plants)",
       "icon_id": "_base_tropical_rainforest_seed_plants",
@@ -13327,6 +13935,13 @@
     "Tropical Rainforest Seed (Trees)": {
       "name": "Tropical Rainforest Seed (Trees)",
       "icon_id": "_base_tropical_rainforest_seed_trees",
+      "icon_path": "",
+      "is_fluid": false,
+      "is_intermediate": false
+    },
+    "Tundra Dirt": {
+      "name": "Tundra Dirt",
+      "icon_id": "_base_terrain_tundra_dirt",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -13355,13 +13970,6 @@
     "Walkway": {
       "name": "Walkway",
       "icon_id": "_base_walkway_ledge",
-      "icon_path": "",
-      "is_fluid": false,
-      "is_intermediate": false
-    },
-    "Wall Light": {
-      "name": "Wall Light",
-      "icon_id": "",
       "icon_path": "",
       "is_fluid": false,
       "is_intermediate": false
@@ -16361,7 +16969,7 @@
     },
     "_base_ore_vein_miner_i": {
       "name": "Ore Vein Miner",
-      "power_kw": 0.0,
+      "power_kw": 500.0,
       "loader_sides": [
         0,
         0,
