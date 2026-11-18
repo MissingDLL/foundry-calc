@@ -726,7 +726,10 @@ const BURNABLE_GROUPS = [];
   });
 })();
 
-const VARIANT_GROUPS = [
+// Recipe choices per item from the game data (RECIPE_VARIANT_GROUPS); the
+// hand-written list below only serves data versions extracted before that.
+// A group that is also a fuel group (Steam) joins it: one choice per item.
+const _HAND_VARIANT_GROUPS = [
   {
     label: "Xenoferrite Plates",
     variants: [
@@ -756,6 +759,17 @@ const VARIANT_GROUPS = [
     variants: ["Xenoferrite Ore", "Xenoferrite Ore (Alternative)"],
   },
 ];
+const VARIANT_GROUPS = (typeof RECIPE_VARIANT_GROUPS === 'undefined') ? _HAND_VARIANT_GROUPS
+  : RECIPE_VARIANT_GROUPS
+      .filter(g => g.variants.every(v => RECIPES[v]))
+      .filter(g => {
+        const fuel = BURNABLE_GROUPS.find(b => b.label === g.label);
+        if (!fuel) return true;
+        g.variants.forEach(v => { if (!fuel.variants.includes(v)) fuel.variants.push(v); });
+        return false;
+      })
+      .map(g => ({ label: g.label, variants: [...g.variants] }));
+
 
 
 // ── Settings persistence (localStorage) ──────────────────────

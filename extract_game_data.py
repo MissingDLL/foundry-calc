@@ -2032,6 +2032,38 @@ def rename_unique_recipes_to_item(recipes: list[dict]) -> None:
             r["name"] = item
 
 
+def build_variant_groups(recipes: list[dict]) -> list[dict]:
+    """
+    Items with more than one recipe → a choice (Xenoferrite Plates Tier 1-3,
+    Biomass from Biomass or a Seed, Advanced Machinery Parts via Scrap
+    Recycler, Ore Rubble from Dirt …). Recyclers count for every product they
+    can yield. Recipes that only give back their own input (Resource Separator:
+    Biomass) are no choice. Order: the recipe named like the item first, then
+    the recipes of the main crafting row in the game's order (Tier 1 < Tier 2),
+    other rows (Barrel Recycle), recyclers last.
+    Returns [{"label": item, "variants": [recipe names]}].
+    """
+    groups: dict[str, list[dict]] = {}
+    for r in recipes:
+        ins = {i["item"] for i in r.get("ingredients", [])}
+        outs = [o["item"] for o in r.get("outputs", [])]
+        if not outs or ins == set(outs):  # only gives back its own input
+            continue
+        for item in (outs if r.get("chance_outputs") else outs[:1]):
+            groups.setdefault(item, []).append(r)
+    out = []
+    for item, rs in sorted(groups.items()):
+        if len(rs) < 2:
+            continue
+        # the game's own order: main crafting row first, by its sorting order
+        rows = [r.get("rowgroup_id") for r in rs if r.get("rowgroup_id") and not r.get("chance_outputs")]
+        main_row = max(set(rows), key=rows.count) if rows else ""
+        rs.sort(key=lambda r: (r["name"] != item, bool(r.get("chance_outputs")),
+                               r.get("rowgroup_id") != main_row, r.get("sorting_in_rowgroup", 0), r["name"]))
+        out.append({"label": item, "variants": [r["name"] for r in rs]})
+    return out
+
+
 def to_const_key(name: str) -> str:
     """Convert display name to JS constant key: 'Advanced Smelter' → 'ADVANCED_SMELTER'."""
     s = re.sub(r"[^\w\s]", " ", name)
@@ -2288,6 +2320,8 @@ def generate_game_data_js(version: str, recipes: list[dict],
     lines.append(f"const EXCAVATION = Object.freeze({json.dumps(shipping_data.get('excavation', {}))});")
     lines.append("// Pipe types (L/min), pipe/pipeline connections per building, pumps between them")
     lines.append(f"const FLUID_PORTS = Object.freeze({json.dumps(shipping_data.get('fluid', {}), sort_keys=True)});")
+    lines.append("// Items with several recipes: the choice offered in the settings / sidebar")
+    lines.append(f"const RECIPE_VARIANT_GROUPS = Object.freeze({json.dumps(shipping_data.get('variants', []))});")
     lines.append("")
 
     # RESEARCH_BONUSES (parsed from endless research descriptions)
@@ -2843,6 +2877,7 @@ def main():
     shipping_data = detect_shipping_data(templates_dir, id_to_name)
     shipping_data["excavation"] = shipping_excavation  # rides along to the JS writer
     shipping_data["fluid"] = detect_fluid_ports(templates_dir, bots_raw, id_to_name)
+    shipping_data["variants"] = build_variant_groups(recipes)
     vein_mining_fluids = detect_vein_mining_fluids(templates_dir, bots_raw, id_to_name)
     research_bonuses = detect_research_bonuses(templates_dir, bots_raw, id_to_name)
     # A vein mining fluid is consumed (by miners), so it is no byproduct to dispose of

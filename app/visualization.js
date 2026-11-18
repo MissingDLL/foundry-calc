@@ -118,7 +118,8 @@ function buildSankeyGraph() {
   const chanceLabel = (item, machine) => `${item} (${machine})`;
   selectedRecipeList.forEach(line => {
     const r = RECIPES[line.recipeName];
-    if (r?.chanceOutputs) r.output.forEach(o => { supplySource[o.item] = chanceLabel(o.item, line.machineName); });
+    if (r?.chanceOutputs && !r.output.some(o => o.item === line.itemName))
+      r.output.forEach(o => { supplySource[o.item] = chanceLabel(o.item, line.machineName); });
   });
   const take = (item, amount) => {
     const t = supplySource[item] ? Math.min(pool[item] || 0, amount) : 0;
@@ -233,7 +234,7 @@ function buildSankeyGraph() {
     const machineName = preferredMachineFor(r);
     const md = machineName && r.machines[machineName];
     if (!md) return null;
-    const opm  = machineOpm(r, { itemName: resolved, machineName }); // output items/min per machine
+    const opm  = machineOpm(r, { itemName: resolved, machineName, product: itemName }); // output items/min per machine
     const runs = rateNeeded / opm; // how many machines are needed (fractional, not rounded)
 
     // Accumulate machine type and fractional count for display in info cards
@@ -254,12 +255,9 @@ function buildSankeyGraph() {
 
     // Add secondary outputs (byproducts) as outgoing edges from the
     // primary product node so they appear downstream of the same process.
-    if (Array.isArray(r.output) && r.output.length > 1) {
-      for (let i = 1; i < r.output.length; i++) {
-        const sec     = r.output[i];
-        addByproduct(resolved, sec.item, runs * (sec.amount * (sec.chance ?? 1)) * (60 / wsCycleTime(r, { itemName: resolved, machineName })));
-      }
-    }
+    sideOutputs(r, itemName).forEach(sec => {
+      addByproduct(resolved, sec.item, runs * (sec.amount * (sec.chance ?? 1)) * (60 / wsCycleTime(r, { itemName: resolved, machineName })));
+    });
 
     return resolved;
   }
@@ -289,7 +287,7 @@ function buildSankeyGraph() {
       feed(ing.item, (60 / ct) * ing.amount * runs, item.itemName, new Set([item.itemName]));
     });
 
-    if (r.chanceOutputs) {
+    if (r.chanceOutputs && !r.output.some(o => o.item === item.itemName)) {
       r.output.forEach(o => {
         const n = getNode(chanceLabel(o.item, item.machineName), 'final');
         n.icon = o.item;
@@ -299,12 +297,9 @@ function buildSankeyGraph() {
     } else
     // Secondary outputs of the final product — connect from the
     // primary product itself so byproducts appear downstream of it.
-    if (Array.isArray(r.output) && r.output.length > 1) {
-      for (let i = 1; i < r.output.length; i++) {
-        const sec     = r.output[i];
-        addByproduct(item.itemName, sec.item, (60 / ct) * (sec.amount * (sec.chance ?? 1)) * runs);
-      }
-    }
+    sideOutputs(r, item.itemName).forEach(sec => {
+      addByproduct(item.itemName, sec.item, (60 / ct) * (sec.amount * (sec.chance ?? 1)) * runs);
+    });
   });
 
   // Fixed fluid per running machine (Blast Furnace → Hot Air), per rounded-up

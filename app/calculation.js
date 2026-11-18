@@ -63,11 +63,15 @@ function getOutputLabel(recipe) {
   if (typeof EXCAVATION === 'undefined' || typeof RECIPES === 'undefined') return;
   Object.entries(RECIPES).forEach(([key, r]) => {
     const product = Array.isArray(r.output) ? r.output[0]?.item : key;
-    const ing = EXCAVATION.items?.includes(product) && r.ingredients?.find(i => i.item === product);
+    const ing = !r.chanceOutputs && EXCAVATION.items?.includes(product) && r.ingredients?.find(i => i.item === product);
     if (ing) r.selfLoop = { item: product, amount: ing.amount };
   });
 })();
 const isSelfLoopInput = (recipe, item) => recipe?.selfLoop?.item === item;
+// Outputs besides the one wanted: byproducts. Recyclers have no main output —
+// everything except the wanted product counts.
+const sideOutputs = (recipe, product) => !Array.isArray(recipe?.output) ? []
+  : recipe.chanceOutputs ? recipe.output.filter(o => o.item !== product) : recipe.output.slice(1);
 // Output rate of a SELECTED line: the goal is the machine's gross output as the
 // game shows it (Greenhouse 0.3/min Forest Seeds; 0.2 go back, +0.1 net).
 // Demand inside the chain uses machineOpm (net), the loop must cover it.
@@ -81,8 +85,11 @@ function machineOpm(recipe, item) {
   const eff = botEfficiencyOverrides[item.itemName] ?? botEfficiencyOverrides[parent] ?? recipe.efficiency ?? 0;
   const pumpjackBonus = typeof RESEARCH_BONUSES !== 'undefined' && RESEARCH_BONUSES.pumpjacks.includes(item.machineName)
     ? pumpjackEfficiencyLevel * researchBonus('Pumpjack Efficiency') : 0;
+  // Recycler chosen to make one of its products (Scrap Recycler → Advanced
+  // Machinery Parts): rate of that product = its chance per processed item.
+  const wanted = recipe.chanceOutputs && recipe.output.find(o => o.item === (item.product || item.itemName));
   // All bonuses stack additively in the productivity bracket.
-  const gross = getOutputAmount(recipe) * (1 + eff / 100) * (1 + pumpjackBonus + getItemWsEffect(item).eff);
+  const gross = (wanted ? wanted.amount : getOutputAmount(recipe)) * (1 + eff / 100) * (1 + pumpjackBonus + getItemWsEffect(item).eff);
   return (60 / ct) * (gross - (recipe.selfLoop?.amount || 0)); // net for self-feeding loops
 }
 
@@ -521,17 +528,19 @@ function calculateRecipes() {
   const chanceProducts  = {}; // recycler line products: usable by the chain, nothing to dispose of
   lines.forEach(line => {
     const r = RECIPES[line.recipeName || line.name];
-    if (r?.chanceOutputs) {
+    // Recycler selected as itself: every output is a product. Chosen as the
+    // recipe of one product (variant): that product is the goal, the rest are
+    // byproducts like for any recipe.
+    if (r?.chanceOutputs && !r.output.some(o => o.item === line.itemName)) {
       const ct = wsCycleTime(r, line);
-      r.output.filter(o => !r.ingredients.some(i => i.item === o.item)).forEach(o => {
+      r.output.filter(o => !r.ingredients.some(i => i.item === o.item) && o.item !== line.itemName).forEach(o => {
         chanceProducts[o.item] = (chanceProducts[o.item] || 0) + line.runs * (60 / ct) * o.amount;
       });
       return;
     }
     if (!Array.isArray(r?.output) || r.output.length < 2) return;
     const ct = wsCycleTime(r, line);
-    for (let i = 1; i < r.output.length; i++) {
-      const sec = r.output[i];
+    for (const sec of sideOutputs(r, line.itemName)) {
       const apm = line.runs * (60 / ct) * sec.amount * (sec.chance ?? 1);
       if (!byproductTotals[sec.item]) byproductTotals[sec.item] = { amount: 0, machine: null };
       byproductTotals[sec.item].amount += apm;
@@ -552,18 +561,19 @@ function calculateRecipes() {
   function byproductsPerUnit(itemName, visitedPath) {
     const resolved = resolveRecipeName(itemName);
     if (visitedPath.has(resolved) || visitedPath.size > 50) return {};
-    if (bpMemo.has(resolved)) return bpMemo.get(resolved);
+    const memoKey = RECIPES[resolved]?.chanceOutputs ? `${resolved}|${itemName}` : resolved;
+    if (bpMemo.has(memoKey)) return bpMemo.get(memoKey);
     const out = {};
-    bpMemo.set(resolved, out);
+    bpMemo.set(memoKey, out);
     const recipe = RECIPES[resolved];
     const machine = recipe?.ingredients?.length && Object.keys(recipe.machines || {}).length
       ? preferredMachineFor(recipe) : null;
     const md = machine && recipe.machines[machine];
     if (!md) return out;
-    const chainItem = { itemName: resolved, machineName: machine };
+    const chainItem = { itemName: resolved, machineName: machine, product: itemName };
     const runsPerUnit = (60 / wsCycleTime(recipe, chainItem)) / machineOpm(recipe, chainItem);
-    if (Array.isArray(recipe.output)) {
-      recipe.output.slice(1).forEach(sec => {
+    {
+      sideOutputs(recipe, itemName).forEach(sec => {
         out[sec.item] = (out[sec.item] || 0) + runsPerUnit * sec.amount * (sec.chance ?? 1);
       });
     }
@@ -611,11 +621,9 @@ function calculateRecipes() {
     const machine = recipe?.ingredients?.length && Object.keys(recipe.machines || {}).length
       ? preferredMachineFor(recipe) : null;
     if (!machine || !recipe.machines[machine]) return;
-    const chainItem = { itemName: resolved, machineName: machine };
+    const chainItem = { itemName: resolved, machineName: machine, product: itemName };
     const runs = amount * (60 / wsCycleTime(recipe, chainItem)) / machineOpm(recipe, chainItem);
-    if (Array.isArray(recipe.output)) {
-      recipe.output.slice(1).forEach(sec => addByproduct(sec.item, runs * sec.amount * (sec.chance ?? 1)));
-    }
+    sideOutputs(recipe, itemName).forEach(sec => addByproduct(sec.item, runs * sec.amount * (sec.chance ?? 1)));
     const next = new Set(path).add(resolved);
     recipe.ingredients.forEach(ing => chainByproducts(ing.item, runs * ing.amount, next));
   }
@@ -797,7 +805,7 @@ function calculateRecipes() {
       }).join('');
 
       if (recipe.chanceOutputs) {
-        ingPills += chanceProductPills(recipe, r.goal, iconBox, 64);
+        ingPills += chanceProductPills(recipe, r.runs * (60 / ct) * (recipe.ingredients[0]?.amount || 1), iconBox, 64);
       } else
       // Add byproduct pills if the recipe has secondary outputs
       if (Array.isArray(recipe.output) && recipe.output.length > 1) {
@@ -954,7 +962,7 @@ function calculateRecipes() {
       const machine = preferredMachineFor(recipe);
       const machData = recipe.machines[machine];
       const ct  = wsCycleTime(recipe, { itemName: resolved, machineName: machine });
-      const opm = machineOpm(recipe, { itemName: resolved, machineName: machine });
+      const opm = machineOpm(recipe, { itemName: resolved, machineName: machine, product: itemName });
       addItem(machine);
 
       // Byproducts are NOT tracked here: they come from byproductTotals (same
@@ -986,7 +994,7 @@ function calculateRecipes() {
         const rec = RECIPES[info.recipeName];
         if (info.byproduct || lineKeys.has(name) || !rec?.machines?.[info.machine]) return;
         if (!Object.keys(fluidNeedsPerMachine(info.machine, info.recipeName)).length) return;
-        runsByItem[info.recipeName] = { machine: info.machine, runs: info.amount / machineOpm(rec, { itemName: info.recipeName, machineName: info.machine }) };
+        runsByItem[info.recipeName] = { machine: info.machine, runs: info.amount / machineOpm(rec, { itemName: info.recipeName, machineName: info.machine, product: name }) };
       });
       Object.entries(chainFluidDemand(runsByItem)).forEach(([f, amt]) => resolveAllLevels(f, amt, new Set()));
     }
@@ -1066,7 +1074,7 @@ function calculateRecipes() {
       const machineName = preferredMachineFor(recipe);
       const machData    = recipe.machines[machineName];
       const ct  = wsCycleTime(recipe, { itemName: resolved, machineName });
-      const opm = machineOpm(recipe, { itemName: resolved, machineName });
+      const opm = machineOpm(recipe, { itemName: resolved, machineName, product: itemName });
       const runsPerMin = amountPerMin / opm;
 
       // Track this machine
@@ -1135,6 +1143,7 @@ function calculateRecipes() {
   // Machine runs of a results row: the selected line's share at its gross rate
   // (lineOpm), any further chain demand at the net rate (self-feeding loops).
   function rowRunsOf(rec, item, name, val) {
+    item = { ...item, product: name };
     if (!rec.selfLoop) return val / machineOpm(rec, item);
     const lineGoal = Math.min(val, lines.filter(l => (l.displayName || l.itemName) === name).reduce((a, l) => a + l.goal, 0));
     return lineGoal / lineOpm(rec, item) + (val - lineGoal) / machineOpm(rec, item);
@@ -1157,7 +1166,7 @@ function calculateRecipes() {
           const rec = RECIPES[info.recipeName || name];
           const md  = rec && rec.machines[machine];
           if (md) {
-            const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine });
+            const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine, product: name });
             const count       = ceilMachines(val / opm);
             const machPwrKw   = machinesPowerKw(machine, count);
             const nSolid      = countSolidConnections(rec, name);
@@ -1321,7 +1330,7 @@ function calculateRecipes() {
               ? `<span style="font-size:10px;color:var(--text-dim);margin-left:4px" title="Gathered from the world">excavation: ${EXCAVATION.tools.join(' / ')}</span>` : '';
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span>${excavation}</div>`;
           } else if (md) {
-            const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine });
+            const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine, product: name });
             const rowRuns     = rowRunsOf(rec, { itemName: info.recipeName || name, machineName: machine }, name, val);
             const count       = ceilMachines(rowRuns);
             const machPwrKw   = machinesPowerKw(machine, count);
@@ -1369,7 +1378,7 @@ function calculateRecipes() {
             }
 
             if (rec.chanceOutputs) {
-              ingPills += chanceProductPills(rec, val, iconBox, 48);
+              ingPills += chanceProductPills(rec, rowRuns * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * (rec.ingredients[0]?.amount || 1), iconBox, 48);
             } else
             // Add byproduct pills for secondary outputs of this recipe
             if (Array.isArray(rec.output) && rec.output.length > 1) {

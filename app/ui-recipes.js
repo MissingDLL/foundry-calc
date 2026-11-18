@@ -66,7 +66,8 @@ function renderRecipeBrowser() {
   });
   Object.keys(RECIPES).forEach((name) => {
     if (shown.has(name)) return; // skip if already shown as canonical
-    if (VARIANT_GROUPS.some((g) => g.variants.includes(name))) return; // skip variant entries
+    // skip variant entries (recyclers stay: they belong to several groups and are recipes of their own)
+    if (!RECIPES[name]?.chanceOutputs && VARIANT_GROUPS.some((g) => g.variants.includes(name))) return;
     if (burnableVariants.has(name)) return; // skip fuel recipes
     if (!recipeAvailable(RECIPES[name])) return; // Deluxe Edition not owned
     const r = RECIPES[name];
@@ -223,7 +224,7 @@ function filterRecipesInline(query) {
   });
   Object.keys(RECIPES).forEach((name) => {
     if (shown.has(name)) return;
-    if (VARIANT_GROUPS.some((g) => g.variants.includes(name))) return;
+    if (!RECIPES[name]?.chanceOutputs && VARIANT_GROUPS.some((g) => g.variants.includes(name))) return;
     if (!recipeAvailable(RECIPES[name])) return; // Deluxe Edition not owned
     if (q && !name.toLowerCase().includes(q)) return;
     const r = RECIPES[name];
@@ -451,6 +452,7 @@ function fillItemDatalist() {
 
 // Canonical (selectable) name of a recipe key: its variant group label.
 function _canonicalOf(recipeKey) {
+  if (RECIPES[recipeKey]?.chanceOutputs) return recipeKey; // recyclers are recipes of their own
   const g = VARIANT_GROUPS.find(g => g.variants.includes(recipeKey));
   return g ? g.label : recipeKey;
 }
@@ -664,7 +666,7 @@ function renderSelectedRecipes() {
         ${r.chanceOutputs
           ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:5px">
           <span style="font-size:10px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase">Products:</span>
-          ${r.output.map(op => `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(op.item, 14)}${op.item}: <span style="color:var(--accent3)">${fmt(item.goal / (r.ingredients[0]?.amount || 1) * op.amount)}</span> (${Math.round(op.amount * 100)} %)</span>`).join(' <span style="color:var(--color-text-disabled)">·</span> ')}
+          ${r.output.map(op => `<span style="display:inline-flex;align-items:center;gap:3px;color:var(--text-dim);font-size:11px">${getIcon(op.item, 14)}${op.item}: <span style="color:var(--accent3)">${fmt((item.goal / opm) * (60 / ct) * op.amount)}</span> (${Math.round(op.amount * 100)} %)</span>`).join(' <span style="color:var(--color-text-disabled)">·</span> ')}
         </div>`
           : Array.isArray(r.output) && r.output.length > 1
           ? `<div style="margin-top:5px;padding-top:5px;border-top:1px solid var(--color-border);display:flex;flex-wrap:wrap;gap:5px">
