@@ -364,6 +364,20 @@ function renderSettingsContent(targetId) {
     el.appendChild(row);
   }
 
+  // ── Section: Raw fluid intakes (Water: pipe or pipeline intake) ─────
+  if (typeof FLUID_SOURCE_MACHINES !== "undefined") {
+    Object.entries(FLUID_SOURCE_MACHINES).filter(([, src]) => (src.alternatives || []).length > 1).forEach(([fluid, src]) => {
+      const row = document.createElement("label");
+      row.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--text);margin-top:10px";
+      row.appendChild(document.createTextNode(`${fluid} comes from:`));
+      const sel = document.createElement("select");
+      src.alternatives.forEach(a => sel.appendChild(new Option(`${a.machine} — ${fmt(a.capacityPerMin)} L/min`, a.machine, false, a.machine === fluidSourceFor(fluid)?.machine)));
+      sel.onchange = () => { fluidSourceChoice[fluid] = sel.value; saveSettings(); if (selectedRecipeList.length) calculateRecipes(); };
+      row.appendChild(sel);
+      el.appendChild(row);
+    });
+  }
+
   // ── Section: Deluxe Edition content ─────────────────────────────
   {
     const sep = document.createElement("div");

@@ -176,6 +176,7 @@ function chainPowerKw() {
   const g = buildSankeyGraph();
   if (!g) return null;
   let machines = 0, loaders = 0;
+  const graph = g;
   g.nodes.forEach(n => {
     if (!n.machineName || !(n.machineCount > 0)) return;
     const count = ceilMachines(n.machineCount);
@@ -184,7 +185,42 @@ function chainPowerKw() {
     const rec = RECIPES[line?.recipeName || resolveRecipeName(n.label)];
     if (rec?.machines?.[n.machineName]) loaders += calcLoadersForMachine(n.machineName, countSolidConnections(rec, n.label)).powerKw * count;
   });
-  return { machines, loaders };
+  return { machines, loaders, graph };
+}
+
+// Pipes / pipelines and pumps per fluid, from the full-chain graph: each fluid
+// edge links a producer's outlet to a consumer's inlet (FLUID_PORTS, game data).
+// A common type → no pump (the Blast Furnace offers both outlets); otherwise a
+// Pipe-to-Pipeline / Pipeline-to-Pipe Pump. Lines = flow / type throughput.
+// ponytail: one pump moves at most a pipe's throughput (36,000 L/min); the
+// pump's own rate is not in the game data.
+function fluidPlan(graph) {
+  if (typeof FLUID_PORTS === 'undefined' || !graph) return {};
+  const P = FLUID_PORTS, plan = {};
+  const nodes = Object.fromEntries(graph.nodes.map(n => [n.label, n]));
+  const minTp = Math.min(...Object.values(P.pipes));
+  graph.links.forEach(l => {
+    const src = nodes[l.source], tgt = nodes[l.target];
+    const item = src?.icon || src?.label;
+    // edges into byproduct / loop-back nodes carry that byproduct, not `item`
+    if (!src || !tgt || !FLUID_ITEMS.has(item) || tgt.kind === 'byproduct' || tgt.kind === 'sink' && tgt.icon === item) return;
+    const outs = P.ports[src.machineName || fluidSourceFor(item)?.machine]?.out || [];
+    const ins  = P.ports[tgt.machineName]?.in || [];
+    const common = outs.filter(t => ins.includes(t));
+    const type = common[0] || outs[0] || ins[0] || Object.keys(P.pipes)[0];
+    const e = (plan[item] ||= { types: {}, pumps: {} });
+    e.types[type] = (e.types[type] || 0) + l.value;
+    if (outs.length && ins.length && !common.length) {
+      const pump = P.pumps.find(p => p.from === outs[0] && p.to === ins[0]);
+      if (pump) (e.pumps[pump.name] ||= { flow: 0, kw: pump.kw }).flow += l.value;
+    }
+  });
+  Object.values(plan).forEach(e => {
+    e.lines = Object.entries(e.types).map(([t, flow]) => ({ type: t, count: Math.ceil(flow / P.pipes[t] - 1e-9) }));
+    e.pumpList = Object.entries(e.pumps).map(([name, p]) => ({ name, count: Math.ceil(p.flow / minTp - 1e-9), kw: p.kw }));
+    e.pumpKw = e.pumpList.reduce((a, p) => a + p.count * p.kw, 0);
+  });
+  return plan;
 }
 
 // Product pills of a recycler (chanceOutputs): all outputs are equal products
@@ -658,7 +694,12 @@ function calculateRecipes() {
 
   // ── Summary stats ────────────────────────────────────────
   const totalMachines   = lines.reduce((s, r) => s + r.machines, 0);
-  const totalGoal       = lines.reduce((s, r) => s + r.goal, 0);
+  // Closed loops (Greenhouse) count their net output: 0.3 made, 0.2 back in → 0.1
+  const netGoal = (l) => {
+    const rec = RECIPES[l.recipeName || l.name];
+    return rec?.selfLoop ? l.goal * machineOpm(rec, l) / lineOpm(rec, l) : l.goal;
+  };
+  const totalGoal       = lines.reduce((s, r) => s + netGoal(r), 0);
   const uniqueMachines  = new Set(lines.map((r) => r.machineName)).size;
   const totalOver       = lines.reduce((s, r) => s + r.over, 0);
 
@@ -686,10 +727,12 @@ function calculateRecipes() {
   // Built at the end (function): the Fracking Tower plan is known only after
   // the chain was resolved; its towers are not graph nodes.
   const chainPwr = chainPowerKw();
+  const fluids   = fluidPlan(chainPwr?.graph);
+  const pumpKw   = Object.values(fluids).reduce((a, e) => a + e.pumpKw, 0);
   const summaryHtml = () => {
   const frackKw      = chainPwr && frackPlan ? frackPlan.powerKw : 0;
   const sumMachPwrKw = chainPwr ? chainPwr.machines + frackKw : totalMachPwrKw;
-  const sumPwrKw     = chainPwr ? sumMachPwrKw + chainPwr.loaders : totalPwrKw;
+  const sumPwrKw     = chainPwr ? sumMachPwrKw + chainPwr.loaders + pumpKw : totalPwrKw;
   return modeSelector + `
     <div class="summary-grid" style="margin-bottom:28px">
       <div class="summary-box">
@@ -715,12 +758,12 @@ function calculateRecipes() {
       <div class="summary-box orange">
         <div class="summary-label">Machine power</div>
         <div class="summary-value">${fmtPwr(sumMachPwrKw)}</div>
-        <div class="summary-unit">whole chain, excl. loaders</div>
+        <div class="summary-unit">whole chain, excl. loaders and pumps</div>
       </div>
       <div class="summary-box" style="border-color:var(--color-power-border);background:var(--color-power-bg)">
         <div class="summary-label" style="color:var(--color-power)">Total power</div>
         <div class="summary-value" style="color:var(--color-power)">${fmtPwr(sumPwrKw)}</div>
-        <div class="summary-unit">whole chain, machines + loaders</div>
+        <div class="summary-unit">whole chain, machines + loaders + pumps</div>
       </div>
     </div>`;
   };
@@ -749,7 +792,7 @@ function calculateRecipes() {
             <span style="color:var(--text-dim)">${ing.item}</span>
             <span style="font-family:'Share Tech Mono',monospace;color:${warn ? 'var(--warn)' : 'var(--accent3)'}">
               ${fmt(ipm)}<span style="color:var(--text-dim);font-size:10px">/min</span>
-            </span>
+            </span>${isSelfLoopInput(recipe, ing.item) ? '<span style="font-size:10px;color:var(--accent3)" title="Fed back from the machine\'s own output">↻ from own output</span>' : ''}
           </span>`;
       }).join('');
 
@@ -842,7 +885,7 @@ function calculateRecipes() {
   if (typeof FLUID_SOURCE_MACHINES !== 'undefined') {
     Object.entries(FLUID_SOURCE_MACHINES).forEach(([key, info]) => {
       // keyed by item name ("Water"); lookups below use the normalised key
-      fluidProducerMap[key.toLowerCase().replace(/\s+/g, '_')] = info.machine;
+      fluidProducerMap[key.toLowerCase().replace(/\s+/g, '_')] = fluidSourceFor(key)?.machine || info.machine;
     });
   }
 
@@ -1222,7 +1265,12 @@ function calculateRecipes() {
 
         // Conveyor (solids) or Pipe (fluids)
         const pipeThroughput = RECIPES['Pipe']?.throughput_l_per_min || 36000;
-        const conveyorCell = isFluid
+        let rowKw = 0; // machine (+ loader) power of this row; pumps added below
+        const fp = isFluid ? fluids[name] : null;
+        if (fp) totMachPwr += fp.pumpKw;
+        const conveyorCell = fp
+          ? `<div style="display:flex;flex-direction:column;gap:3px">${fp.lines.map(l => `<div style="display:flex;align-items:center;gap:4px">${iconBox(l.type, 48)}<span style="font-size:12px;color:var(--text-dim)">${l.type}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${l.count}</span></div>`).join('')}${fp.pumpList.map(p => `<div style="display:flex;align-items:center;gap:4px" title="Pipe and pipeline do not connect directly">${iconBox(p.name, 32)}<span style="font-size:11px;color:var(--text-dim)">${p.name}</span><span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent3)">×${p.count}</span><span style="font-size:11px;color:var(--color-power)">${fmtPwr(p.count * p.kw)}</span></div>`).join('')}</div>`
+          : isFluid
           ? `<div style="display:flex;align-items:center;gap:4px">${iconBox('Pipe', 48)}<span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">${(val / pipeThroughput).toFixed(2)}</span></div>`
           : `<div style="display:flex;align-items:center;gap:4px">${iconBox(conveyorType, 48)}<span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">${(val / conveyorThroughput).toFixed(2)}</span></div>`;
 
@@ -1243,13 +1291,13 @@ function calculateRecipes() {
             const restPwrKw = machinesPowerKw(disposal.machine, restCount); // Flare Stack / Incinerator draw power too
             totMachPwr += restPwrKw;
             if (restCount) machineCell += `<div style="display:flex;align-items:center;gap:5px;margin-top:3px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${restCount}</span><span style="font-size:10px;color:var(--text-dim);margin-left:4px">rest ${fmt(rest)}/min</span></div>`;
-            if (machPwrKw + restPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw + restPwrKw)}</span>`;
+            rowKw = machPwrKw + restPwrKw;
           } else {
             const count     = Math.ceil(val / disposal.capacityPerMin);
             const machPwrKw = machinesPowerKw(disposal.machine, count);
             totMachPwr += machPwrKw;
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
-            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
+            rowKw = machPwrKw;
           }
         } else if (machine) {
           const rec = RECIPES[info.recipeName || name];
@@ -1257,7 +1305,7 @@ function calculateRecipes() {
           // Fluid source machines from fluidProducerMap (no cycleTime-based recipe for this item)
           const machineRec = RECIPES[machine];
           const fluidKey   = name.toLowerCase().replace(/\s+/g, '_');
-          const fluidSrc   = typeof FLUID_SOURCE_MACHINES !== 'undefined' ? (FLUID_SOURCE_MACHINES[name] || FLUID_SOURCE_MACHINES[fluidKey]) : null;
+          const fluidSrc   = fluidSourceFor(name);
           const capacityLpm = fluidSrc?.capacityPerMin ?? machineRec?.throughput_l_per_min ?? null;
           if (!md && capacityLpm) {
             // Capacity-based count (e.g. Pipe Intake → ceil(waterRate / 30000))
@@ -1265,7 +1313,7 @@ function calculateRecipes() {
             const machPwrKw = machinesPowerKw(machine, count);
             totMachPwr += machPwrKw;
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
-            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
+            rowKw = machPwrKw;
           } else if (!md) {
             // No capacity data — show machine name only (e.g. Air Intake Base).
             // Excavated items (Dirt, Sand, Stone …): list every way to gather them.
@@ -1298,7 +1346,7 @@ function calculateRecipes() {
               loaderCell = `<span style="font-size:11px;color:var(--text-dim)">${parts}</span>`;
             }
 
-            pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw + loaderPwrKw)}</span>`;
+            rowKw = machPwrKw + loaderPwrKw;
 
             // Build ingredient pills for expanded detail row
             if (rec.ingredients && rec.ingredients.length) {
@@ -1315,7 +1363,7 @@ function calculateRecipes() {
                     <span style="color:var(--text-dim)">${ing.item}</span>
                     <span style="font-family:'Share Tech Mono',monospace;color:${warn ? 'var(--warn)' : 'var(--accent3)'}">
                       ${fmt(ipm)}<span style="color:var(--text-dim);font-size:10px">/min</span>
-                    </span>
+                    </span>${isSelfLoopInput(rec, ing.item) ? '<span style="font-size:10px;color:var(--accent3)" title="Fed back from the machine\'s own output">↻ from own output</span>' : ''}
                   </span>`;
               }).join('');
             }
@@ -1342,6 +1390,8 @@ function calculateRecipes() {
           }
         }
 
+        rowKw += fp?.pumpKw || 0; // Pipe-to-Pipeline / Pipeline-to-Pipe pumps of this fluid
+        if (rowKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(rowKw)}</span>`;
         const cls = val > 100 ? 'num-warn' : 'num';
         const hasDetail = ingPills.length > 0;
         const isByproduct = !!info.byproduct;
@@ -1353,7 +1403,16 @@ function calculateRecipes() {
       <tr class="recipe-main-row" onclick="${hasDetail ? `toggleRecipeRow('${rid}')` : ''}" style="border-bottom:1px solid var(--color-border);${hasDetail ? 'cursor:pointer' : ''}${rowBg}">
         <td style="padding:5px 12px"><div style="display:flex;align-items:center;gap:6px">
           ${hasDetail ? `<span class="row-expand-arrow" id="arr_${rid}">▶</span>` : '<span style="display:inline-block;width:14px"></span>'}
-          ${iconBox(info.icon || name, 48)}<span class="label" style="font-size:13px">${name}</span>${info.byproduct || info.excavated ? '' : productNote(info.recipeName || name, name, 24)}${byproductBadge}
+          ${iconBox(info.icon || name, 48)}<span class="label" style="font-size:13px">${name}</span>${info.byproduct || info.excavated ? '' : productNote(info.recipeName || name, name, 24)}${(() => {
+            // Closed loop (Greenhouse): show what goes back in and the net output
+            const rr = RECIPES[info.recipeName || name];
+            if (!rr?.selfLoop || !info.machine || !rr.machines[info.machine]) return '';
+            const it = { itemName: info.recipeName || name, machineName: info.machine };
+            const runs = rowRunsOf(rr, it, name, val);
+            const back = runs * (60 / wsCycleTime(rr, it)) * rr.selfLoop.amount;
+            const net  = runs * lineOpm(rr, it) - back;
+            return `<span style="font-size:11px;color:var(--text-dim);margin-left:6px">↻ ${fmt(back)}/min back · <span style="color:var(--accent3)">net +${fmt(net)}/min</span></span>`;
+          })()}${byproductBadge}
         </div></td>
         <td class="${cls}" style="font-size:13px">${info.initial ? `${fmt(val)} <span style="font-size:10px;color:var(--text-dim)" title="One-time start fill; afterwards the loop feeds itself">once</span>` : `${fmt(val)}/min`}</td>
         <td style="padding:5px 12px">${machineCell}</td>

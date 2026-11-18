@@ -136,6 +136,16 @@ function buildSankeyGraph() {
     n.rate += t;
     return t;
   };
+  // Closed loop (Greenhouse): the share of the output that goes back in.
+  // A Sankey cannot draw an edge back into the same node, so it ends in a
+  // "back into the loop" node of its own.
+  function addLoopBack(fromLabel, item, rate) {
+    if (!(rate > 0)) return;
+    const n = getNode(`${item} ↻ back into the loop`, 'sink');
+    n.icon = item;
+    n.rate += rate;
+    addEdge(fromLabel, n.label, rate);
+  }
   function addByproduct(fromLabel, item, rate) {
     const n = getNode(byproductKey(item), 'byproduct');
     n.icon  = item; // icon lookup needs the plain item name
@@ -235,7 +245,10 @@ function buildSankeyGraph() {
 
     // Recurse into each ingredient at the computed rate
     r.ingredients.forEach(ing => {
-      if (r.selfLoop?.item === ing.item) return; // closed loop: fed from its own output
+      if (r.selfLoop?.item === ing.item) { // closed loop: fed from its own output
+        addLoopBack(resolved, ing.item, runs * ing.amount * (60 / wsCycleTime(r, { itemName: resolved, machineName })));
+        return;
+      }
       feed(ing.item, runs * ing.amount * (60 / wsCycleTime(r, { itemName: resolved, machineName })), resolved, nextPath);
     });
 
@@ -272,7 +285,7 @@ function buildSankeyGraph() {
     // Seed the visited path with the final product itself so that any
     // ingredient cycle back to it is caught immediately.
     r.ingredients.forEach(ing => {
-      if (r.selfLoop?.item === ing.item) return; // closed loop: fed from its own output
+      if (r.selfLoop?.item === ing.item) { addLoopBack(item.itemName, ing.item, (60 / ct) * ing.amount * runs); return; }
       feed(ing.item, (60 / ct) * ing.amount * runs, item.itemName, new Set([item.itemName]));
     });
 

@@ -787,7 +787,8 @@ def detect_excavation(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> 
     (TerrainBlockType yieldItemOnDig: Dirt, Sand, Stone …) and mining world
     objects (worldDecor_miningYield: Biomass, Xeno-Scrap …; worldDecor_specialDrops:
     seeds with a chance). Tools: handhelds MINING_TOOL / MINING_DRONE_CONTROLLER
-    and the Construction Ship Port (mines what the drone controller marked).
+    the Quarry (digs terrain) and the Construction Ship Port (mines what the
+    drone controller marked).
     Returns {"source": <port>, "tools": [...], "items": [...]}.
     """
     items = set()
@@ -808,10 +809,15 @@ def detect_excavation(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> 
                 and "PREVIEW" not in (v.get("name") or ""):
             tools.append(v.get("name"))
     item_ids = _build_item_bot_ids(templates_dir)
+    buildings = []
     for ident, v in bots_raw.items():
-        if v.get("type") == "ConstructionDronePort" and ident in item_ids and id_to_name.get(ident):
+        if ident not in item_ids or not id_to_name.get(ident):
+            continue
+        if v.get("type") == "ConstructionDronePort":
             port = id_to_name[ident]
-    return {"source": port, "tools": sorted(tools) + ([port] if port else []), "items": sorted(items)}
+        elif v.get("type") == "QuarryBuilding":  # digs terrain automatically (Dirt, Stone …)
+            buildings.append(id_to_name[ident])
+    return {"source": port, "tools": sorted(tools) + sorted(buildings) + ([port] if port else []), "items": sorted(items)}
 
 
 def detect_vein_mining_fluids(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> dict:
@@ -1141,12 +1147,14 @@ def detect_fluid_sources(templates_dir: Path, bots_raw: dict, id_to_name: dict) 
                 continue
 
             capacity_per_min = rate * 60
-            # Keep the lowest capacity per fluid (= most basic machine, not pipeline variant)
-            if fluid_id not in sources or capacity_per_min < sources[fluid_id]["capacityPerMin"]:
-                sources[fluid_id] = {
-                    "machine": machine_name,
-                    "capacityPerMin": capacity_per_min,
-                }
+            alt = {"machine": machine_name, "capacityPerMin": capacity_per_min}
+            # Default = lowest capacity (basic intake); all intakes are alternatives
+            # (Liquid Intake on pipes, Liquid Intake (Pipeline) 180,000 L/min).
+            prev = sources.get(fluid_id)
+            alts = (prev or {}).get("alternatives", []) + [alt]
+            if prev is None or capacity_per_min < prev["capacityPerMin"]:
+                sources[fluid_id] = dict(alt)
+            sources[fluid_id]["alternatives"] = sorted(alts, key=lambda a: a["capacityPerMin"])
 
     return sources
 
@@ -1154,6 +1162,53 @@ def detect_fluid_sources(templates_dir: Path, bots_raw: dict, id_to_name: dict) 
 # ─────────────────────────────────────────────────────────────────────────────
 # Modular buildings — speed bonus per optional module (in-game "Tower", "Vent")
 # ─────────────────────────────────────────────────────────────────────────────
+
+def detect_fluid_ports(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> dict:
+    """
+    Pipes vs pipelines (PipeTypeTemplate throughputPerMinute_l_str: Pipe 36,000,
+    Pipeline 360,000 L/min) and which one each building connects to: its own
+    fbm_ioFluidBoxes plus those of the modules it can attach
+    (modularBuildingLimits, e.g. Hot Air Stove "Pipe Attachment (Input)" =
+    pipeline). Pumps convert between the types (Pipe-to-Pipeline Pump, 1 MW).
+    Returns {"pipes": {name: L/min}, "ports": {machine: {"in": [...], "out": [...]}},
+             "pumps": [{name, from, to, kw}]}.
+    """
+    pipe_ids = {}
+    pipes = {}
+    for ident, v in load_yaml_templates(templates_dir, "PipeTypeTemplate").items():
+        name = id_to_name.get(ident, ident)
+        try:
+            pipes[name] = float(v.get("throughputPerMinute_l_str") or 0)
+        except (ValueError, TypeError):
+            continue
+        pipe_ids[ident] = name
+    item_ids = _build_item_bot_ids(templates_dir)
+
+    def boxes(v):
+        for fb in v.get("fbm_ioFluidBoxes") or []:
+            t = pipe_ids.get(fb.get("pipeTypeIdentifier") or "")
+            if t:
+                yield ("in" if str(fb.get("isInput")) == "True" else "out"), t
+
+    ports, pumps = {}, []
+    for ident, v in bots_raw.items():
+        name = id_to_name.get(ident, "")
+        if not name or ident not in item_ids:
+            continue
+        found = {"in": set(), "out": set()}
+        for d, t in boxes(v):
+            found[d].add(t)
+        for lim in v.get("modularBuildingLimits") or []:
+            for d, t in boxes(bots_raw.get(lim.get("bot_identifier") or "", {})):
+                found[d].add(t)
+        if v.get("type") == "Pump" and found["in"] and found["out"] and found["in"] != found["out"]:
+            pumps.append({"name": name, "from": sorted(found["in"])[0], "to": sorted(found["out"])[0],
+                          "kw": float(v.get("energyConsumptionKW_str") or 0)})
+            continue
+        if found["in"] or found["out"]:
+            ports[name] = {"in": sorted(found["in"]), "out": sorted(found["out"])}
+    return {"pipes": pipes, "ports": ports, "pumps": pumps}
+
 
 def detect_modular_buildings(bots_raw: dict, id_to_name: dict, item_ids: set) -> dict:
     """
@@ -2172,7 +2227,8 @@ def generate_game_data_js(version: str, recipes: list[dict],
     lines.append("const FLUID_SOURCE_MACHINES = Object.freeze({")
     for fluid_id, info in sorted(fluid_sources.items()):
         fluid_name = id_to_name.get(fluid_id, fluid_id)
-        lines.append(f"  '{fluid_name}': {{ machine: '{info['machine']}', capacityPerMin: {info['capacityPerMin']} }},")
+        alts = json.dumps(info.get("alternatives", []))
+        lines.append(f"  '{fluid_name}': {{ machine: '{info['machine']}', capacityPerMin: {info['capacityPerMin']}, alternatives: {alts} }},")
     lines.append("});")
     lines.append("")
 
@@ -2230,6 +2286,8 @@ def generate_game_data_js(version: str, recipes: list[dict],
     lines.append(f"const EXTERNAL_SOURCES = Object.freeze({json.dumps(external_sources)});")
     lines.append("// Gathered from the world (digging terrain, mining world objects): start of a chain")
     lines.append(f"const EXCAVATION = Object.freeze({json.dumps(shipping_data.get('excavation', {}))});")
+    lines.append("// Pipe types (L/min), pipe/pipeline connections per building, pumps between them")
+    lines.append(f"const FLUID_PORTS = Object.freeze({json.dumps(shipping_data.get('fluid', {}), sort_keys=True)});")
     lines.append("")
 
     # RESEARCH_BONUSES (parsed from endless research descriptions)
@@ -2784,6 +2842,7 @@ def main():
     workstation_data = detect_workstation_data(templates_dir, id_to_name)
     shipping_data = detect_shipping_data(templates_dir, id_to_name)
     shipping_data["excavation"] = shipping_excavation  # rides along to the JS writer
+    shipping_data["fluid"] = detect_fluid_ports(templates_dir, bots_raw, id_to_name)
     vein_mining_fluids = detect_vein_mining_fluids(templates_dir, bots_raw, id_to_name)
     research_bonuses = detect_research_bonuses(templates_dir, bots_raw, id_to_name)
     # A vein mining fluid is consumed (by miners), so it is no byproduct to dispose of

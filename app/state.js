@@ -452,6 +452,14 @@ let stockItems = {};
 let ownsDeluxe = false;
 // Tool shown as source of excavated items (Dirt, Biomass, seeds …); null = game data default
 let excavationTool = null;
+// Chosen intake per raw fluid (Water: Liquid Intake on pipes or Liquid Intake
+// (Pipeline) 180,000 L/min); null = game data default (the basic intake).
+const fluidSourceChoice = {};
+function fluidSourceFor(item) {
+  const src = typeof FLUID_SOURCE_MACHINES !== 'undefined' ? FLUID_SOURCE_MACHINES[item] : null;
+  if (!src) return null;
+  return (src.alternatives || []).find(a => a.machine === fluidSourceChoice[item]) || src;
+}
 const excavationSource = () => (typeof EXCAVATION === 'undefined' ? null
   : (EXCAVATION.tools.includes(excavationTool) ? excavationTool : EXCAVATION.source));
 const recipeAvailable = (r) => !r?.dlc || ownsDeluxe;
@@ -788,6 +796,7 @@ function _flushSaveSettings() {
       stockItems,
       ownsDeluxe,
       excavationTool,
+      fluidSourceChoice,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
       // Save recipe list without UI-only state (wsExpanded)
@@ -830,6 +839,8 @@ function loadSettings() {
     stockItems = sanitizeStock(s.stockItems);
     if (typeof s.ownsDeluxe === 'boolean') ownsDeluxe = s.ownsDeluxe;
     if (typeof s.excavationTool === 'string') excavationTool = s.excavationTool;
+    if (s.fluidSourceChoice && typeof s.fluidSourceChoice === 'object')
+      Object.entries(s.fluidSourceChoice).forEach(([k, v]) => { if (typeof v === 'string') fluidSourceChoice[k] = v; });
     if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))
       calcDepthMode = s.calcDepthMode;
 
