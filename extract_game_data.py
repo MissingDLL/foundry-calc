@@ -1835,6 +1835,13 @@ def generate_game_data_js(version: str, recipes: list[dict],
                     "Assembly Line Producer", "Assembly Line Painter"]:
         all_machines[al_name] = to_const_key(al_name)
 
+    # Disposal buildings (Flare Stack, Incinerator) only appear as dissolvers in
+    # BYPRODUCT_DISPOSAL, not as recipe machines, but draw power while running.
+    for info in byproduct_disposal.values():
+        for mname in (info["machine"], ((info.get("reprocess") or {}).get("surplus") or {}).get("machine")):
+            if mname:
+                all_machines[mname] = to_const_key(mname)
+
     sorted_machines = sorted(all_machines.items(), key=lambda x: x[1])
 
     # Collect all item names from recipes with deduplication

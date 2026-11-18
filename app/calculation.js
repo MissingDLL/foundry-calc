@@ -138,6 +138,25 @@ function frackingTowerPlan(liquidPerMin) {
   return { machine, count, capacity, powerKw: machinesPowerKw(machine, count) };
 }
 
+// Power of the whole production chain, independent of the depth view: the
+// graph always expands the full chain (incl. hot air, disposal, reprocessing,
+// stock). Rounded up per node like the Full Detail table. null = no graph.
+function chainPowerKw() {
+  if (typeof buildSankeyGraph !== 'function') return null; // unit test runner
+  const g = buildSankeyGraph();
+  if (!g) return null;
+  let machines = 0, loaders = 0;
+  g.nodes.forEach(n => {
+    if (!n.machineName || !(n.machineCount > 0)) return;
+    const count = ceilMachines(n.machineCount);
+    const line  = selectedRecipeList.find(l => l.itemName === n.label);
+    machines += line ? machinesPowerKw(n.machineName, count, line) : machinesPowerKw(n.machineName, count);
+    const rec = RECIPES[line?.recipeName || resolveRecipeName(n.label)];
+    if (rec?.machines?.[n.machineName]) loaders += calcLoadersForMachine(n.machineName, countSolidConnections(rec, n.label)).powerKw * count;
+  });
+  return { machines, loaders };
+}
+
 // Items/min of the conveyor tier chosen in settings (game data; I 160 … IV 1280).
 function conveyorItemsPerMin() {
   const fam = MACHINE_FAMILIES.find(f => f.label === 'Conveyor Belt');
@@ -556,7 +575,16 @@ function calculateRecipes() {
         </button>`).join('')}
     </div>`;
 
-  const summaryHtml = modeSelector + `
+  // Summary boxes: whole chain (lines alone miss e.g. the Hot Air Stoves that
+  // power a Blast Furnace). The Infrastructure section stays per selected line.
+  // Built at the end (function): the Fracking Tower plan is known only after
+  // the chain was resolved; its towers are not graph nodes.
+  const chainPwr = chainPowerKw();
+  const summaryHtml = () => {
+  const frackKw      = chainPwr && frackPlan ? frackPlan.powerKw : 0;
+  const sumMachPwrKw = chainPwr ? chainPwr.machines + frackKw : totalMachPwrKw;
+  const sumPwrKw     = chainPwr ? sumMachPwrKw + chainPwr.loaders : totalPwrKw;
+  return modeSelector + `
     <div class="summary-grid" style="margin-bottom:28px">
       <div class="summary-box">
         <div class="summary-label">Recipes</div>
@@ -580,15 +608,16 @@ function calculateRecipes() {
       </div>
       <div class="summary-box orange">
         <div class="summary-label">Machine power</div>
-        <div class="summary-value">${fmtPwr(totalMachPwrKw)}</div>
-        <div class="summary-unit">excl. loaders</div>
+        <div class="summary-value">${fmtPwr(sumMachPwrKw)}</div>
+        <div class="summary-unit">whole chain, excl. loaders</div>
       </div>
       <div class="summary-box" style="border-color:var(--color-power-border);background:var(--color-power-bg)">
         <div class="summary-label" style="color:var(--color-power)">Total power</div>
-        <div class="summary-value" style="color:var(--color-power)">${fmtPwr(totalPwrKw)}</div>
-        <div class="summary-unit">machines + loaders</div>
+        <div class="summary-value" style="color:var(--color-power)">${fmtPwr(sumPwrKw)}</div>
+        <div class="summary-unit">whole chain, machines + loaders</div>
       </div>
     </div>`;
+  };
 
   // ── Icon box helper (full-bleed image with rounded container) ─
   const iconBox = (name, size) =>
@@ -1074,8 +1103,11 @@ function calculateRecipes() {
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(rp.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${rp.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${rp.count}</span><span style="font-size:10px;color:var(--color-success-text);margin-left:4px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span></div>`;
             // Unused rest goes straight to disposal (e.g. 200/min slag → Flare Stack)
             const rest = byproductTotals[name]?.leftover || 0;
-            if (rest > 0.01) machineCell += `<div style="display:flex;align-items:center;gap:5px;margin-top:3px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${ceilMachines(rest / disposal.capacityPerMin)}</span><span style="font-size:10px;color:var(--text-dim);margin-left:4px">rest ${fmt(rest)}/min</span></div>`;
-            if (machPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw)}</span>`;
+            const restCount = rest > 0.01 ? ceilMachines(rest / disposal.capacityPerMin) : 0;
+            const restPwrKw = machinesPowerKw(disposal.machine, restCount); // Flare Stack / Incinerator draw power too
+            totMachPwr += restPwrKw;
+            if (restCount) machineCell += `<div style="display:flex;align-items:center;gap:5px;margin-top:3px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${restCount}</span><span style="font-size:10px;color:var(--text-dim);margin-left:4px">rest ${fmt(rest)}/min</span></div>`;
+            if (machPwrKw + restPwrKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(machPwrKw + restPwrKw)}</span>`;
           } else {
             const count     = Math.ceil(val / disposal.capacityPerMin);
             const machPwrKw = machinesPowerKw(disposal.machine, count);
@@ -1275,7 +1307,7 @@ function calculateRecipes() {
 
   // ── Inject HTML into results panel ───────────────────────
   document.getElementById("recipeResults").innerHTML =
-    summaryHtml +
+    summaryHtml() +
     `
     ${calcDepthMode !== 3 ? `
     <div class="collapsible-section">
