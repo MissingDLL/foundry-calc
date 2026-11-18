@@ -109,12 +109,11 @@
   <!-- Stub the icon helper so icons.js (25 MB) is not needed -->
   <script>function getIcon() { return ''; }</script>
 
-  <!-- App modules under test -->
-  <script src="../app/state.js"></script>
-  <script src="../app/calculation.js"></script>
-  <script src="../app/ui-nav.js"></script>
-
-  <!-- Test suite -->
-  <script src="unit.test.js"></script>
+  <!-- App modules under test + test suite (always fresh: no browser cache) -->
+  <script>
+    ['../app/state.js', '../app/calculation.js', '../app/ui-nav.js', 'unit.test.js'].forEach(function (src) {
+      document.write('<scr' + 'ipt src="' + src + '?t=' + Date.now() + '"></scr' + 'ipt>');
+    });
+  </script>
 </body>
 </html>

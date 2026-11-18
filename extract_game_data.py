@@ -677,12 +677,16 @@ def detect_shipping_data(templates_dir: Path, id_to_name: dict) -> dict:
                       "padSize": v.get("transportShip_requiredShippingPadSize", ""),
                       "transferKgPerS": num(v.get("transportShip_itemTransferRate_kgPerS_str")),
                       "hangarSpace": num(v.get("requiredHangarSpace"))})
-    pads, conveyors = [], {}
+    pads, conveyors, loader_kw = [], {}, {}
+    lane_of = {"Loader": 1, "Loader (2nd Lane)": 2, "Loader (3rd Lane)": 3}
     for ident, v in bots.items():
         name = id_to_name.get(ident, "")
         if not name or ident not in item_ids:
             continue
-        if v.get("type") == "ShippingPad":
+        if v.get("type") == "Loader" and name in lane_of and str(v.get("loader_isFilter")) != "True":
+            # Power while running (tooltip "Max Power Consumption"); 0 in current versions
+            loader_kw[lane_of[name]] = num(v.get("energyConsumptionKW_str"))
+        elif v.get("type") == "ShippingPad":
             conns = v.get("ccm_connectionData") or []
             pads.append({"name": name, "padSize": v.get("shippingPad_padSize", ""),
                          "capacityKg": num(v.get("shippingPad_cargoCapacity_weightInKg_str")),
@@ -697,7 +701,7 @@ def detect_shipping_data(templates_dir: Path, id_to_name: dict) -> dict:
         if g > 0 and v.get("name"):
             weights[v["name"]] = g / 1000
     return {"ships": sorted(ships, key=lambda x: x["cargoKg"]), "pads": sorted(pads, key=lambda x: x["capacityKg"]),
-            "conveyors": conveyors, "weights": weights}
+            "conveyors": conveyors, "weights": weights, "loaderKw": loader_kw}
 
 
 def detect_workstation_data(templates_dir: Path, id_to_name: dict) -> dict:
@@ -2005,6 +2009,8 @@ def generate_game_data_js(version: str, recipes: list[dict],
     lines.append("// ── Shipping pads, cargo ships, conveyor speeds, item weights (kg) ──")
     lines.append(f"const SHIPPING = Object.freeze({json.dumps({k: shipping_data[k] for k in ('ships', 'pads', 'conveyors')})});")
     lines.append(f"const ITEM_WEIGHTS_KG = Object.freeze({json.dumps(shipping_data['weights'], sort_keys=True)});")
+    lines.append("// Loader power per lane (1 = Loader, 2 = 2nd Lane, 3 = 3rd Lane), kW")
+    lines.append(f"const LOADER_POWER_KW = Object.freeze({json.dumps(shipping_data['loaderKw'], sort_keys=True)});")
     lines.append("")
 
     # WORKSTATION_CATEGORIES / WORKSTATION_EFFECTS (robot bonuses per machine group)

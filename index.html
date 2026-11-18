@@ -269,6 +269,29 @@
           </button>
         </div>
 
+        <datalist id="allItemsList"></datalist>
+
+        <!-- Where used: recipes that take an item as ingredient -->
+        <details class="panel" style="padding:8px 10px" ontoggle="if(this.open) fillItemDatalist()">
+          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)">Where used?</summary>
+          <input type="text" id="whereUsedInput" list="allItemsList" placeholder="Item, e.g. Steel"
+            oninput="renderWhereUsed(this.value)" autocomplete="off"
+            style="width:100%;margin-top:8px;padding:6px 10px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;outline:none;box-sizing:border-box">
+          <div id="whereUsedResults" style="display:flex;flex-direction:column;gap:4px;margin-top:6px;max-height:240px;overflow-y:auto"></div>
+        </details>
+
+        <!-- Existing stock: materials the factory already makes -->
+        <details class="panel" id="stockPanel" style="padding:8px 10px" ontoggle="if(this.open) fillItemDatalist()">
+          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)">Existing stock <span id="stockCount"></span></summary>
+          <div style="display:flex;gap:4px;margin-top:8px">
+            <input type="text" id="stockItemInput" list="allItemsList" placeholder="Item" autocomplete="off" style="flex:1;min-width:0;padding:6px 10px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;outline:none;box-sizing:border-box">
+            <input type="number" id="stockAmountInput" min="0" step="any" placeholder="/min" style="width:64px;text-align:right;padding:6px 10px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;outline:none;box-sizing:border-box"
+              onkeydown="if(event.key==='Enter') addStockItem()">
+            <button class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px" onclick="addStockItem()">Add</button>
+          </div>
+          <div id="stockList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div>
+        </details>
+
         <!-- Selected recipe list -->
         <div id="selectedRecipes"
           style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;min-height:0">
@@ -669,19 +692,19 @@
         sel = GAME_VERSION_DEFAULT;
       // Bump the revision after re-running extract_game_data.py — the version
       // id alone never changes, so browsers kept serving stale data files.
-      var cb = '?vcb=' + sel + '-r16';
+      var cb = '?vcb=' + sel + '-r17';
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/game-data.js' + cb + '"></scr' + 'ipt>');
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/recipes.js' + cb + '"></scr' + 'ipt>');
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/icons.js' + cb + '"></scr' + 'ipt>');
     })();
   </script>
-  <script src="app/state.js?v=29"></script>
+  <script src="app/state.js?v=30"></script>
   <script src="app/ui-settings.js?v=22"></script>
-  <script src="app/ui-recipes.js?v=23"></script>
-  <script src="app/calculation.js?v=41"></script>
-  <script src="app/ui-nav.js?v=22"></script>
-  <script src="app/visualization.js?v=41"></script>
-  <script src="app/ui-power.js?v=3"></script>
+  <script src="app/ui-recipes.js?v=24"></script>
+  <script src="app/calculation.js?v=45"></script>
+  <script src="app/ui-nav.js?v=23"></script>
+  <script src="app/visualization.js?v=44"></script>
+  <script src="app/ui-power.js?v=4"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();

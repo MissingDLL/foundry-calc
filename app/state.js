@@ -214,6 +214,7 @@ let _syntheticRobotsInjected = false;
 function _injectSyntheticRobotRecipes() {
   if (_syntheticRobotsInjected) return;
   _syntheticRobotsInjected = true;
+  _allItemNames = null; // robots become items
   _ensureRobotData();  // also initialises _robotSubgroupMap
 
   const robotGroups = (typeof RECIPE_SUBGROUPS !== "undefined" && RECIPE_SUBGROUPS["Robots"]) || [];
@@ -436,6 +437,36 @@ let depletedVeins           = 1; // depleted veins being mined → ≥ 1 Frackin
 // 26 s = building on the surface (conservative default).
 let shippingShip      = null; // ship name; null = biggest cargo ship
 let shippingFlightSec = 26;
+// Materials already produced in the existing factory (item → per min). The
+// chain uses them after byproducts; only the missing rest is calculated.
+let stockItems = {};
+
+// Every item name in the game data (ingredients + outputs), sorted.
+let _allItemNames = null;
+function allItemNames() {
+  if (!_allItemNames) {
+    const s = new Set();
+    Object.entries(RECIPES).forEach(([key, r]) => {
+      (r.ingredients || []).forEach(i => s.add(i.item));
+      if (Array.isArray(r.output)) r.output.forEach(o => s.add(o.item));
+      else s.add(key);
+    });
+    _allItemNames = [...s].sort();
+  }
+  return _allItemNames;
+}
+
+// Stock from storage / imported plans / share links: known items, amount > 0
+// (item names end up in innerHTML, so unknown keys are dropped).
+function sanitizeStock(raw) {
+  const out = {};
+  if (!raw || typeof raw !== 'object') return out;
+  const known = new Set(allItemNames());
+  Object.entries(raw).forEach(([item, v]) => {
+    if (known.has(item) && typeof v === 'number' && isFinite(v) && v > 0) out[item] = v;
+  });
+  return out;
+}
 const researchBonus = (name) =>
   (typeof RESEARCH_BONUSES !== 'undefined' && RESEARCH_BONUSES.perLevel[name]) || 0;
 const modularSettings      = {}; // { machineName → number of speed modules (Tower/Vent) }
@@ -718,6 +749,7 @@ function _flushSaveSettings() {
       veinsDepleted,
       shippingShip,
       shippingFlightSec,
+      stockItems,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
       // Save recipe list without UI-only state (wsExpanded)
@@ -757,6 +789,7 @@ function loadSettings() {
     if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
     if (typeof s.shippingShip === 'string') shippingShip = s.shippingShip;
     if (typeof s.shippingFlightSec === 'number' && s.shippingFlightSec >= 0) shippingFlightSec = s.shippingFlightSec;
+    stockItems = sanitizeStock(s.stockItems);
     if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))
       calcDepthMode = s.calcDepthMode;
 

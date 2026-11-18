@@ -201,6 +201,10 @@ function _renderRows() {
            Fuel consumption: <strong style="color:var(--text)">${fmt(Math.round(fuelRateTotal * 1000) / 1000)}</strong>
            <span style="color:var(--color-interactive)"> ${row.fuelName}/min</span>
            <span style="color:var(--color-text-disabled); margin-left:8px;">(${fmt(Math.round(fuelRateUnit * 1000) / 1000)} per unit)</span>
+           ${RECIPES[resolveRecipeName(row.fuelName)]?.ingredients?.length ? `<button class="reset-btn" style="margin:0 0 0 8px; padding:3px 9px; font-size:11px"
+             title="Open the recipe calculation for exactly this amount"
+             data-item="${row.fuelName}" data-rate="${fuelRateTotal}"
+             onclick="calcFuelInRecipes(this.dataset.item, +this.dataset.rate)">Calculate →</button>` : ''}
          </div>`
       : '';
 
@@ -277,6 +281,19 @@ function _renderSummary() {
 }
 
 // ── Public API ───────────────────────────────────────────────
+// "Calculate →" on a fuel: sets that fuel as recipe line with exactly the
+// needed amount (adds it or updates the existing line) and opens the results.
+function calcFuelInRecipes(item, rate) {
+  if (!selectedRecipeList.some(l => l.itemName === item)) addRecipeItem(item);
+  const line = selectedRecipeList.find(l => l.itemName === item);
+  if (!line) return;
+  line.goal = Math.round(rate * 1000) / 1000;
+  switchSidebarView('recipes'); // also switches the main tab
+  renderSelectedRecipes();
+  saveSettings();
+  calculateRecipes();
+}
+
 function initPowerPlanner() {
   _renderRows();
   _renderSummary();

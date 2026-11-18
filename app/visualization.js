@@ -118,6 +118,17 @@ function buildSankeyGraph() {
     if (t > 0) pool[item] -= t;
     return t;
   };
+  // Existing stock (sidebar): used after byproducts, own source node per item.
+  const stockPool = { ..._lastStock };
+  const takeStock = (item, amount) => {
+    const t = Math.min(stockPool[item] || 0, amount);
+    if (t <= 0) return 0;
+    stockPool[item] -= t;
+    const n = getNode(item + ' (Stock)', 'raw');
+    n.icon = item;
+    n.rate += t;
+    return t;
+  };
   function addByproduct(fromLabel, item, rate) {
     const n = getNode(byproductKey(item), 'byproduct');
     n.icon  = item; // icon lookup needs the plain item name
@@ -149,6 +160,19 @@ function buildSankeyGraph() {
   // caller can connect an edge to it.
   // `visitedPath` is the Set of resolved names already on the call stack;
   // it detects cycles (A → B → A) and stops expansion at the repeated node.
+  // Feeds `rate` of `item` into `consumer`. Stock goes straight to the consumer
+  // (no extra item node); it is used after byproducts like in calculateRecipes(),
+  // so the byproduct share expand() will take is left out here.
+  function feed(item, rate, consumer, visitedPath) {
+    const bpAvail = supplySource[item] ? (pool[item] || 0) : 0;
+    const st = takeStock(item, Math.max(0, rate - bpAvail));
+    if (st > 0) addEdge(item + ' (Stock)', consumer, st);
+    const rest = rate - st;
+    if (rest <= 1e-9 || (st > 0 && rest < STOCK_TOLERANCE)) return; // same tolerance as the results
+    const label = expand(item, rest, visitedPath);
+    if (label) addEdge(label, consumer, rest);
+  }
+
   function expand(itemName, rateNeeded, visitedPath) {
     const resolved = resolveRecipeName(itemName);
     if (visitedPath.has(resolved)) return null; // cycle — stop expanding
@@ -193,9 +217,7 @@ function buildSankeyGraph() {
 
     // Recurse into each ingredient at the computed rate
     r.ingredients.forEach(ing => {
-      const ingRate  = runs * ing.amount * (60 / wsCycleTime(r, { itemName: resolved, machineName }));
-      const ingLabel = expand(ing.item, ingRate, nextPath);
-      if (ingLabel) addEdge(ingLabel, resolved, ingRate);
+      feed(ing.item, runs * ing.amount * (60 / wsCycleTime(r, { itemName: resolved, machineName })), resolved, nextPath);
     });
 
     // Add secondary outputs (byproducts) as outgoing edges from the
@@ -231,9 +253,7 @@ function buildSankeyGraph() {
     // Seed the visited path with the final product itself so that any
     // ingredient cycle back to it is caught immediately.
     r.ingredients.forEach(ing => {
-      const ingRate  = (60 / ct) * ing.amount * runs;
-      const ingLabel = expand(ing.item, ingRate, new Set([item.itemName]));
-      if (ingLabel) addEdge(ingLabel, item.itemName, ingRate);
+      feed(ing.item, (60 / ct) * ing.amount * runs, item.itemName, new Set([item.itemName]));
     });
 
     // Secondary outputs of the final product — connect from the
@@ -252,8 +272,7 @@ function buildSankeyGraph() {
   Object.values(nodeMap).filter(n => n.machineName).forEach(n => {
     Object.entries(fluidNeedsPerMachine(n.machineName, n.label)).forEach(([fluid, per]) => {
       const amount = per * ceilMachines(n.machineCount);
-      const src = amount > 0 && expand(fluid, amount, new Set([n.label]));
-      if (src) addEdge(src, n.label, amount);
+      if (amount > 0) feed(fluid, amount, n.label, new Set([n.label]));
     });
   });
 

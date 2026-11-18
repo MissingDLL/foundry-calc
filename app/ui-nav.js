@@ -249,6 +249,7 @@ function exportPlan() {
       veinsDepleted,
       shippingShip,
       shippingFlightSec,
+      stockItems,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
     },
@@ -322,6 +323,7 @@ function _applyImportedPlan(plan) {
   veinsDepleted  = false;
   shippingShip = null;
   shippingFlightSec = 26;
+  stockItems = {};
   MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
 
   // Restore settings from the imported plan
@@ -341,6 +343,7 @@ function _applyImportedPlan(plan) {
   if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
   if (typeof s.shippingShip === 'string') shippingShip = s.shippingShip;
   if (typeof s.shippingFlightSec === 'number' && s.shippingFlightSec >= 0) shippingFlightSec = s.shippingFlightSec;
+  stockItems = sanitizeStock(s.stockItems);
   _applyModularSpeeds();
   if (s.machineFamilyDefaults) {
     MACHINE_FAMILIES.forEach(f => {
@@ -402,6 +405,7 @@ function sharePlan() {
       veinsDepleted,
       shippingShip,
       shippingFlightSec,
+      stockItems,
       workstationConfigs,
       machineFamilyDefaults: famDefaults,
     },

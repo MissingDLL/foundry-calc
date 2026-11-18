@@ -440,6 +440,92 @@ function setRecipeForSale(idx, on) {
   calculateRecipes();
 }
 
+// ── Item datalist (shared by "Where used?" and "Existing stock") ──
+function fillItemDatalist() {
+  const dl = document.getElementById("allItemsList");
+  if (!dl || dl.childElementCount) return;
+  allItemNames().forEach(n => dl.appendChild(new Option(n)));
+}
+
+// Canonical (selectable) name of a recipe key: its variant group label.
+function _canonicalOf(recipeKey) {
+  const g = VARIANT_GROUPS.find(g => g.variants.includes(recipeKey));
+  return g ? g.label : recipeKey;
+}
+
+// "Where used?": every recipe that takes the item as ingredient; click adds it.
+function renderWhereUsed(query) {
+  const el = document.getElementById("whereUsedResults");
+  if (!el) return;
+  el.innerHTML = "";
+  const item = allItemNames().find(n => n.toLowerCase() === (query || "").trim().toLowerCase());
+  if (!item) return;
+  const users = Object.entries(RECIPES)
+    .filter(([, r]) => (r.ingredients || []).some(i => i.item === item))
+    .sort(([a], [b]) => a.localeCompare(b));
+  if (!users.length) {
+    el.innerHTML = '<div style="font-size:11px;color:var(--color-text-disabled)">Not used in any recipe</div>';
+    return;
+  }
+  users.forEach(([key, r]) => {
+    const ing = r.ingredients.find(i => i.item === item);
+    const canonical = _canonicalOf(key);
+    const added = selectedRecipeList.some(l => l.itemName === canonical);
+    const row = document.createElement("button");
+    row.className = "reset-btn";
+    row.title = added ? "Already selected" : "Add this recipe";
+    row.style.cssText = "margin:0;padding:4px 8px;display:flex;align-items:center;gap:6px;text-align:left;font-size:11px;width:100%";
+    row.innerHTML = `${getIcon(key, 18)}<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${key}</span>` +
+      `<span style="color:var(--color-text-disabled)">${fmt(ing.amount)}×</span>${added ? "✓" : "+"}`;
+    row.onclick = () => { addRecipeItem(canonical); renderWhereUsed(item); };
+    el.appendChild(row);
+  });
+}
+
+// ── Existing stock ──
+function addStockItem() {
+  const itemEl = document.getElementById("stockItemInput");
+  const amtEl  = document.getElementById("stockAmountInput");
+  const item = allItemNames().find(n => n.toLowerCase() === itemEl.value.trim().toLowerCase());
+  const amt  = parseFloat(amtEl.value);
+  if (!item || !(amt > 0)) { (item ? amtEl : itemEl).focus(); return; }
+  stockItems[item] = amt;
+  itemEl.value = ""; amtEl.value = "";
+  _stockChanged();
+}
+function setStockAmount(item, val) {
+  const v = parseFloat(val);
+  if (v > 0) stockItems[item] = v; else delete stockItems[item];
+  _stockChanged();
+}
+function _stockChanged() {
+  renderStockList();
+  saveSettings();
+  if (selectedRecipeList.length) calculateRecipes();
+}
+function renderStockList() {
+  const el = document.getElementById("stockList");
+  if (!el) return;
+  const items = Object.keys(stockItems).sort();
+  document.getElementById("stockCount").textContent = items.length ? `(${items.length})` : "";
+  el.innerHTML = "";
+  items.forEach(item => {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text)";
+    row.innerHTML = `${getIcon(item, 18)}<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis">${item}</span>`;
+    const inp = document.createElement("input");
+    inp.type = "number"; inp.min = "0"; inp.step = "any"; inp.value = stockItems[item];
+    inp.style.cssText = "width:64px;text-align:right;padding:6px 10px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;outline:none;box-sizing:border-box";
+    inp.onchange = () => setStockAmount(item, inp.value);
+    const del = document.createElement("button");
+    del.className = "reset-btn"; del.textContent = "✕"; del.title = "Remove";
+    del.style.cssText = "margin:0;padding:3px 7px;font-size:11px";
+    del.onclick = () => setStockAmount(item, 0);
+    row.append(inp, del);
+    el.appendChild(row);
+  });
+}
+
 // Bots view "Sell all": toggles forSale on every selected bot line.
 function toggleBotsForSale() {
   const bots = selectedRecipeList.filter(l => RECIPES[l.recipeName]?.category === 'Robots');
@@ -477,6 +563,7 @@ function updateRecipeGoal(idx, val) {
 
 // ── Render selected list ──────────────────────────────────────
 function renderSelectedRecipes() {
+  renderStockList(); // stock is part of the plan (load / import / reset)
   const sellBtn = document.getElementById("botSellAllBtn");
   if (sellBtn) {
     const bots = selectedRecipeList.filter(l => RECIPES[l.recipeName]?.category === 'Robots');

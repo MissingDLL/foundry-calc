@@ -73,6 +73,8 @@ function wsCycleTime(recipe, item) {
 // Byproduct supply pool of the last calculation (item → per min), read by the
 // Sankey/Boxes graph so both views take byproducts from the same pool.
 let _lastSupply = {};
+let _lastStock  = {}; // existing stock (item → per min) for the graph
+const STOCK_TOLERANCE = 0.01; // per min; smaller rests are covered by stock
 
 // ceil() that ignores float noise (3.0000000001 machines → 3, not 4).
 const ceilMachines = (x) => Math.ceil(x - 1e-9);
@@ -283,11 +285,14 @@ function calcLoadersForMachine(machineName, nSolidConnections) {
     remaining -= add;
   }
 
+  // Loader power per lane from the game data (current versions: 0 kW). Data
+  // versions extracted before LOADER_POWER_KW existed keep the old 5/10/12 kW.
+  const lkw = typeof LOADER_POWER_KW !== 'undefined' ? LOADER_POWER_KW : { 1: 5, 2: 10, 3: 12 };
   let loaderCount = 0, secondLaneCount = 0, thirdLaneCount = 0, powerKw = 0;
   usedSides.forEach(n => {
-    if (n >= 1) { loaderCount++;     powerKw += 5;  }
-    if (n >= 2) { secondLaneCount++; powerKw += 10; }
-    if (n >= 3) { thirdLaneCount++;  powerKw += 12; }
+    if (n >= 1) { loaderCount++;     powerKw += lkw[1] || 0; }
+    if (n >= 2) { secondLaneCount++; powerKw += lkw[2] || 0; }
+    if (n >= 3) { thirdLaneCount++;  powerKw += lkw[3] || 0; }
   });
 
   return { powerKw, loaderCount, secondLaneCount, thirdLaneCount };
@@ -484,6 +489,15 @@ function calculateRecipes() {
     if (t > 0) pool[item] -= t;
     return amount - t;
   };
+  // Existing stock (sidebar) is used after byproducts; only the rest is made.
+  // A rest below 0.01/min (display precision; 3.33 entered for 3.333…) counts
+  // as covered — otherwise it spawns a whole chain of 1-machine rows at "0/min".
+  const takeStock = (pool, item, amount) => {
+    const left = takeFrom(pool, item, amount);
+    return left < amount && left < STOCK_TOLERANCE ? 0 : left;
+  };
+  const stockPool = { ...stockItems };
+  _lastStock = { ...stockItems };
 
   // ── Infrastructure: loaders + power per line ────────────────
   const infraByMachine = {}; // aggregated by machineName
@@ -703,8 +717,9 @@ function calculateRecipes() {
   // section in modes 0 and 1.
   const directTotals = {};
   const directPool   = { ...supply };
+  const directStock  = { ...stockItems };
   Object.entries(totals).forEach(([name, val]) => {
-    val = takeFrom(directPool, name, val);
+    val = takeStock(directStock, name, takeFrom(directPool, name, val));
     if (val <= 1e-9) return;
     const resolved = resolveRecipeName(name);
     const recipe   = RECIPES[resolved];
@@ -722,7 +737,7 @@ function calculateRecipes() {
       const resolved = resolveRecipeName(itemName);
       if (visitedPath.has(resolved)) { cycleWarnings.add(resolved); return; }
       if (visitedPath.size > 50) return;
-      amountPerMin = takeFrom(supply, itemName, amountPerMin); // byproducts first
+      amountPerMin = takeStock(stockPool, itemName, takeFrom(supply, itemName, amountPerMin)); // byproducts, then stock
       if (amountPerMin <= 1e-9) return;
 
       const recipe = RECIPES[resolved];
@@ -812,7 +827,7 @@ function calculateRecipes() {
         return;
       }
       if (visitedPath.size > 50) return;
-      amountPerMin = takeFrom(supply, itemName, amountPerMin); // byproducts first
+      amountPerMin = takeStock(stockPool, itemName, takeFrom(supply, itemName, amountPerMin)); // byproducts, then stock
       if (amountPerMin <= 1e-9) return;
 
       const recipe = RECIPES[resolved];
@@ -897,6 +912,10 @@ function calculateRecipes() {
   }
   // ── Space station shipping: lines marked "for sale" go up, items delivered
   // by the station (EXTERNAL_SOURCES, e.g. Firmarlite Bar) come down.
+  const usedPool = calcDepthMode === 0 ? directStock : stockPool;
+  const stockRows = Object.entries(stockItems).map(([item, have]) => ({
+    item, have, used: Math.round((have - (usedPool[item] || 0)) * 1000) / 1000,
+  }));
   const shipping = [];
   lines.filter(l => l.forSale).forEach(l => {
     const p = shippingPlan(l.itemName, l.goal, 'up', l.machineName === M.ASSEMBLY_LINE);
@@ -1349,6 +1368,30 @@ function calculateRecipes() {
             </span>`;
           }).join('')}
         </div>
+      </div>
+    </div>` : ''}
+
+    ${stockRows.length ? `
+    <div class="collapsible-section">
+      <div class="collapsible-header" onclick="toggleSection(this)">
+        <span class="ch-title">Existing Stock</span>
+        <span style="display:flex;align-items:center;gap:12px">
+          <span class="ch-meta">${stockRows.length} item${stockRows.length > 1 ? 's' : ''} · only the missing rest is produced</span>
+          <span class="ch-arrow">▼</span>
+        </span>
+      </div>
+      <div class="collapsible-body">
+        <table class="results-table">
+          <thead><tr><th>Item</th><th style="text-align:right">Available /min</th><th style="text-align:right">Used /min</th><th style="text-align:right">Unused /min</th></tr></thead>
+          <tbody>${stockRows.map(r => `
+            <tr>
+              <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(r.item, 48)}<span class="label">${r.item}</span></div></td>
+              <td class="num">${fmt(r.have)}</td>
+              <td class="num">${fmt(r.used)}</td>
+              <td class="num">${fmt(r.have - r.used)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
       </div>
     </div>` : ''}
 

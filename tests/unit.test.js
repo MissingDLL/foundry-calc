@@ -546,9 +546,9 @@ describe('Recipe data integrity', () => {
     expect(!!RECIPES['Firmarlite Sheet']).toBeTruthy();
   });
 
-  it('Firmarlite Sheet requires 4 Firmarlite Bars', () => {
+  it('Firmarlite Sheet requires 1 Firmarlite Bar (game data _base_firmarlite_sheet_t0)', () => {
     const ing = (RECIPES['Firmarlite Sheet'].ingredients || []).find(i => i.item === I.FIRMARLITE_BAR);
-    expect(ing && ing.amount).toBe(4);
+    expect(ing && ing.amount).toBe(1);
   });
 
   it('Firmarlite Sheet output amount is 1', () => {
