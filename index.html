@@ -150,6 +150,13 @@
           </svg>
           Power
         </button>
+        <button id="toggleSaveBtn" onclick="switchSidebarView('save')" class="nav-btn--inactive"
+          style="flex:1;padding:9px 4px;border:none;border-left:1px solid var(--color-border);cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;font-weight:500;letter-spacing:0;transition:all 0.18s;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+          </svg>
+          Save
+        </button>
       </div>
 
       <!-- Bot Sidebar -->
@@ -221,6 +228,21 @@
           <div id="powerAddButtons" style="display:flex;flex-direction:column;gap:6px;"></div>
         </div>
 
+      </div>
+
+      <!-- Savegame Sidebar -->
+      <div id="sidebar-save" style="display:none;flex-direction:column;gap:16px;overflow-y:auto;flex:1;min-height:0;padding:4px 0">
+        <div>
+          <div class="section-title">Savegame</div>
+          <div class="panel" style="display:flex;flex-direction:column;gap:10px;font-size:12px;">
+            <input id="saveFileInput" type="file" onchange="loadSavegame(this.files[0])" style="font-size:12px;color:var(--text)">
+            <div id="saveStatus" style="color:var(--color-text-disabled)">The file is read in your browser, nothing is uploaded.</div>
+            <div style="color:var(--color-text-disabled);line-height:1.5">
+              Saves are in<br><code style="word-break:break-all">%USERPROFILE%\AppData\LocalLow\Channel 3 Entertainment\Foundry\save\&lt;world&gt;</code><br>
+              (Linux/Proton: <code style="word-break:break-all">steamapps/compatdata/983870/pfx/drive_c/users/steamuser/…</code>)
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Recipe Sidebar -->
@@ -505,6 +527,11 @@
         </div>
       </div><!-- end tab-power -->
 
+      <!-- Savegame Tab -->
+      <div id="tab-save" style="flex:1; overflow-y:auto; display:none;">
+        <div id="saveContent" style="padding:24px; max-width:900px; margin:0 auto;"></div>
+      </div><!-- end tab-save -->
+
 
     </main>
 
@@ -692,7 +719,7 @@
         sel = GAME_VERSION_DEFAULT;
       // Bump the revision after re-running extract_game_data.py — the version
       // id alone never changes, so browsers kept serving stale data files.
-      var cb = '?vcb=' + sel + '-r26';
+      var cb = '?vcb=' + sel + '-r28';
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/game-data.js' + cb + '"></scr' + 'ipt>');
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/recipes.js' + cb + '"></scr' + 'ipt>');
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/icons.js' + cb + '"></scr' + 'ipt>');
@@ -701,10 +728,12 @@
   <script src="app/state.js?v=37"></script>
   <script src="app/ui-settings.js?v=27"></script>
   <script src="app/ui-recipes.js?v=29"></script>
-  <script src="app/calculation.js?v=64"></script>
-  <script src="app/ui-nav.js?v=24"></script>
+  <script src="app/calculation.js?v=68"></script>
+  <script src="app/ui-nav.js?v=25"></script>
   <script src="app/visualization.js?v=50"></script>
   <script src="app/ui-power.js?v=6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fzstd@0.1.1/umd/index.js"></script>
+  <script src="app/ui-savegame.js?v=4"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();

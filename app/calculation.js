@@ -1249,6 +1249,19 @@ function calculateRecipes() {
   function buildFullDetailRows(totalsMap) {
     let totMachPwr = 0, totLoaderPwr = 0;
     let fdIdx = 0;
+    // Buildings of the whole chain, summed per type (conveyors/pipes are
+    // throughput shares, not piece counts, so they are not included)
+    const buildings = {};
+    const tally = (b, n) => {
+      if (!b || !(n > 0)) return;
+      // An Assembly Line is several buildings (start, producers, painter);
+      // its rails have no fixed length, like conveyors
+      if (b === M.ASSEMBLY_LINE && typeof ASSEMBLY_LINE_COMPOSITION !== 'undefined') {
+        ['start', 'producer', 'painter'].forEach(k => tally(ASSEMBLY_LINE_COMPOSITION[k].name, ASSEMBLY_LINE_COMPOSITION[k].count * n));
+        return;
+      }
+      buildings[b] = (buildings[b] || 0) + n;
+    };
 
     const rows = Object.entries(totalsMap)
       .sort((a, b) => {
@@ -1264,6 +1277,12 @@ function calculateRecipes() {
       .map(([name, info]) => {
         const val     = info.amount;
         const machine = info.machine;
+        // A selected line with its own workstation (Custom / No WS) counts with
+        // that WS, like its demand does; chain-only rows use the global WS.
+        // ponytail: extra chain demand of the same item shares the line's WS
+        const ownLine = lines.find(l => (l.displayName || l.itemName) === name && l.machineName === machine);
+        const rowItem = { itemName: info.recipeName || name, machineName: machine,
+                          ...(ownLine && ownLine.wsOverride !== undefined ? { wsOverride: ownLine.wsOverride } : {}) };
         const isFluid = FLUID_ITEMS.has(name);
         const rid     = 'fd_' + (fdIdx++);
 
@@ -1277,6 +1296,7 @@ function calculateRecipes() {
         let rowKw = 0; // machine (+ loader) power of this row; pumps added below
         const fp = isFluid ? fluids[name] : null;
         if (fp) totMachPwr += fp.pumpKw;
+        if (fp) fp.pumpList.forEach(p => tally(p.name, p.count));
         const conveyorCell = fp
           ? `<div style="display:flex;flex-direction:column;gap:3px">${fp.lines.map(l => `<div style="display:flex;align-items:center;gap:4px">${iconBox(l.type, 48)}<span style="font-size:12px;color:var(--text-dim)">${l.type}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${l.count}</span></div>`).join('')}${fp.pumpList.map(p => `<div style="display:flex;align-items:center;gap:4px" title="Pipe and pipeline do not connect directly">${iconBox(p.name, 32)}<span style="font-size:11px;color:var(--text-dim)">${p.name}</span><span style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--accent3)">×${p.count}</span><span style="font-size:11px;color:var(--color-power)">${fmtPwr(p.count * p.kw)}</span></div>`).join('')}</div>`
           : isFluid
@@ -1293,18 +1313,21 @@ function calculateRecipes() {
             // Reprocessing: e.g. Chemical Processor for Blast Furnace Slag → Cement
             const machPwrKw = machinesPowerKw(rp.machine, rp.count);
             totMachPwr += machPwrKw;
+            tally(rp.machine, rp.count);
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(rp.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${rp.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${rp.count}</span><span style="font-size:10px;color:var(--color-success-text);margin-left:4px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span></div>`;
             // Unused rest goes straight to disposal (e.g. 200/min slag → Flare Stack)
             const rest = byproductTotals[name]?.leftover || 0;
             const restCount = rest > 0.01 ? ceilMachines(rest / disposal.capacityPerMin) : 0;
             const restPwrKw = machinesPowerKw(disposal.machine, restCount); // Flare Stack / Incinerator draw power too
             totMachPwr += restPwrKw;
+            tally(disposal.machine, restCount);
             if (restCount) machineCell += `<div style="display:flex;align-items:center;gap:5px;margin-top:3px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${restCount}</span><span style="font-size:10px;color:var(--text-dim);margin-left:4px">rest ${fmt(rest)}/min</span></div>`;
             rowKw = machPwrKw + restPwrKw;
           } else {
             const count     = Math.ceil(val / disposal.capacityPerMin);
             const machPwrKw = machinesPowerKw(disposal.machine, count);
             totMachPwr += machPwrKw;
+            tally(disposal.machine, count);
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
             rowKw = machPwrKw;
           }
@@ -1321,6 +1344,7 @@ function calculateRecipes() {
             const count     = Math.ceil(val / capacityLpm);
             const machPwrKw = machinesPowerKw(machine, count);
             totMachPwr += machPwrKw;
+            tally(machine, count);
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
             rowKw = machPwrKw;
           } else if (!md) {
@@ -1330,10 +1354,10 @@ function calculateRecipes() {
               ? `<span style="font-size:10px;color:var(--text-dim);margin-left:4px" title="Gathered from the world">excavation: ${EXCAVATION.tools.join(' / ')}</span>` : '';
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span>${excavation}</div>`;
           } else if (md) {
-            const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine, product: name });
-            const rowRuns     = rowRunsOf(rec, { itemName: info.recipeName || name, machineName: machine }, name, val);
+            const opm         = machineOpm(rec, { ...rowItem, product: name });
+            const rowRuns     = rowRunsOf(rec, rowItem, name, val);
             const count       = ceilMachines(rowRuns);
-            const machPwrKw   = machinesPowerKw(machine, count);
+            const machPwrKw   = machinesPowerKw(machine, count, rowItem);
             const nSolid      = countSolidConnections(rec, name);
             const loaders     = calcLoadersForMachine(machine, nSolid);
             const loaderPwrKw = loaders.powerKw * count;
@@ -1341,11 +1365,15 @@ function calculateRecipes() {
             totMachPwr   += machPwrKw;
             totLoaderPwr += loaderPwrKw;
 
-            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span>${wsBadge({ itemName: info.recipeName || name, machineName: machine })}</div>`;
+            machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span>${wsBadge(rowItem)}</div>`;
 
             const totalLoaders = loaders.loaderCount * count;
             const totalSecond  = loaders.secondLaneCount * count;
             const totalThird   = loaders.thirdLaneCount  * count;
+            tally(machine, count);
+            tally('Loader', totalLoaders);
+            tally('Loader (2nd Lane)', totalSecond);
+            tally('Loader (3rd Lane)', totalThird);
             if (totalLoaders || totalSecond || totalThird) {
               const parts = [
                 totalLoaders ? `${totalLoaders}×L1` : '',
@@ -1362,7 +1390,7 @@ function calculateRecipes() {
               ingPills = rec.ingredients.map((ing) => {
                 // Use demand-proportional rate (val = needed output/min), not machine-capacity × count.
                 // This avoids showing a higher number than the row above due to Math.ceil rounding.
-                const ipm  = rowRuns * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * ing.amount;
+                const ipm  = rowRuns * (60 / wsCycleTime(rec, rowItem)) * ing.amount;
                 const warn = ipm > 100;
                 return `<span style="display:inline-flex;align-items:center;gap:5px;
                     background:${warn ? 'var(--color-warning-bg)' : 'var(--color-success-bg)'};
@@ -1378,12 +1406,12 @@ function calculateRecipes() {
             }
 
             if (rec.chanceOutputs) {
-              ingPills += chanceProductPills(rec, rowRuns * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * (rec.ingredients[0]?.amount || 1), iconBox, 48);
+              ingPills += chanceProductPills(rec, rowRuns * (60 / wsCycleTime(rec, rowItem)) * (rec.ingredients[0]?.amount || 1), iconBox, 48);
             } else
             // Add byproduct pills for secondary outputs of this recipe
             if (Array.isArray(rec.output) && rec.output.length > 1) {
               ingPills += rec.output.slice(1).map(sec => {
-                const bpm = rowRuns * (60 / wsCycleTime(rec, { itemName: info.recipeName || name, machineName: machine })) * sec.amount * (sec.chance ?? 1);
+                const bpm = rowRuns * (60 / wsCycleTime(rec, rowItem)) * sec.amount * (sec.chance ?? 1);
                 return `<span style="display:inline-flex;align-items:center;gap:5px;
                     background:var(--color-byproduct-bg);border:1px solid var(--color-byproduct-border);
                     border-radius:4px;padding:3px 8px;font-size:12px;white-space:nowrap">
@@ -1443,7 +1471,21 @@ function calculateRecipes() {
         <td style="padding:6px 12px;text-align:right;color:var(--color-power)">${fmtPwr(totMachPwr + totLoaderPwr)}</td>
       </tr>`;
 
-    return { rows, footer, count: Object.keys(totalsMap).length };
+    // Shipping pads for items sold (up) and delivered by the station (down)
+    shipping.forEach(p => tally(p.pad, p.count));
+    const isLoader = b => b.startsWith('Loader');
+    const list = Object.entries(buildings).sort((a, b) => (isLoader(a[0]) - isLoader(b[0])) || b[1] - a[1]);
+    const buildingsHtml = list.length ? `
+      <div style="padding:10px 12px 12px;border-bottom:1px solid var(--color-border)">
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">Buildings needed · ${fmt(list.reduce((n, [, c]) => n + c, 0))} total (without conveyors, pipes and Assembly Line rails)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:5px">${list.map(([b, c]) => `
+          <span style="display:inline-flex;align-items:center;gap:4px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:5px;padding:2px 7px 2px 3px;font-size:12px;white-space:nowrap">
+            ${iconBox(b, 32)}<span style="color:var(--text-dim)">${b}</span>
+            <span style="font-family:'Share Tech Mono',monospace;color:var(--accent3)">×${fmt(c)}</span>
+          </span>`).join('')}</div>
+      </div>` : '';
+
+    return { rows, footer, buildingsHtml, count: Object.keys(totalsMap).length };
   }
 
   const direct   = buildMaterialRows(directTotals);
@@ -1703,6 +1745,7 @@ function calculateRecipes() {
         </span>
       </div>
       <div class="collapsible-body">
+        ${fullDetail.buildingsHtml}
         <table class="results-table">
           <thead><tr><th>Item</th><th style="text-align:right">/ Minute</th><th>Producer</th><th>Conveyor</th><th>Loader</th><th style="text-align:right">Power</th></tr></thead>
           <tbody>${fullDetail.rows}${fullDetail.footer}</tbody>

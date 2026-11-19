@@ -647,6 +647,70 @@ def build_intermediate_items(templates_dir: Path, id_to_name: dict) -> set[str]:
 # Ore mining map — dynamic from OreVeinTemplate + TerrainBlockType
 # ─────────────────────────────────────────────────────────────────────────────
 
+_M64 = (1 << 64) - 1
+
+
+def string_hash64(s: str) -> int:
+    """Port of GameRoot.generateStringHash64 (Main.dll): how saves reference templates.
+    ASCII upper → lower, two rotating sums, xor."""
+    a, b = 2526055270775151, 3653144551261183
+    for ch in s:
+        c = ord(ch)
+        if 65 <= c <= 90:
+            c += 32
+        a = (a + c) & _M64
+        b = (b + c) & _M64
+        a = ((a << 3) | (a >> 61)) & _M64
+        b = ((b << 7) | (b >> 57)) & _M64
+    return a ^ b
+
+
+# template dir → hash prefix (the generateStringHash method of each template class)
+SAVE_HASH_PREFIX = {
+    "BuildableObjectTemplate": "bot_", "ItemTemplate": "it_", "CraftingRecipe": "cr_",
+    "ElementTemplate": "et_", "OreVeinTemplate": "ovt_", "ReservoirTemplate": "reservoirt_",
+    "BlastFurnaceModeTemplate": "bfmt_", "ResearchTemplate": "rt_", "PipeTypeTemplate": "ptt_",
+    "TerrainBlockType": "tbt_",
+}
+
+
+def build_save_templates(templates_dir: Path, id_to_name: dict) -> dict:
+    """
+    Savegame template hash (decimal string) → [kind, name, ...] for the in-browser
+    save reader. kind: b = building [type, category], i = item, r = recipe,
+    e = element, o = ore vein, t = research [endless, unlocked item names], p = pipe type.
+    Building category = the item's creative-mode category, else the building type.
+    """
+    cats = {i: v.get("categoryName", i)
+            for i, v in load_yaml_templates(templates_dir, "CreativeModeCategoryTemplate").items()}
+    items = load_yaml_templates(templates_dir, "ItemTemplate")
+    bot_cat = {v.get("buildableObjectIdentifer"): cats.get(v.get("creativeModeCategory_str"))
+               for v in items.values() if v.get("buildableObjectIdentifer")}
+    terrain = load_yaml_templates(templates_dir, "TerrainBlockType")
+    # recipe identifier → names of the items it makes (research unlocks recipes)
+    recipe_out = {i: [id_to_name.get(o.get("identifier"), o.get("identifier")) for o in (v.get("output_data") or [])]
+                  for i, v in load_yaml_templates(templates_dir, "CraftingRecipe").items()}
+    kinds = {"BuildableObjectTemplate": "b", "ItemTemplate": "i", "CraftingRecipe": "r",
+             "BlastFurnaceModeTemplate": "r", "ElementTemplate": "e", "OreVeinTemplate": "o",
+             "ResearchTemplate": "t", "PipeTypeTemplate": "p"}
+    out = {}
+    for ttype, kind in kinds.items():
+        for ident, v in load_yaml_templates(templates_dir, ttype).items():
+            if ttype == "OreVeinTemplate":
+                name = terrain.get(v.get("mineableBlockType_identifier"), {}).get("name")
+            else:
+                name = v.get("name") or id_to_name.get(ident)
+            entry = [kind, name or ident]
+            if kind == "b":
+                btype = v.get("type", "")
+                entry += [btype, bot_cat.get(ident) or btype]
+            elif kind == "t":
+                entry.append("ENDLESS_RESEARCH" in str(v.get("flags", "")).split("|"))
+                entry.append(sorted({n for r in v.get("list_craftingUnlocks_str") or [] for n in recipe_out.get(r, [])}))
+            out[str(string_hash64(SAVE_HASH_PREFIX[ttype] + ident))] = entry
+    return out
+
+
 def detect_research_bonuses(templates_dir: Path, bots_raw: dict, id_to_name: dict) -> dict:
     """
     Endless researches (flags ENDLESS_RESEARCH) → {name: bonusPerLevel}.
@@ -2322,6 +2386,8 @@ def generate_game_data_js(version: str, recipes: list[dict],
     lines.append(f"const FLUID_PORTS = Object.freeze({json.dumps(shipping_data.get('fluid', {}), sort_keys=True)});")
     lines.append("// Items with several recipes: the choice offered in the settings / sidebar")
     lines.append(f"const RECIPE_VARIANT_GROUPS = Object.freeze({json.dumps(shipping_data.get('variants', []))});")
+    lines.append("// Savegame reader: template hash → [kind, name, (building type, category | endless, unlocked items)]")
+    lines.append(f"const SAVE_TEMPLATES = Object.freeze({json.dumps(shipping_data.get('saveTemplates', {}), separators=(',', ':'))});")
     lines.append("")
 
     # RESEARCH_BONUSES (parsed from endless research descriptions)
@@ -2878,6 +2944,7 @@ def main():
     shipping_data["excavation"] = shipping_excavation  # rides along to the JS writer
     shipping_data["fluid"] = detect_fluid_ports(templates_dir, bots_raw, id_to_name)
     shipping_data["variants"] = build_variant_groups(recipes)
+    shipping_data["saveTemplates"] = build_save_templates(templates_dir, id_to_name)
     vein_mining_fluids = detect_vein_mining_fluids(templates_dir, bots_raw, id_to_name)
     research_bonuses = detect_research_bonuses(templates_dir, bots_raw, id_to_name)
     # A vein mining fluid is consumed (by miners), so it is no byproduct to dispose of

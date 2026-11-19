@@ -60,15 +60,18 @@ function switchSidebarView(mode) {
   const isBots    = mode === 'bots';
   const isRecipes = mode === 'recipes';
   const isPower   = mode === 'power';
+  const isSave    = mode === 'save';
 
   document.getElementById('sidebar-bots').style.display    = isBots    ? 'flex'  : 'none';
   document.getElementById('sidebar-recipes').style.display = isRecipes ? 'flex'  : 'none';
   document.getElementById('sidebar-power').style.display   = isPower   ? 'flex'  : 'none';
+  document.getElementById('sidebar-save').style.display    = isSave    ? 'flex'  : 'none';
 
   [
     { id: 'toggleBotBtn',    active: isBots    },
     { id: 'toggleRecipeBtn', active: isRecipes },
     { id: 'togglePowerBtn',  active: isPower   },
+    { id: 'toggleSaveBtn',   active: isSave    },
   ].forEach(function (item) {
     const el = document.getElementById(item.id);
     if (!el) return;
@@ -76,8 +79,8 @@ function switchSidebarView(mode) {
     el.classList.toggle('nav-btn--inactive', !item.active);
   });
 
-  if (isPower) {
-    switchMainTab('power');
+  if (isPower || isSave) {
+    switchMainTab(mode);
   } else {
     const tabName = isBots ? 'overview' : 'recipes';
     const tabEl = document.querySelector('.tab[onclick*="\'' + tabName + '\'"]');
@@ -165,16 +168,20 @@ function switchMainTab(tab) {
   const isRecipes   = tab === 'recipes';
   const isVisualize = tab === 'visualize';
   const isPower     = tab === 'power';
+  const isSave      = tab === 'save';
 
   const recipesEl = document.getElementById('tab-recipes');
   const vizEl     = document.getElementById('tab-visualize');
   const powerEl   = document.getElementById('tab-power');
+  const saveEl    = document.getElementById('tab-save');
 
   recipesEl.style.display = isRecipes   ? 'block' : 'none';
   vizEl.style.display     = isVisualize ? 'flex'  : 'none';
   powerEl.style.display   = isPower     ? 'block' : 'none';
+  saveEl.style.display    = isSave      ? 'block' : 'none';
+  if (isSave) renderSavegame();
 
-  const incoming = isRecipes ? recipesEl : isPower ? powerEl : vizEl;
+  const incoming = isRecipes ? recipesEl : isPower ? powerEl : isSave ? saveEl : vizEl;
   incoming.style.animation = 'none';
   incoming.offsetHeight;
   incoming.style.animation = 'tabContentIn 0.32s cubic-bezier(0.22,1,0.36,1) both';
