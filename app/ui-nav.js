@@ -301,19 +301,7 @@ function _applyImportedPlan(plan) {
   }
 
   // Restore recipe list — skip recipes no longer in RECIPES
-  if (Array.isArray(plan.selectedRecipeList)) {
-    selectedRecipeList = plan.selectedRecipeList
-      .filter(item => item.recipeName && RECIPES[item.recipeName])
-      .map(item => ({
-        itemName:    item.itemName   || item.recipeName,
-        recipeName:  item.recipeName,
-        machineName: item.machineName,
-        goal:        item.goal       || 60,
-        wsOverride:  item.wsOverride || null,
-        forSale:     !!item.forSale,
-        wsExpanded:  false,
-      }));
-  }
+  if (Array.isArray(plan.selectedRecipeList)) selectedRecipeList = sanitizeRecipeList(plan.selectedRecipeList);
 
   // Reset all settings to their defaults before applying imported values.
   // Without this, Object.assign() would only merge — leaving any keys that
@@ -444,19 +432,32 @@ function sharePlan() {
     }, 2000);
   }
 
-  navigator.clipboard.writeText(url)
-    // ponytail: translucent success border has no token yet (only solid --accent3 exists)
-    .then(() => _flashBtn('✓ Copied!', 'var(--accent3)', 'var(--color-success-border)'))
-    .catch(() => {
-      // Fallback for environments without clipboard API (e.g. plain file://)
-      prompt('Link kopieren:', url);
-    });
+  // ponytail: translucent success border has no token yet (only solid --accent3 exists)
+  const ok = () => _flashBtn('✓ Copied!', 'var(--accent3)', 'var(--color-success-border)');
+  // navigator.clipboard only exists in secure contexts (https / localhost) —
+  // over plain http (e.g. LAN IP) fall back to execCommand, then to a prompt.
+  const legacyCopy = () => {
+    const ta = document.createElement('textarea');
+    ta.value = url;
+    ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    let done = false;
+    try { done = document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+    if (done) ok(); else prompt('Copy link:', url);
+  };
+  if (navigator.clipboard?.writeText) navigator.clipboard.writeText(url).then(ok, legacyCopy);
+  else legacyCopy();
 }
 
 // Called once on startup (from the inline <script> in index.html).
 // If the URL contains a #plan=… hash the encoded plan is decoded and
 // applied, overriding any locally saved state.  The hash is then removed
 // so that a subsequent reload starts with the user's own saved state.
+// Link pasted into a tab where the app is already open: only the hash changes, no reload.
+window.addEventListener('hashchange', () => _loadPlanFromUrl());
+
 function _loadPlanFromUrl() {
   const hash = location.hash;
   if (!hash.startsWith('#plan=')) return;

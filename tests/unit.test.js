@@ -86,6 +86,7 @@ const { describe, it, expect } = _T;
 
 function _resetState() {
   localStorage.clear();
+  sessionStorage.clear();
   Object.keys(variantSettings).forEach(k => delete variantSettings[k]);
   Object.keys(minerSettings).forEach(k => delete minerSettings[k]);
   Object.keys(botEfficiencyOverrides).forEach(k => delete botEfficiencyOverrides[k]);

@@ -47,6 +47,7 @@ function switchGameVersion(id) {
     s.minerSettings = {};
     localStorage.setItem('fc_settings', JSON.stringify(s));
   } catch (e) {}
+  sessionStorage.removeItem('fc_settings'); // tab copy would keep the old version's recipes
   location.reload();
 }
 

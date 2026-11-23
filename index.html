@@ -314,6 +314,16 @@
           <div id="stockList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div>
         </details>
 
+        <!-- Recent calculations (shared by all tabs) -->
+        <details class="panel" id="historyPanel" style="padding:8px 10px" ontoggle="if(this.open) renderHistory()">
+          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)">Recent calculations</summary>
+          <div id="historyList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div>
+        </details>
+
+        <button class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px;align-self:flex-start"
+          title="Best workstations for the whole chain: WS 3, charged core, the bot mix with the fewest machines — global WS per machine group, then each recipe"
+          onclick="optimizeAllWs()">⚡ Optimize all workstations</button>
+
         <!-- Selected recipe list -->
         <div id="selectedRecipes"
           style="display:flex;flex-direction:column;gap:6px;overflow-y:auto;flex:1;min-height:0">
@@ -725,11 +735,11 @@
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/icons.js' + cb + '"></scr' + 'ipt>');
     })();
   </script>
-  <script src="app/state.js?v=37"></script>
-  <script src="app/ui-settings.js?v=27"></script>
-  <script src="app/ui-recipes.js?v=29"></script>
+  <script src="app/state.js?v=38"></script>
+  <script src="app/ui-settings.js?v=28"></script>
+  <script src="app/ui-recipes.js?v=31"></script>
   <script src="app/calculation.js?v=68"></script>
-  <script src="app/ui-nav.js?v=25"></script>
+  <script src="app/ui-nav.js?v=27"></script>
   <script src="app/visualization.js?v=50"></script>
   <script src="app/ui-power.js?v=6"></script>
   <script src="https://cdn.jsdelivr.net/npm/fzstd@0.1.1/umd/index.js"></script>

@@ -566,6 +566,43 @@ function updateRecipeGoal(idx, val) {
 }
 
 // ── Render selected list ──────────────────────────────────────
+// ── Recent calculations ────────────────────────────────────────
+function renderHistory() {
+  const el = document.getElementById("historyList");
+  if (!el) return;
+  const h = loadHistory().filter(e => e.version === GAME_VERSION_ID);
+  if (!h.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--color-text-disabled)">Nothing calculated yet.</div>`;
+    return;
+  }
+  el.innerHTML = h.map((e, i) => {
+    const label = e.list.map(l => `${+l.goal.toFixed(2)}/min ${l.itemName}`).join(", ");
+    const when = new Date(e.at).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+    return `<div style="display:flex;gap:6px;align-items:center;font-size:12px">
+      <button class="reset-btn" style="margin:0;padding:4px 8px;font-size:11px;flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
+        title="${label}" onclick="loadHistoryEntry(${i})">${label}</button>
+      <span style="color:var(--color-text-disabled);white-space:nowrap">${when}</span>
+      <button class="reset-btn" style="margin:0;padding:4px 7px;font-size:11px" title="Remove" onclick="deleteHistoryEntry(${i})">✕</button>
+    </div>`;
+  }).join("");
+}
+
+function loadHistoryEntry(i) {
+  const e = loadHistory().filter(e => e.version === GAME_VERSION_ID)[i];
+  if (!e) return;
+  selectedRecipeList = sanitizeRecipeList(e.list);
+  saveSettings();
+  renderSelectedRecipes();
+  calculateRecipes();
+}
+
+function deleteHistoryEntry(i) {
+  const all = loadHistory();
+  const e = all.filter(e => e.version === GAME_VERSION_ID)[i];
+  localStorage.setItem("fc_history", JSON.stringify(all.filter(x => x !== e)));
+  renderHistory();
+}
+
 function renderSelectedRecipes() {
   renderStockList(); // stock is part of the plan (load / import / reset)
   const sellBtn = document.getElementById("botSellAllBtn");
@@ -836,10 +873,101 @@ function buildItemWsRow(item, idx) {
         style="padding:2px 8px;background:${item.wsExpanded ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)"};border:1px solid ${item.wsExpanded ? "var(--color-border-focus)" : "var(--color-border)"};color:var(--color-interactive);border-radius:6px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px">
         ${modeLabel} ${bonusLabel} <span style="font-size:9px">${item.wsExpanded ? "▲" : "▼"}</span>
       </button>
+      ${compatBots.length ? `<button onclick="event.stopPropagation();optimizeLineWs(${idx})"
+        title="Best workstation for this recipe: WS 3, charged core, the bot mix with the fewest machines in the whole chain"
+        style="padding:2px 8px;background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--accent3);border-radius:6px;cursor:pointer;font-size:11px">⚡ Optimize</button>` : ""}
     </div>
     ${editorHtml}`;
 }
 
+
+// ── Workstation optimizer ─────────────────────────────────────
+// WS 3 with a charged core. Bot effects add up, so only the speed/efficiency
+// mix matters: every slot holds either the strongest speed bot or the
+// strongest efficiency bot for the machine (4 mixes). The mix with the fewest
+// machines in the whole chain wins; on a tie the one using less power.
+// ponytail: all bots from the game data count, owned or not
+function _wsBestBots(machineName, cat) {
+  const fits = we => cat ? (we.applies_to || []).includes(cat)
+    : (we.applies_to || []).some(c => (APPLIES_TO_MACHINES[c] || []).includes(machineName));
+  const bots = Object.entries(RECIPES).filter(([, r]) => r.category === "Robots" && r.workstation_effect && fits(r.workstation_effect));
+  const best = key => bots
+    .filter(([, r]) => r.workstation_effect[key] > 0)
+    .sort(([, a], [, b]) => b.workstation_effect[key] - a.workstation_effect[key]
+      || (a.workstation_effect.power_consumption || 0) - (b.workstation_effect.power_consumption || 0))[0]?.[0];
+  return { speed: best("machine_speed"), eff: best("machine_efficiency") };
+}
+
+function _wsMixes(b) {
+  const out = [];
+  for (let s = 0; s <= 3; s++) {
+    if ((s > 0 && !b.speed) || (s < 3 && !b.eff)) continue;
+    out.push({ tier: 3, robots: [...Array(s).fill(b.speed), ...Array(3 - s).fill(b.eff)], chargedCore: true });
+  }
+  return out;
+}
+
+// [machines, kW] of the whole chain for the current settings
+function _wsChainScore() {
+  const p = chainPowerKw();
+  if (!p) return [Infinity, Infinity];
+  let machines = 0;
+  p.graph.nodes.forEach(n => { if (n.machineName && n.machineCount > 0) machines += ceilMachines(n.machineCount); });
+  return [machines, p.machines + p.loaders];
+}
+
+// Tries each option (the first one wins ties) and keeps the best
+function _wsPick(apply, options) {
+  let best, bestScore;
+  options.forEach(o => {
+    apply(o);
+    const s = _wsChainScore();
+    if (!bestScore || s[0] < bestScore[0] || (s[0] === bestScore[0] && s[1] < bestScore[1] - 1e-6)) { best = o; bestScore = s; }
+  });
+  apply(best);
+}
+
+function _wsOptimizeLine(item) {
+  const mixes = _wsMixes(_wsBestBots(item.machineName));
+  if (!mixes.length) return;
+  const keep = item.wsOverride;
+  // current setting first: only a real improvement replaces it
+  _wsPick(o => { item.wsOverride = o; }, [keep, ...mixes]);
+}
+
+function _wsAfterOptimize() {
+  saveSettings();
+  renderSelectedRecipes();
+  calculateRecipes();
+  if (typeof renderWorkstations === "function") renderWorkstations();
+  if (typeof renderWorkstationBonusSummary === "function") renderWorkstationBonusSummary();
+}
+
+function optimizeLineWs(idx) {
+  const item = selectedRecipeList[idx];
+  if (!item) return;
+  _wsOptimizeLine(item);
+  _wsAfterOptimize();
+}
+
+// Global WS per machine group of the whole chain (intermediate machines
+// follow it), then every selected line on its own
+function optimizeAllWs() {
+  if (!selectedRecipeList.length) return;
+  selectedRecipeList.forEach(l => { delete l.wsOverride; }); // lines follow the global WS meanwhile
+  const g = buildSankeyGraph();
+  const cats = new Set((g?.nodes || [])
+    .filter(n => n.machineName && n.machineCount > 0)
+    .map(n => MACHINE_TO_CATEGORY[n.machineName]).filter(Boolean));
+  cats.forEach(cat => {
+    const mixes = _wsMixes(_wsBestBots(null, cat));
+    if (!mixes.length) return;
+    const keep = workstationConfigs[cat];
+    _wsPick(o => { if (o) workstationConfigs[cat] = o; else delete workstationConfigs[cat]; }, [keep, ...mixes]);
+  });
+  selectedRecipeList.forEach(_wsOptimizeLine);
+  _wsAfterOptimize();
+}
 
 function updateItemWsMode2(idx, mode) {
   const item = selectedRecipeList[idx];

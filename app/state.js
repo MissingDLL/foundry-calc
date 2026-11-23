@@ -792,7 +792,7 @@ function _flushSaveSettings() {
   const famDefaults = {};
   MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
   try {
-    localStorage.setItem('fc_settings', JSON.stringify({
+    const blob = JSON.stringify({
       gameVersion: GAME_VERSION_ID,
       variantSettings,
       minerSettings,
@@ -822,15 +822,64 @@ function _flushSaveSettings() {
         wsOverride:  item.wsOverride,
         forSale:     !!item.forSale,
       })),
-    }));
+    });
+    // sessionStorage = this tab's own calculation (survives reload, not shared);
+    // localStorage = starting point for new tabs.
+    sessionStorage.setItem('fc_settings', blob);
+    localStorage.setItem('fc_settings', blob);
+    _recordHistory(JSON.parse(blob).selectedRecipeList);
+    if (document.getElementById('historyPanel')?.open) renderHistory();
   } catch (e) {
     console.warn('foundry-calc: could not save settings:', e);
   }
 }
 
+// ── Recent calculations (localStorage 'fc_history', shared by all tabs) ──
+// One entry per calculation, newest first. Adding recipes to the newest entry
+// (new set ⊇ its set) updates it instead of creating a new one.
+const HISTORY_MAX = 20;
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem('fc_history') || '[]'); } catch (e) { return []; }
+}
+function _recordHistory(list) {
+  if (!list.length) return;
+  const names = list.map(i => i.recipeName);
+  const h = loadHistory().filter(e => e.version === GAME_VERSION_ID);
+  const top = h[0];
+  if (top && top.list.every(i => names.includes(i.recipeName))) h.shift();
+  const key = [...names].sort().join('|');
+  const rest = h.filter(e => e.list.map(i => i.recipeName).sort().join('|') !== key);
+  rest.unshift({ version: GAME_VERSION_ID, at: Date.now(), list });
+  localStorage.setItem('fc_history', JSON.stringify(rest.slice(0, HISTORY_MAX)));
+}
+
+// Validate a saved recipe list against the loaded game data.
+function sanitizeRecipeList(list) {
+  return (Array.isArray(list) ? list : [])
+    .filter(item => item.recipeName && RECIPES[item.recipeName])
+    .map(item => {
+      const r = RECIPES[item.recipeName];
+      const machineName = (item.machineName && r.machines[item.machineName])
+        ? item.machineName
+        : (Object.keys(r.machines).find(m => m !== 'Character') || Object.keys(r.machines)[0]);
+      const goal = (typeof item.goal === 'number' && isFinite(item.goal) && item.goal > 0)
+        ? Math.min(item.goal, 999999)
+        : 60;
+      return {
+        itemName:   item.itemName || item.recipeName,
+        recipeName: item.recipeName,
+        machineName,
+        goal,
+        wsOverride: item.wsOverride || null,
+        forSale:    !!item.forSale,
+        wsExpanded: false,
+      };
+    });
+}
+
 function loadSettings() {
   try {
-    const raw = localStorage.getItem('fc_settings');
+    const raw = sessionStorage.getItem('fc_settings') || localStorage.getItem('fc_settings');
     if (!raw) return;
     const s = JSON.parse(raw);
     if (s.variantSettings)    Object.assign(variantSettings,    s.variantSettings);
@@ -885,28 +934,7 @@ function loadSettings() {
       s.selectedRecipeList = [];
     }
 
-    if (Array.isArray(s.selectedRecipeList)) {
-      selectedRecipeList = s.selectedRecipeList
-        .filter(item => item.recipeName && RECIPES[item.recipeName])
-        .map(item => {
-          const r = RECIPES[item.recipeName];
-          const machineName = (item.machineName && r.machines[item.machineName])
-            ? item.machineName
-            : (Object.keys(r.machines).find(m => m !== 'Character') || Object.keys(r.machines)[0]);
-          const goal = (typeof item.goal === 'number' && isFinite(item.goal) && item.goal > 0)
-            ? Math.min(item.goal, 999999)
-            : 60;
-          return {
-            itemName:   item.itemName || item.recipeName,
-            recipeName: item.recipeName,
-            machineName,
-            goal,
-            wsOverride: item.wsOverride || null,
-            forSale:    !!item.forSale,
-            wsExpanded: false,
-          };
-        });
-    }
+    if (Array.isArray(s.selectedRecipeList)) selectedRecipeList = sanitizeRecipeList(s.selectedRecipeList);
   } catch (e) {
     console.warn('foundry-calc: could not load settings:', e);
   }
