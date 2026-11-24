@@ -1995,7 +1995,8 @@ function _calculateRecipesOnce() {
           <thead><tr><th>Item</th><th>Direction</th><th style="text-align:right">/min</th><th style="text-align:right">kg/item</th><th style="text-align:right">kg/min</th><th>Pad</th><th style="text-align:right">Pads</th><th>Belts</th><th>Limited by</th></tr></thead>
           <tbody>${shipping.map(p => `
             <tr>
-              <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(p.item, 48)}<span class="label">${p.item}</span></div></td>
+              <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(p.item, 48)}<span class="label">${p.item}</span>${botWeightReductions[p.item] > 0
+                ? `<span title="R&D Lab weight reduction: ${fmt(ITEM_WEIGHTS_KG[p.item])} kg → ${fmt(p.kgEach)} kg per item" style="font-size:10px;color:var(--accent3);border:1px solid var(--color-success-border);background:var(--color-success-bg);border-radius:3px;padding:0 4px;white-space:nowrap">−${fmt(botWeightReductions[p.item])}% kg</span>` : ''}</div></td>
               <td style="padding:6px 12px">${p.direction === 'up' ? '↑ to station (sale)' : '↓ from station'}</td>
               <td class="num">${fmt(p.perMin)}</td>
               <td class="num">${fmt(p.kgEach)}</td>
