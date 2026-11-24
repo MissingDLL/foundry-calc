@@ -1165,11 +1165,14 @@ function openWsOptimizeDialog() {
         Machines <input type="range" name="balance" min="0" max="100" step="5" value="${pref.balance}" style="flex:1"
           oninput="this.nextElementSibling.textContent = this.value + ' / ' + (100 - this.value)"> <span style="min-width:52px;text-align:right">${pref.balance} / ${100 - pref.balance}</span> Raw</label>
       <div id="wsWeightsRow" style="display:${pref.goal === 'weighted' ? 'block' : 'none'};margin-top:8px">
-        <div class="ws-opt-label" style="display:flex;align-items:center;gap:8px">Weights of the buildings in this chain <small style="color:var(--text-dim);font-weight:400">(higher = avoid more, 0 = don't care)</small>
+        <div class="ws-opt-label" style="display:flex;align-items:center;gap:8px">Building weights (×n = in this chain) <small style="color:var(--text-dim);font-weight:400">(higher = avoid more, 0 = don't care)</small>
           <button type="button" class="reset-btn" style="width:auto;margin:0 0 0 auto;padding:2px 8px;font-size:11px" onclick="this.closest('#wsWeightsRow').querySelectorAll('input').forEach(i => i.value = i.dataset.preset)">Preset</button></div>
         <div style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px">${(() => {
           const p = chainPowerKw();
           const counts = p ? _wsBuildingCounts(p) : {};
+          // also every building with its own weight (preset ≠ 1 or set by you), ×0 if not in this chain
+          const all = new Set([...Object.values(RECIPES).flatMap(r => Object.keys(r.machines || {})), ...Object.keys(typeof MODULAR_BUILDINGS !== 'undefined' ? MODULAR_BUILDINGS : {})]);
+          all.forEach(m => { if (m !== 'Character' && !(m in counts) && (wsWeightPreset(m) !== 1 || pref.weights?.[m] != null)) counts[m] = 0; });
           return Object.entries(counts).sort((a, b) => wsWeightPreset(b[0]) - wsWeightPreset(a[0]) || b[1] - a[1]).map(([m, n]) => {
             const preset = wsWeightPreset(m), w = pref.weights?.[m] ?? preset;
             return `<label style="display:flex;align-items:center;gap:6px;font-size:12px">${getIcon(m, 18)}<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m}">${m}</span>
