@@ -476,6 +476,7 @@ describe('_applyImportedPlan()', () => {
     powerPlan = { on: true, gen: 'some_generator', fuel: null };
     buildCostOn = true; buildPlan = { mode: 'rate', rates: { 'Construction Material': 50 } };
     wsOptimized = { goal: 'raw', at: 1 };
+    machineChoice['Casting Machine | Heavy Caster Base'] = 'Casting Machine';
     wsGlobalOn = false; wsRecipeConfigs = { 'Wire Coil': { tier: 3, robots: ['Operator Robot', null, null], chargedCore: false } };
     workstationConfigs['Miners'] = { tier: 2, robots: ['Light Bot', null], chargedCore: false };
     MACHINE_FAMILIES[0].defaultChoice = MACHINE_FAMILIES[0].machines.at(-1);

@@ -130,6 +130,26 @@ function renderSettingsContent(targetId) {
   });
   el.appendChild(machGrid);
 
+  // Recipes made in machines of different kinds (from the game data)
+  Object.entries(machineChoiceGroups()).forEach(([key, g]) => {
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px";
+    const lbl = document.createElement("div");
+    lbl.style.cssText = "width:110px;font-size:13px;color:var(--text);flex-shrink:0";
+    lbl.textContent = g.machines.join(" / ");
+    lbl.title = "Used for: " + g.recipes.join(", ");
+    const sel = document.createElement("select");
+    sel.style.cssText = "flex:1;min-width:180px;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-size:12px;outline:none";
+    const cur = machineChoice[key] || g.machines[0];
+    g.machines.forEach(m => sel.appendChild(new Option(m, m, false, m === cur)));
+    sel.onchange = () => { machineChoice[key] = sel.value; saveSettings(); };
+    const hint = document.createElement("div");
+    hint.style.cssText = "width:100%;font-size:11px;color:var(--text-dim);margin-left:122px";
+    hint.textContent = "for " + g.recipes.join(", ");
+    row.append(lbl, sel, hint);
+    el.appendChild(row);
+  });
+
   // ── Section: Recipe variant defaults ─────────────────────
   const sep = document.createElement("div");
   sep.style.cssText = "border-top:1px solid var(--color-border);margin:18px 0";

@@ -483,6 +483,21 @@ function sanitizeBuildPlan(b) {
 // Chosen intake per raw fluid (Water: Liquid Intake on pipes or Liquid Intake
 // (Pipeline) 180,000 L/min); null = game data default (the basic intake).
 const fluidSourceChoice = {};
+// Machine for recipes that can be made in machines of DIFFERENT kinds (Heavy
+// Caster or Casting Machine): set of machines → chosen one. Groups come from
+// the game data (recipes with several non-tier machines); default = first.
+const machineChoice = {};
+const machineSetKey = recipe => Object.keys(recipe?.machines || {}).filter(m => m !== 'Character').sort().join(' | ');
+function machineChoiceGroups() {
+  const groups = {};
+  Object.entries(RECIPES).forEach(([name, r]) => {
+    const ms = Object.keys(r.machines || {}).filter(m => m !== 'Character');
+    if (ms.length < 2 || !(r.ingredients || []).length) return;              // raw items: miner settings
+    if (MACHINE_FAMILIES.some(f => ms.every(m => f.machines.includes(m)))) return; // tiers: Default Machines
+    (groups[machineSetKey(r)] ||= { machines: ms, recipes: [] }).recipes.push(name);
+  });
+  return groups;
+}
 function fluidSourceFor(item) {
   const src = typeof FLUID_SOURCE_MACHINES !== 'undefined' ? FLUID_SOURCE_MACHINES[item] : null;
   if (!src) return null;
@@ -873,6 +888,7 @@ function settingsSnapshot() {
     wsRecipeConfigs,
     wsOptimized,
     fluidSourceChoice,
+    machineChoice,
     workstationConfigs,
     machineFamilyDefaults: famDefaults,
   };
@@ -894,7 +910,7 @@ function savedRecipeList() {
 // Every setting back to its default (import starts from here, so nothing of
 // the current session leaks into an imported plan)
 function resetSettings() {
-  [variantSettings, minerSettings, botEfficiencyOverrides, botWeightReductions, workstationConfigs, modularSettings, fluidSourceChoice]
+  [variantSettings, minerSettings, botEfficiencyOverrides, botWeightReductions, workstationConfigs, modularSettings, fluidSourceChoice, machineChoice]
     .forEach(o => Object.keys(o).forEach(k => delete o[k]));
   miningEfficiencyLevel   = 0;
   pumpjackEfficiencyLevel = 0;
@@ -1004,6 +1020,8 @@ function applySettings(s) {
   wsRecipeConfigs = sanitizeWsConfigs(s.wsRecipeConfigs);
   wsOptimized = s.wsOptimized && typeof s.wsOptimized.goal === 'string'
     ? { goal: s.wsOptimized.goal, at: +s.wsOptimized.at || 0, ...(typeof s.wsOptimized.balance === 'number' ? { balance: s.wsOptimized.balance } : {}) } : null;
+  if (s.machineChoice && typeof s.machineChoice === 'object')
+    Object.entries(s.machineChoice).forEach(([k, v]) => { if (typeof v === 'string') machineChoice[k] = v; });
   if (s.fluidSourceChoice && typeof s.fluidSourceChoice === 'object')
     Object.entries(s.fluidSourceChoice).forEach(([k, v]) => { if (typeof v === 'string') fluidSourceChoice[k] = v; });
   if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))

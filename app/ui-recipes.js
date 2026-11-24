@@ -989,18 +989,21 @@ let _wsGoal = 'machines';
 // machines weighs as much as 1 % less raw material.
 let _wsBalance = 0.5, _wsRefs = null;
 
-// Weighted (expert): every building counts with a weight. Preset for a
-// late game: few Lava-Smelters, few modular buildings (power plant excepted),
-// few deposits to tap — Ore Vein Miners worse than Pumpjacks / Extractors.
+// Weighted (expert): every building counts with a weight. Preset for a late
+// game (user's ranking): Lava-Smelters are the worst to build (on lava, all via
+// elevators), then Ore Vein Miners, modular buildings, Heavy Casters, Xeno
+// Extractors, Pumpjacks; power plant and everything else 1.
 // The user can change every weight in the Optimize dialog.
 let _wsWeights = {};
 function wsWeightPreset(machine) {
   const inGroup = key => Object.entries(APPLIES_TO_MACHINES).some(([cat, ms]) => cat.startsWith(key) && ms.includes(machine));
-  // order matters: Xeno-Extractors are modular in the game data but count as deposits (2)
+  // order matters: Extractors and Heavy Caster are modular in the game data
   if (typeof POWER_SOURCES !== 'undefined' && POWER_SOURCES.some(s => s.name === machine)) return 1;   // power plant
-  if (inGroup('Pumpjacks') || inGroup('Extractors')) return 2;                                         // deposits, light
-  if (machine === M.ORE_VEIN_MINER) return 4;                                                          // deposits, heavy
-  if (/^Lava-Smelter/.test(machine)) return 5;
+  if (/^Lava-Smelter/.test(machine)) return 12;
+  if (machine === M.ORE_VEIN_MINER) return 10;
+  if (/^Heavy Caster/.test(machine)) return 4;
+  if (inGroup('Extractors')) return 3;
+  if (inGroup('Pumpjacks')) return 2;
   if (typeof MODULAR_BUILDINGS !== 'undefined' && MODULAR_BUILDINGS[machine]) return 8;              // modular
   return 1;
 }
@@ -1151,7 +1154,7 @@ function openWsOptimizeDialog() {
                  ['power', 'Least power', 'machines + loaders; then fewer machines'],
                  ['raw', 'Fewest raw materials', 'ores and other solid raw items per min (fluids not counted); then fewer machines'],
                  ['balanced', 'Balanced', 'fewer machines AND less raw material — weight with the slider below; each judged in % against the chain without workstations'],
-                 ['weighted', 'Weighted (expert)', 'fewest buildings, each counted with its weight below — preset: modular buildings 8, Lava-Smelter 5, Ore Vein Miner 4, Pumpjack / Extractor 2, power plant and the rest 1'],
+                 ['weighted', 'Weighted (expert)', 'fewest buildings, each counted with its weight below — preset: Lava-Smelter 12, Ore Vein Miner 10, modular buildings 8, Heavy Caster 4, Xeno Extractor 3, Pumpjack 2, power plant and the rest 1'],
                  ['materials', 'Fewest materials overall', 'every item mined or made per min in the whole chain — raw materials and all intermediates (fluids not counted); then fewer machines']];
   dlg.innerHTML = `<form method="dialog">
       <div class="ws-opt-title">⚡ Optimize workstations</div>

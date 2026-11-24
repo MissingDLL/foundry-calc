@@ -371,6 +371,8 @@ function firstMachineFor(recipe) {
 // and family ordering (lowest tier first when no preference is set).
 function preferredMachineFor(recipe) {
   const available = Object.keys(recipe.machines || {});
+  const chosen = machineChoice[machineSetKey(recipe)];
+  if (chosen && available.includes(chosen)) return chosen;
   for (const family of MACHINE_FAMILIES) {
     // Check if this recipe is built by any machine in this family
     const familyMatch = family.machines.find(m => available.includes(m));
