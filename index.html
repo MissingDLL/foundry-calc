@@ -341,9 +341,12 @@
           <div id="historyList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div></div>
         </details>
 
-        <button class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px;width:auto;flex:1 1 auto"
-          title="Custom WS for every recipe of the chain (WS 3 + core: speed/eff mix or none), scored on the whole chain (fewest machines, least power or fewest raw materials). Rounds until stable."
-          onclick="openWsOptimizeDialog()">⚡ Optimize WS</button>
+        <div style="display:flex;gap:4px;flex:1 1 auto">
+          <button id="optimizeWsBtn" class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px;width:auto;flex:1 1 auto"
+            onclick="openWsOptimizeDialog()">⚡ Optimize WS</button>
+          <button id="optimizeWsClear" class="reset-btn" style="margin:0;padding:5px 8px;font-size:11px;width:auto;flex:none;display:none"
+            title="Remove the optimization (all recipes back to the global workstations)" onclick="resetRecipeWs()">✕</button>
+        </div>
         </div>
 
         <!-- Selected recipe list -->
@@ -760,10 +763,10 @@
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/icons.js' + cb + '"></scr' + 'ipt>');
     })();
   </script>
-  <script src="app/state.js?v=49"></script>
+  <script src="app/state.js?v=51"></script>
   <script src="app/ui-settings.js?v=33"></script>
-  <script src="app/ui-recipes.js?v=58"></script>
-  <script src="app/calculation.js?v=82"></script>
+  <script src="app/ui-recipes.js?v=67"></script>
+  <script src="app/calculation.js?v=83"></script>
   <script src="app/ui-nav.js?v=35"></script>
   <script src="app/visualization.js?v=51"></script>
   <script src="app/ui-power.js?v=7"></script>

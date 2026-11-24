@@ -461,6 +461,8 @@ let wsGlobalOn = true;
 // Custom WS of recipes deeper in the chain (recipe name → WS config); set by
 // Optimize. Selected lines keep theirs in line.wsOverride.
 let wsRecipeConfigs = {};
+// Last whole-chain Optimize: { goal, at } (shown in the sidebar, removable)
+let wsOptimized = null;
 function sanitizeWsConfigs(o) {
   const out = {};
   Object.entries(o && typeof o === 'object' ? o : {}).forEach(([rn, c]) => {
@@ -869,6 +871,7 @@ function settingsSnapshot() {
     buildPlan,
     wsGlobalOn,
     wsRecipeConfigs,
+    wsOptimized,
     fluidSourceChoice,
     workstationConfigs,
     machineFamilyDefaults: famDefaults,
@@ -909,6 +912,7 @@ function resetSettings() {
   buildPlan = { mode: 'once', rates: {} };
   wsGlobalOn = true;
   wsRecipeConfigs = {};
+  wsOptimized = null;
   MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
 }
 
@@ -998,6 +1002,8 @@ function applySettings(s) {
   buildPlan = sanitizeBuildPlan(s.buildPlan);
   wsGlobalOn = s.wsGlobalOn !== false;
   wsRecipeConfigs = sanitizeWsConfigs(s.wsRecipeConfigs);
+  wsOptimized = s.wsOptimized && typeof s.wsOptimized.goal === 'string'
+    ? { goal: s.wsOptimized.goal, at: +s.wsOptimized.at || 0, ...(typeof s.wsOptimized.balance === 'number' ? { balance: s.wsOptimized.balance } : {}) } : null;
   if (s.fluidSourceChoice && typeof s.fluidSourceChoice === 'object')
     Object.entries(s.fluidSourceChoice).forEach(([k, v]) => { if (typeof v === 'string') fluidSourceChoice[k] = v; });
   if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))

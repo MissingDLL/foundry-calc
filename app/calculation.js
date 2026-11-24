@@ -156,10 +156,14 @@ function wsExtraKw(machine, count, item = { machineName: machine }) {
 
 // Power value with a "+x WS" chip and a hover breakdown
 // parts: { ws, loaders, pumps } (kW) — machines (base) = total minus the rest
-function powerCellHtml(totalKw, { ws = 0, loaders = 0, pumps = 0 } = {}, style = 'font-size:12px;color:var(--color-power)') {
+function powerCellHtml(totalKw, { ws = 0, loaders = 0, pumps = 0 } = {}, style = 'font-size:12px;color:var(--color-power)', chipBelow = false) {
   const f = kw => kw >= 1000 ? `${(kw / 1000).toLocaleString('de-DE', { maximumFractionDigits: 2 })} MW` : `${fmt(Math.round(kw))} kW`;
   const base = totalKw - ws - loaders - pumps;
   const tip = [`Machines (base): ${f(base)}`, ws > 0.5 && `Workstation bots: +${f(ws)}`, loaders > 0.5 && `Loaders: ${f(loaders)}`, pumps > 0.5 && `Pumps: ${f(pumps)}`, `Total: ${f(totalKw)}`].filter(Boolean).join('\n');
+  if (chipBelow) { // summary boxes: big value, chip on its own readable line
+    const chip = ws > 0.5 ? `<div style="margin-top:4px"><span style="font-size:12px;font-weight:600;color:var(--warn);border:1px solid var(--color-border);background:var(--color-bg-elevated);border-radius:4px;padding:1px 6px;white-space:nowrap">+${f(ws)} workstation bots</span></div>` : '';
+    return `<span title="${tip}" style="${style};cursor:help;white-space:nowrap">${f(totalKw)}</span>${chip}`;
+  }
   const chip = ws > 0.5 ? ` <span style="font-size:10px;color:var(--warn);border:1px solid var(--color-border);border-radius:3px;padding:0 4px;white-space:nowrap">+${f(ws)} WS</span>` : '';
   return `<span title="${tip}" style="${style};cursor:help;white-space:nowrap">${f(totalKw)}${chip}</span>`;
 }
@@ -997,12 +1001,12 @@ function _calculateRecipesOnce() {
       </div>
       <div class="summary-box orange">
         <div class="summary-label">Machine power</div>
-        <div class="summary-value">${chainPwr ? powerCellHtml(sumMachPwrKw, { ws: chainPwr.wsKw }, '') : fmtPwr(sumMachPwrKw)}</div>
+        <div class="summary-value">${chainPwr ? powerCellHtml(sumMachPwrKw, { ws: chainPwr.wsKw }, '', true) : fmtPwr(sumMachPwrKw)}</div>
         <div class="summary-unit">whole chain, excl. loaders and pumps</div>
       </div>
       <div class="summary-box" style="border-color:var(--color-power-border);background:var(--color-power-bg)">
         <div class="summary-label" style="color:var(--color-power)">Total power</div>
-        <div class="summary-value" style="color:var(--color-power)">${chainPwr ? powerCellHtml(sumPwrKw, { ws: chainPwr.wsKw, loaders: chainPwr.loaders, pumps: pumpKw }, '') : fmtPwr(sumPwrKw)}</div>
+        <div class="summary-value" style="color:var(--color-power)">${chainPwr ? powerCellHtml(sumPwrKw, { ws: chainPwr.wsKw, loaders: chainPwr.loaders, pumps: pumpKw }, '', true) : fmtPwr(sumPwrKw)}</div>
         <div class="summary-unit">whole chain, machines + loaders + pumps</div>
       </div>
       ${powerPlanResult ? `

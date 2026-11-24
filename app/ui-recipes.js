@@ -329,8 +329,10 @@ function resetRecipes() {
   // Suche zurücksetzen
   clearRecipeSearch();
 
-  // Auswahl leeren
+  // Auswahl leeren — mit ihr die Optimierung der Kette (WS★ + Marker)
   selectedRecipeList = [];
+  wsRecipeConfigs = {};
+  wsOptimized = null;
   saveSettings();
   renderSelectedRecipes();
 
@@ -654,6 +656,7 @@ function deleteHistoryEntry(i) {
 }
 
 function renderSelectedRecipes() {
+  renderOptimizeButton();
   // bot sidebar checkboxes follow the list (load, import, history, reset)
   const picked = new Set(selectedRecipeList.map(l => l.itemName));
   document.querySelectorAll('#botList input[id^="chk_"]').forEach(c => { c.checked = picked.has(c.id.slice(4)); });
@@ -981,22 +984,73 @@ function _wsMixes(b) {
 
 // Optimize goal (dialog): 'machines' | 'power' | 'raw' (solid raw materials /min)
 let _wsGoal = 'machines';
+// Balanced: share of machines in the score (0–1); the rest is raw materials.
+// Both relative to a reference (the start without workstations), so 1 % fewer
+// machines weighs as much as 1 % less raw material.
+let _wsBalance = 0.5, _wsRefs = null;
+
+// Weighted (expert): every building counts with a weight. Preset for a
+// late game: few Lava-Smelters, few modular buildings (power plant excepted),
+// few deposits to tap — Ore Vein Miners worse than Pumpjacks / Extractors.
+// The user can change every weight in the Optimize dialog.
+let _wsWeights = {};
+function wsWeightPreset(machine) {
+  const inGroup = key => Object.entries(APPLIES_TO_MACHINES).some(([cat, ms]) => cat.startsWith(key) && ms.includes(machine));
+  // order matters: Xeno-Extractors are modular in the game data but count as deposits (2)
+  if (typeof POWER_SOURCES !== 'undefined' && POWER_SOURCES.some(s => s.name === machine)) return 1;   // power plant
+  if (inGroup('Pumpjacks') || inGroup('Extractors')) return 2;                                         // deposits, light
+  if (machine === M.ORE_VEIN_MINER) return 4;                                                          // deposits, heavy
+  if (/^Lava-Smelter/.test(machine)) return 5;
+  if (typeof MODULAR_BUILDINGS !== 'undefined' && MODULAR_BUILDINGS[machine]) return 8;              // modular
+  return 1;
+}
+const wsWeight = m => _wsWeights[m] ?? wsWeightPreset(m);
+
+// Buildings of the chain with their counts (machines, power plant, station pads)
+function _wsBuildingCounts(p) {
+  const counts = {};
+  const add = (m, n) => { if (n > 0) counts[m] = (counts[m] || 0) + n; };
+  p.graph.nodes.forEach(n => { if (n.machineName && n.machineCount > 0) add(n.machineName, ceilMachines(n.machineCount)); });
+  Object.entries(powerPlanResult?.buildings || {}).forEach(([b, n]) => add(b, n));
+  if (typeof EXTERNAL_SOURCES !== 'undefined') Object.keys(EXTERNAL_SOURCES).forEach(item => {
+    const amount = p.graph.nodes.filter(n => n.kind === 'raw' && (n.icon || n.label) === item).reduce((a, n) => a + n.rate, 0);
+    const pad = amount > 0 && shippingPlan(item, amount, 'down', false);
+    if (pad) add(pad.pad, pad.count);
+  });
+  return counts;
+}
 
 // [main, tie-break] of the whole chain for the current settings and goal
 function _wsChainScore() {
   // "Calculate power": more power → more fuel chain and power plant, so both count
   if (powerPlan.on) syncPowerLine();
   const p = chainPowerKw();
-  if (!p) return [Infinity, Infinity, Infinity];
-  let machines = 0;
-  p.graph.nodes.forEach(n => { if (n.machineName && n.machineCount > 0) machines += ceilMachines(n.machineCount); });
-  Object.values(powerPlanResult?.buildings || {}).forEach(n => { machines += n; });
+  if (!p) return [Infinity, Infinity, Infinity, Infinity];
+  // machines + power plant + shipping pads for station deliveries (Firmarlite
+  // Bar: fewer needed upstream → fewer pads; pads going up have no WS effect)
+  const counts = _wsBuildingCounts(p);
+  const machines = Object.values(counts).reduce((a, n) => a + n, 0);
   const kw = p.machines + p.loaders;
+  if (_wsGoal === 'weighted') {
+    // tie on the weighted sum → the one with fewer HEAVY buildings wins
+    // (Σ n·w² grows with the weight: 9 Ore Vein Miners (w 4) count more than 36 w-1 machines)
+    const sum = pow => Object.entries(counts).reduce((a, [m, n]) => a + n * wsWeight(m) ** pow, 0);
+    return [sum(1), sum(2), machines, kw];
+  }
   // ponytail: fluids (water, crude) left out — litres would drown the ores
   const raw = p.graph.nodes.filter(n => n.kind === 'raw' && !FLUID_ITEMS.has(n.icon || n.label)).reduce((a, n) => a + n.rate, 0);
   // goal first, then the other two as tie-breaks (no "first tried wins" on a tie)
   if (_wsGoal === 'power') return [kw, machines, raw];
   if (_wsGoal === 'raw')   return [raw, machines, kw];
+  if (_wsGoal === 'balanced') {
+    if (!_wsRefs) _wsRefs = { machines: machines || 1, raw: raw || 1 };
+    return [_wsBalance * machines / _wsRefs.machines + (1 - _wsBalance) * raw / _wsRefs.raw, machines, kw];
+  }
+  if (_wsGoal === 'materials') {
+    // every item mined or made per minute in the chain (raw + intermediates + products)
+    const all = p.graph.nodes.filter(n => ['raw', 'mid', 'final'].includes(n.kind) && !FLUID_ITEMS.has(n.icon || n.label)).reduce((a, n) => a + n.rate, 0);
+    return [all, machines, kw];
+  }
   return [machines, kw, raw];
 }
 
@@ -1044,6 +1098,7 @@ function _wsAfterOptimize() {
 function optimizeLineWs(idx) {
   const item = selectedRecipeList[idx];
   if (!item) return;
+  _wsRefs = null; // balanced: reference = current chain
   _wsOptimizeLine(item);
   _wsAfterOptimize();
 }
@@ -1083,7 +1138,7 @@ let _wsOptimizing = false;
 
 // Dialog before Optimize: rounds + goal (kept per browser)
 function openWsOptimizeDialog() {
-  let pref = { rounds: 4, goal: 'machines' };
+  let pref = { rounds: 4, goal: 'machines', balance: 50, weights: {} };
   try { pref = { ...pref, ...JSON.parse(localStorage.getItem('fc_wsopt') || '{}') }; } catch { /* defaults */ }
   let dlg = document.getElementById('wsOptDialog');
   if (!dlg) {
@@ -1094,12 +1149,32 @@ function openWsOptimizeDialog() {
   }
   const goals = [['machines', 'Fewest machines', 'then less power'],
                  ['power', 'Least power', 'machines + loaders; then fewer machines'],
-                 ['raw', 'Fewest raw materials', 'ores and other solid raw items per min (fluids not counted); then fewer machines']];
+                 ['raw', 'Fewest raw materials', 'ores and other solid raw items per min (fluids not counted); then fewer machines'],
+                 ['balanced', 'Balanced', 'fewer machines AND less raw material — weight with the slider below; each judged in % against the chain without workstations'],
+                 ['weighted', 'Weighted (expert)', 'fewest buildings, each counted with its weight below — preset: modular buildings 8, Lava-Smelter 5, Ore Vein Miner 4, Pumpjack / Extractor 2, power plant and the rest 1'],
+                 ['materials', 'Fewest materials overall', 'every item mined or made per min in the whole chain — raw materials and all intermediates (fluids not counted); then fewer machines']];
   dlg.innerHTML = `<form method="dialog">
       <div class="ws-opt-title">⚡ Optimize workstations</div>
       <div class="ws-opt-label">Optimize for</div>
       ${goals.map(([v, l, d]) => `<label class="ws-opt-choice"><input type="radio" name="goal" value="${v}" ${pref.goal === v ? 'checked' : ''}>
         <span><b>${l}</b><br><small>${d}</small></span></label>`).join('')}
+      <label class="ws-opt-label" id="wsBalanceRow" style="display:${pref.goal === 'balanced' ? 'flex' : 'none'};align-items:center;gap:8px;margin-top:8px">
+        Machines <input type="range" name="balance" min="0" max="100" step="5" value="${pref.balance}" style="flex:1"
+          oninput="this.nextElementSibling.textContent = this.value + ' / ' + (100 - this.value)"> <span style="min-width:52px;text-align:right">${pref.balance} / ${100 - pref.balance}</span> Raw</label>
+      <div id="wsWeightsRow" style="display:${pref.goal === 'weighted' ? 'block' : 'none'};margin-top:8px">
+        <div class="ws-opt-label" style="display:flex;align-items:center;gap:8px">Weights of the buildings in this chain <small style="color:var(--text-dim);font-weight:400">(higher = avoid more, 0 = don't care)</small>
+          <button type="button" class="reset-btn" style="width:auto;margin:0 0 0 auto;padding:2px 8px;font-size:11px" onclick="this.closest('#wsWeightsRow').querySelectorAll('input').forEach(i => i.value = i.dataset.preset)">Preset</button></div>
+        <div style="max-height:220px;overflow-y:auto;display:flex;flex-direction:column;gap:3px">${(() => {
+          const p = chainPowerKw();
+          const counts = p ? _wsBuildingCounts(p) : {};
+          return Object.entries(counts).sort((a, b) => wsWeightPreset(b[0]) - wsWeightPreset(a[0]) || b[1] - a[1]).map(([m, n]) => {
+            const preset = wsWeightPreset(m), w = pref.weights?.[m] ?? preset;
+            return `<label style="display:flex;align-items:center;gap:6px;font-size:12px">${getIcon(m, 18)}<span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${m}">${m}</span>
+              <span style="color:var(--text-dim);font-size:11px">×${n}</span>
+              <input type="number" min="0" max="100" step="0.5" data-machine="${m}" data-preset="${preset}" value="${w}" style="width:56px"></label>`;
+          }).join('') || '<div style="font-size:11px;color:var(--text-dim)">Calculate a chain first.</div>';
+        })()}</div>
+      </div>
       <label class="ws-opt-label" style="display:flex;align-items:center;gap:8px;margin-top:12px">Max. rounds
         <input type="number" name="rounds" min="1" max="20" step="1" value="${pref.rounds}" style="width:64px"></label>
       <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Stops earlier once a round changes nothing.</div>
@@ -1111,18 +1186,32 @@ function openWsOptimizeDialog() {
   dlg.onclose = () => {
     if (dlg.returnValue !== 'ok') return;
     const f = dlg.querySelector('form');
-    const opts = { goal: f.goal.value, rounds: Math.min(20, Math.max(1, parseInt(f.rounds.value) || 4)) };
+    // weights: keep only the ones that differ from the preset (plus earlier ones of other chains)
+    const weights = { ...(pref.weights || {}) };
+    dlg.querySelectorAll('#wsWeightsRow input[data-machine]').forEach(i => {
+      const v = parseFloat(i.value), m = i.dataset.machine;
+      if (isFinite(v) && v >= 0 && v !== +i.dataset.preset) weights[m] = v; else delete weights[m];
+    });
+    const opts = { goal: f.goal.value, rounds: Math.min(20, Math.max(1, parseInt(f.rounds.value) || 4)), balance: +f.balance.value, weights };
     try { localStorage.setItem('fc_wsopt', JSON.stringify(opts)); } catch { /* not kept */ }
     optimizeAllWs(opts);
   };
+  dlg.querySelectorAll('input[name=goal]').forEach(r => r.onchange = () => {
+    const g = dlg.querySelector('input[name=goal]:checked').value;
+    dlg.querySelector('#wsBalanceRow').style.display = g === 'balanced' ? 'flex' : 'none';
+    dlg.querySelector('#wsWeightsRow').style.display = g === 'weighted' ? 'block' : 'none';
+  });
   dlg.returnValue = '';
   dlg.showModal();
 }
 
-async function optimizeAllWs({ rounds = 4, goal = 'machines' } = {}) {
+async function optimizeAllWs({ rounds = 4, goal = 'machines', balance = 50, weights = {} } = {}) {
   if (!selectedRecipeList.length || _wsOptimizing) return;
   _wsOptimizing = true;
   _wsGoal = goal;
+  _wsBalance = Math.min(1, Math.max(0, balance / 100));
+  _wsWeights = { ...weights };
+  _wsRefs = null;
   _wsEffCache = new WeakMap();
   let lastYield = 0; // first step paints the overlay right away
   const step = async (text, sub) => {
@@ -1149,6 +1238,7 @@ async function optimizeAllWs({ rounds = 4, goal = 'machines' } = {}) {
     wsRecipeConfigs = {};
     chain.forEach((m, rn) => { wsRecipeConfigs[rn] = startCfg[start](m); });
     calculateRecipes(); // byproduct supply pool of the graph from this start
+    if (si === 0) { _wsRefs = null; _wsChainScore(); } // balanced: reference = the chain without workstations
     let used = rounds, stable = false;
     for (let round = 0; round < rounds; round++) {
       const before = JSON.stringify([wsRecipeConfigs, lines.map(l => l.wsOverride)]);
@@ -1171,6 +1261,7 @@ async function optimizeAllWs({ rounds = 4, goal = 'machines' } = {}) {
   wsRecipeConfigs = best.rc;
   lines.forEach((l, i) => { l.wsOverride = best.lo[i]; });
   _wsEffCache = null;
+  wsOptimized = { goal, at: Date.now(), ...(goal === 'balanced' ? { balance } : {}) };
   _wsAfterOptimize();
   const limited = usedRounds.some(r => r.endsWith('+'));
   await _wsProgressDone(`Done · best of ${starts.length} starts: ${best.start === 'none' ? 'no WS' : 'all ' + best.start}`,
@@ -1185,9 +1276,28 @@ async function optimizeAllWs({ rounds = 4, goal = 'machines' } = {}) {
   }
 }
 
+// Remove the optimization: Custom WS of the chain recipes and of the lines
+// (back to Global WS), marker gone
 function resetRecipeWs() {
+  if (!confirm("Remove the workstation optimization? All recipes go back to the global workstations.")) return;
   wsRecipeConfigs = {};
+  selectedRecipeList.forEach(l => { l.wsOverride = null; });
+  wsOptimized = null;
   _wsAfterOptimize();
+}
+
+const WS_GOAL_LABEL = { machines: "fewest machines", power: "least power", raw: "fewest raw materials", materials: "fewest materials overall", balanced: "balanced", weighted: "weighted buildings" };
+function renderOptimizeButton() {
+  const btn = document.getElementById("optimizeWsBtn"), clr = document.getElementById("optimizeWsClear");
+  if (!btn) return;
+  const any = wsOptimized || Object.keys(wsRecipeConfigs).length;
+  btn.textContent = wsOptimized ? `⚡ Optimized ✓` : "⚡ Optimize WS";
+  btn.title = wsOptimized
+    ? `Optimized for ${WS_GOAL_LABEL[wsOptimized.goal] || wsOptimized.goal}${wsOptimized.balance != null ? ` (machines ${wsOptimized.balance} / raw ${100 - wsOptimized.balance})` : ''} on ${new Date(wsOptimized.at).toLocaleString([], { dateStyle: "short", timeStyle: "short" })} — click to optimize again`
+    : "Custom WS for every recipe of the chain (WS 3 + core: speed/eff mix or none), scored on the whole chain (fewest machines, least power or fewest raw materials). Rounds until stable.";
+  btn.style.color = wsOptimized ? "var(--accent3)" : "";
+  btn.style.borderColor = wsOptimized ? "var(--color-success-border)" : "";
+  clr.style.display = any ? "" : "none";
 }
 
 function updateItemWsMode2(idx, mode) {
