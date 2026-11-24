@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="app/tokens.css?v=3">
-  <link rel="stylesheet" href="styles.css?v=17">
+  <link rel="stylesheet" href="styles.css?v=25">
     <script>
     /* D3 v7 inline */
     // https://d3js.org v7.9.0 Copyright 2010-2023 Mike Bostock
@@ -246,10 +246,9 @@
       </div>
 
       <!-- Recipe Sidebar -->
-      <div id="sidebar-recipes" style="display:flex;flex-direction:column;gap:12px;min-height:0;flex:1">
-        <div>
-          <div class="section-title">Search recipes</div>
-          <div style="position:relative">
+      <div id="sidebar-recipes" style="display:flex;flex-direction:column;gap:8px;min-height:0;flex:1">
+        <div style="display:flex;gap:6px">
+          <div style="position:relative;flex:1;min-width:0">
             <input type="text" id="recipeSearch" placeholder="Z.B. Building Block, Wire Coil…"
               style="width:100%;box-sizing:border-box;padding:9px 14px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:10px;font-family:-apple-system,sans-serif;font-size:13px;outline:none;transition:border-color 0.2s,box-shadow 0.2s"
               oninput="filterRecipesInline(this.value)" onfocus="filterRecipesInline(this.value)" autocomplete="off" />
@@ -257,23 +256,22 @@
               style="display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--color-bg-overlay);backdrop-filter:blur(40px);-webkit-backdrop-filter:blur(40px);border:1px solid var(--color-border);border-radius:12px;overflow:hidden;max-height:280px;overflow-y:auto;z-index:100;box-shadow:0 12px 40px rgba(0,0,0,0.5)">
             </div>
           </div>
-        </div>
-        <div style="display:flex;gap:6px">
           <button class='btn-picker' onclick="openRecipePicker()" title="Open recipe browser"
-            style="flex:1;padding:9px;background:var(--color-bg-elevated);border:1px solid var(--color-border);color:var(--color-interactive);border-radius:10px;cursor:pointer;font-size:13px;font-family:-apple-system,sans-serif;font-weight:500;line-height:1;transition:all 0.18s ease;display:flex;align-items:center;justify-content:center;gap:7px">
+            style="flex:none;padding:0 12px;background:var(--color-bg-elevated);border:1px solid var(--color-border);color:var(--color-interactive);border-radius:10px;cursor:pointer;font-size:13px;font-family:-apple-system,sans-serif;font-weight:500;line-height:1;transition:all 0.18s ease;display:flex;align-items:center;justify-content:center;gap:7px">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-            Browser
           </button>
         </div>
 
-        <button class="calc-btn" onclick="calculateRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
+
+        <div style="display:flex;gap:6px">
+        <button class="calc-btn" onclick="calculateRecipes()" style="flex:1;margin:0;display:flex;align-items:center;justify-content:center;gap:7px">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
           Calculate
         </button>
-        <button class="reset-btn" onclick="resetRecipes()" style="display:flex;align-items:center;justify-content:center;gap:7px">
+        <button class="reset-btn" onclick="resetRecipes()" title="Reset" style="width:auto;flex:none;margin:0;padding:0 14px;display:flex;align-items:center;justify-content:center;gap:7px">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-          Reset
         </button>
+        </div>
 
         <!-- Export / Import plan -->
         <div style="display:flex;gap:6px">
@@ -293,36 +291,60 @@
 
         <datalist id="allItemsList"></datalist>
 
+        <div class="side-tools">
+        <!-- Plan options: power plant + one-time build cost -->
+        <details class="panel" id="planOptionsPanel" style="padding:8px 10px">
+          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)">Options <span id="planOptionsStatus" style="font-weight:400;color:var(--text-dim)"></span></summary>
+          <div class="st-body">
+          <div id="planOptions" style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:12px;color:var(--color-text-secondary)"></div></div>
+        </details>
+
         <!-- Where used: recipes that take an item as ingredient -->
         <details class="panel" style="padding:8px 10px" ontoggle="if(this.open) fillItemDatalist()">
           <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)">Where used?</summary>
+          <div class="st-body">
           <input type="text" id="whereUsedInput" list="allItemsList" placeholder="Item, e.g. Steel"
             oninput="renderWhereUsed(this.value)" autocomplete="off"
             style="width:100%;margin-top:8px;padding:6px 10px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;outline:none;box-sizing:border-box">
-          <div id="whereUsedResults" style="display:flex;flex-direction:column;gap:4px;margin-top:6px;max-height:240px;overflow-y:auto"></div>
+          <div id="whereUsedResults" style="display:flex;flex-direction:column;gap:4px;margin-top:6px;max-height:240px;overflow-y:auto"></div></div>
         </details>
 
         <!-- Existing stock: materials the factory already makes -->
         <details class="panel" id="stockPanel" style="padding:8px 10px" ontoggle="if(this.open) fillItemDatalist()">
-          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)">Existing stock <span id="stockCount"></span></summary>
+          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)" title="Existing stock: materials the factory already makes">Stock <span id="stockCount"></span></summary>
+          <div class="st-body">
           <div style="display:flex;gap:4px;margin-top:8px">
             <input type="text" id="stockItemInput" list="allItemsList" placeholder="Item" autocomplete="off" style="flex:1;min-width:0;padding:6px 10px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;outline:none;box-sizing:border-box">
             <input type="number" id="stockAmountInput" min="0" step="any" placeholder="/min" style="width:64px;text-align:right;padding:6px 10px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;outline:none;box-sizing:border-box"
               onkeydown="if(event.key==='Enter') addStockItem()">
-            <button class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px" onclick="addStockItem()">Add</button>
+            <button class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px;width:auto;flex:none" onclick="addStockItem()">Add</button>
           </div>
-          <div id="stockList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div>
+          <div id="stockList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div></div>
+        </details>
+
+        <!-- Saved plans: recipes + all settings incl. Custom WS (shared by all tabs) -->
+        <details class="panel" id="savedPanel" style="padding:8px 10px" ontoggle="if(this.open) renderSavedPlans()">
+          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)" title="Saved plans: recipes, settings and optimized workstations">Saved</summary>
+          <div class="st-body">
+          <div style="display:flex;gap:4px;margin-top:8px">
+            <input type="text" id="savePlanName" placeholder="Name" maxlength="60" autocomplete="off" onkeydown="if(event.key==='Enter') saveCurrentPlan()"
+              style="flex:1;min-width:0;padding:6px 10px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-family:-apple-system,sans-serif;font-size:12px;outline:none;box-sizing:border-box">
+            <button class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px;width:auto;flex:none" onclick="saveCurrentPlan()">Save</button>
+          </div>
+          <div id="savedList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div></div>
         </details>
 
         <!-- Recent calculations (shared by all tabs) -->
         <details class="panel" id="historyPanel" style="padding:8px 10px" ontoggle="if(this.open) renderHistory()">
-          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)">Recent calculations</summary>
-          <div id="historyList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div>
+          <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--color-text-secondary)" title="Recent calculations">Recent</summary>
+          <div class="st-body">
+          <div id="historyList" style="display:flex;flex-direction:column;gap:4px;margin-top:6px"></div></div>
         </details>
 
-        <button class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px;align-self:flex-start"
-          title="Best workstations for the whole chain: WS 3, charged core, the bot mix with the fewest machines — global WS per machine group, then each recipe"
-          onclick="optimizeAllWs()">⚡ Optimize all workstations</button>
+        <button class="reset-btn" style="margin:0;padding:5px 10px;font-size:11px;width:auto;flex:1 1 auto"
+          title="Custom WS for every recipe of the chain (WS 3 + core: speed/eff mix or none), scored on the whole chain (fewest machines, least power or fewest raw materials). Rounds until stable."
+          onclick="openWsOptimizeDialog()">⚡ Optimize WS</button>
+        </div>
 
         <!-- Selected recipe list -->
         <div id="selectedRecipes"
@@ -612,6 +634,9 @@
                 gap: 10px;
                 justify-content: flex-end;
               ">
+          <button onclick="resetSettingsToDefaults()" class="reset-btn" style="font-size: 13px; padding: 8px 18px; width:auto; margin:0 auto 0 0" title="All settings back to the defaults; the recipe list stays">
+            Reset to defaults
+          </button>
           <button onclick="applySettingsToSelected()" class="calc-btn" style="font-size: 13px; padding: 8px 18px; width:auto">
             Apply to existing recipes
           </button>
@@ -729,21 +754,21 @@
         sel = GAME_VERSION_DEFAULT;
       // Bump the revision after re-running extract_game_data.py — the version
       // id alone never changes, so browsers kept serving stale data files.
-      var cb = '?vcb=' + sel + '-r28';
+      var cb = '?vcb=' + sel + '-r30';
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/game-data.js' + cb + '"></scr' + 'ipt>');
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/recipes.js' + cb + '"></scr' + 'ipt>');
       document.write('<scr' + 'ipt src="data/versions/' + sel + '/icons.js' + cb + '"></scr' + 'ipt>');
     })();
   </script>
-  <script src="app/state.js?v=38"></script>
-  <script src="app/ui-settings.js?v=28"></script>
-  <script src="app/ui-recipes.js?v=31"></script>
-  <script src="app/calculation.js?v=68"></script>
-  <script src="app/ui-nav.js?v=27"></script>
-  <script src="app/visualization.js?v=50"></script>
-  <script src="app/ui-power.js?v=6"></script>
+  <script src="app/state.js?v=49"></script>
+  <script src="app/ui-settings.js?v=33"></script>
+  <script src="app/ui-recipes.js?v=58"></script>
+  <script src="app/calculation.js?v=81"></script>
+  <script src="app/ui-nav.js?v=35"></script>
+  <script src="app/visualization.js?v=51"></script>
+  <script src="app/ui-power.js?v=7"></script>
   <script src="https://cdn.jsdelivr.net/npm/fzstd@0.1.1/umd/index.js"></script>
-  <script src="app/ui-savegame.js?v=4"></script>
+  <script src="app/ui-savegame.js?v=5"></script>
   <script>
     buildRecipeCategoryList();
     initRecipeCalc();

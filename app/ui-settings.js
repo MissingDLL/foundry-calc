@@ -65,18 +65,11 @@ function renderSettingsContent(targetId) {
   const verRow = document.createElement("div");
   verRow.style.cssText = "display:flex;align-items:center;gap:8px;flex-wrap:wrap";
 
-  GAME_VERSIONS.forEach(function (v) {
-    const isActive = v.id === GAME_VERSION_ID;
-    const btn = document.createElement("button");
-    btn.style.cssText =
-      "padding:6px 16px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:13px;transition:all 0.18s;" +
-      (isActive
-        ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
-        : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);cursor:pointer;");
-    btn.textContent = v.label;
-    btn.onclick = function () { switchGameVersion(v.id); };
-    verRow.appendChild(btn);
-  });
+  const verSel = document.createElement("select");
+  verSel.style.cssText = "flex:1;min-width:180px;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-size:12px;outline:none";
+  GAME_VERSIONS.forEach(v => verSel.appendChild(new Option(v.label, v.id, false, v.id === GAME_VERSION_ID)));
+  verSel.onchange = () => switchGameVersion(verSel.value);
+  verRow.appendChild(verSel);
   el.appendChild(verRow);
 
   const verSep = document.createElement("div");
@@ -164,37 +157,21 @@ function renderSettingsContent(targetId) {
     const currentChoice =
       variantSettings[group.label] || group.variants[0];
 
+    // one dropdown per recipe: some have many variants
+    const sel = document.createElement("select");
+    sel.style.cssText = "flex:1;min-width:180px;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-size:12px;outline:none";
     group.variants.forEach((variant) => {
-      const isActive = currentChoice === variant;
-      const btn = document.createElement("button");
-      const shortName =
-        variant.replace(group.label, "").trim() || variant;
-      btn.style.cssText =
-        "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
-        (isActive
-          ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
-          : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);");
-      btn.innerHTML =
-        getIcon(variant, 20) +
-        "<span>" +
-        (shortName || variant) +
-        "</span>";
-      btn.dataset.group = group.label;
-      btn.dataset.variant = variant;
-      btn.onclick = function () {
-        variantSettings[group.label] = variant;
-        saveSettings();
-        row.querySelectorAll("button").forEach((b) => {
-          const active = b.dataset.variant === variant;
-          b.style.background = active ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)";
-          b.style.border = active
-            ? "1px solid var(--color-border-focus)"
-            : "1px solid var(--color-border)";
-          b.style.color = active ? "var(--color-text-primary)" : "var(--color-interactive)";
-        });
-      };
-      row.appendChild(btn);
+      sel.appendChild(new Option(variant.replace(group.label, "").trim() || variant, variant, false, currentChoice === variant));
     });
+    sel.onchange = () => {
+      variantSettings[group.label] = sel.value;
+      saveSettings();
+      icon.innerHTML = getIcon(sel.value, 20);
+    };
+    const icon = document.createElement("span");
+    icon.innerHTML = getIcon(currentChoice, 20);
+    row.appendChild(icon);
+    row.appendChild(sel);
 
     varGrid.appendChild(row);
   });
@@ -230,31 +207,21 @@ function renderSettingsContent(targetId) {
 
     const currentChoice = variantSettings[group.label] || group.variants[0];
 
-    group.variants.forEach((variant) => {
-      const isActive = currentChoice === variant;
-      const shortName = variant.replace(group.label, "").replace(/^\s*\(|\)\s*$/g, "").trim() || "No fuel";
-      const btn = document.createElement("button");
-      btn.style.cssText =
-        "display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;cursor:pointer;font-family:-apple-system,sans-serif;font-size:12px;transition:all 0.18s;white-space:nowrap;" +
-        (isActive
-          ? "background:var(--color-accent-active-bg);border:1px solid var(--color-border-focus);color:var(--color-text-primary);"
-          : "background:var(--color-accent-inactive-bg);border:1px solid var(--color-border);color:var(--color-interactive);");
-      btn.innerHTML = getIcon(RECIPES[variant]?.fuel || variant, 20) + "<span>" + shortName + "</span>"; // fuel icon
-      btn.dataset.group = group.label;
-      btn.dataset.variant = variant;
-      btn.onclick = function () {
-        variantSettings[group.label] = variant;
-        saveSettings();
-        if (selectedRecipeList.length) calculateRecipes();
-        row.querySelectorAll("button").forEach((b) => {
-          const active = b.dataset.variant === variant;
-          b.style.background = active ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)";
-          b.style.border = active ? "1px solid var(--color-border-focus)" : "1px solid var(--color-border)";
-          b.style.color = active ? "var(--color-text-primary)" : "var(--color-interactive)";
-        });
-      };
-      row.appendChild(btn);
-    });
+    const icon = document.createElement("span");
+    const fuelIcon = v => getIcon(RECIPES[v]?.fuel || v, 20);
+    icon.innerHTML = fuelIcon(currentChoice);
+    const sel = document.createElement("select");
+    sel.style.cssText = "flex:1;min-width:180px;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:8px;font-size:12px;outline:none";
+    group.variants.forEach(v => sel.appendChild(new Option(
+      v.replace(group.label, "").replace(/^\s*\(|\)\s*$/g, "").trim() || "No fuel", v, false, currentChoice === v)));
+    sel.onchange = () => {
+      variantSettings[group.label] = sel.value;
+      saveSettings();
+      if (selectedRecipeList.length) calculateRecipes();
+      icon.innerHTML = fuelIcon(sel.value);
+    };
+    row.appendChild(icon);
+    row.appendChild(sel);
 
     burnGrid.appendChild(row);
   });
@@ -604,7 +571,7 @@ function renderSettingsContent(targetId) {
   el.appendChild(effDesc);
 
   const effGrid = document.createElement("div");
-  effGrid.style.cssText = "display:grid;grid-template-columns:1fr 1fr;gap:8px";
+  effGrid.style.cssText = "display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:8px";
 
   // Show all Robots-category recipes that are not individual robot parts.
   // Parts are identified by their name ending in Arm / Head / Leg / Torso.
@@ -721,7 +688,7 @@ function renderSettingsContent(targetId) {
 
   const wsDesc = document.createElement("div");
   wsDesc.style.cssText = "font-size:11px;color:var(--text-dim);margin-bottom:10px";
-  wsDesc.textContent = "One workstation per machine category. WS1: 1 slot · WS2: 2 slots · WS3: 3 slots + Charged Reno Core (+33%). Overridable per item.";
+  wsDesc.textContent = "One workstation per machine category. WS1: 1 slot · WS2: 2 slots · WS3: 3 slots + " + I.XENO_POWER_CORE + " (+33%). Overridable per item.";
   el.appendChild(wsDesc);
 
   const wsSummary = document.createElement("div");
@@ -735,6 +702,69 @@ function renderSettingsContent(targetId) {
   el.appendChild(wsContainer);
 
   renderWorkstations();
+  _settingsTabs(el);
+}
+
+// Tabs over the settings sections (grouped by their section titles)
+const SETTINGS_TABS = [
+  ["General",      ["Spielversion", "Default Machines", "Mining Machines"]],
+  ["Recipes",      ["Recipe Variants", "Burnable Items"]],
+  ["Buildings",    ["Space Station Shipping", "Modular Buildings"]],
+  ["Research",     ["Endless Research", "R&D Lab"]],
+  ["Workstations", ["Workstations"]],
+];
+let _settingsTab = "General";
+function _settingsTabs(el) {
+  const tabOf = title => (SETTINGS_TABS.find(([, keys]) => keys.some(k => title.startsWith(k))) || SETTINGS_TABS[0])[0];
+  const panes = Object.fromEntries(SETTINGS_TABS.map(([t]) => {
+    const p = document.createElement("div");
+    p.style.cssText = "display:flex;flex-direction:column;gap:14px;min-width:0";
+    return [t, p];
+  }));
+  let cur = "General";
+  [...el.children].forEach(child => {
+    if (child.style.borderTop && !child.textContent.trim()) { child.remove(); return; } // section separator
+    if (child.style.textTransform === "uppercase") {
+      cur = tabOf(child.textContent.trim());
+      if (panes[cur].children.length) child.style.marginTop = "14px"; // room between sections
+      child.style.marginBottom = "0";
+    }
+    panes[cur].appendChild(child);
+  });
+  const bar = document.createElement("div");
+  bar.style.cssText = "display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px";
+  const show = t => {
+    _settingsTab = t;
+    Object.entries(panes).forEach(([k, p]) => { p.style.display = k === t ? "" : "none"; });
+    bar.querySelectorAll("button").forEach(b => {
+      const on = b.dataset.tab === t;
+      b.style.background = on ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)";
+      b.style.border = "1px solid " + (on ? "var(--color-border-focus)" : "var(--color-border)");
+      b.style.color = on ? "var(--color-text-primary)" : "var(--color-interactive)";
+    });
+  };
+  SETTINGS_TABS.forEach(([t]) => {
+    if (!panes[t].children.length) return;
+    const b = document.createElement("button");
+    b.dataset.tab = t;
+    b.textContent = t;
+    b.style.cssText = "padding:6px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-family:-apple-system,sans-serif";
+    b.onclick = () => show(t);
+    bar.appendChild(b);
+  });
+  el.appendChild(bar);
+  Object.values(panes).forEach(p => el.appendChild(p));
+  show(panes[_settingsTab]?.children.length ? _settingsTab : "General");
+}
+
+// Back to the defaults: every setting, the recipe list stays (incl. its lines' WS)
+function resetSettingsToDefaults() {
+  if (!confirm("Reset all settings to their defaults? Your recipe list stays.")) return;
+  clearTimeout(_savePending); // a pending save must not overwrite the reset
+  const plan = _buildPlanObject();
+  const blob = JSON.stringify({ gameVersion: GAME_VERSION_ID, selectedRecipeList: plan.selectedRecipeList, stockItems: plan.settings.stockItems });
+  try { sessionStorage.setItem("fc_settings", blob); localStorage.setItem("fc_settings", blob); } catch (e) { /* reload still resets */ }
+  location.reload();
 }
 
 // ── Workstation Settings UI ───────────────────────────────────
@@ -754,14 +784,19 @@ function renderWorkstations() {
 
   // Returns only bots compatible with a given WS category
   function botsForCategory(cat) {
-    return allBotsWithEffect.filter(({ we }) =>
-      (we.applies_to || []).includes(cat)
-    );
+    const named = allBotsWithEffect.filter(({ we }) => (we.applies_to || []).includes(cat));
+    if (named.length) return named;
+    // Group only used as an exclusion in the game data (Extractors): the bots
+    // that reach every one of its machines (Light Bot yes, Operator Robot no)
+    return allBotsWithEffect.filter(({ we }) => APPLIES_TO_MACHINES[cat].every(m => wsBotFits(we, m)));
   }
 
   activeCategories.forEach(cat => {
     const ws = workstationConfigs[cat];
     const compatibleBots = botsForCategory(cat);
+    // No bot names this group (game tag only used as an exclusion, e.g.
+    // "Extractors"): its machines take the bots of their other group (Miners).
+    if (!compatibleBots.length) return;
     const machineNames = APPLIES_TO_MACHINES[cat].length
       ? APPLIES_TO_MACHINES[cat].join(", ")
       : "(no effect in recipe calculator — e.g. Miner, Pumpjack)";
@@ -848,7 +883,7 @@ function renderWorkstations() {
           saveSettings();
         };
         coreLabel.appendChild(coreChk);
-        coreLabel.appendChild(document.createTextNode("Charged Reno Core (+33%)"));
+        coreLabel.appendChild(document.createTextNode(I.XENO_POWER_CORE + " (+33%)"));
         tierRow.appendChild(coreLabel);
       }
 
@@ -946,8 +981,8 @@ function renderWorkstationBonusSummary() {
   const lines = [];
   Object.entries(workstationConfigs).forEach(([cat, ws]) => {
     (APPLIES_TO_MACHINES[cat] || []).forEach(machine => {
-      const bonus = calcWsBonusForMachine(machine, ws);
-      if (bonus > 0) lines.push({ machine, bonus });
+      const e = calcWsEffectForMachine(machine, ws);
+      if (e.speed + e.eff > 0) lines.push({ machine, e, ws });
     });
   });
   if (!lines.length) {
@@ -957,10 +992,9 @@ function renderWorkstationBonusSummary() {
   summaryEl.innerHTML =
     '<div style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Active global bonuses</div>' +
     '<div style="display:flex;flex-wrap:wrap;gap:5px">' +
-    lines.map(({ machine, bonus }) =>
-      `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--color-success-bg);border:1px solid var(--color-success-border);border-radius:6px;padding:3px 8px;font-size:11px;font-family:-apple-system,sans-serif">` +
-      `<span style="color:var(--text-dim)">${machine}</span>` +
-      `<span style="color:var(--accent3)">+${Math.round(bonus * 1000) / 10}%</span></span>`
+    lines.map(({ machine, e, ws }) =>
+      `<span title="${wsConfigText(ws)}" style="display:inline-flex;align-items:center;gap:4px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:6px;padding:3px 8px;font-size:11px;font-family:-apple-system,sans-serif">` +
+      `<span style="color:var(--text-dim)">${machine}</span>${wsEffectHtml(e)}</span>`
     ).join("") + "</div>";
 }
 

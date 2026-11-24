@@ -112,10 +112,13 @@ const ceilMachines = (x) => Math.ceil(x - 1e-9);
 // Small "WS +x %" chip when a workstation bonus applies to this machine/item
 // (global per machine group or the line's own override). Empty otherwise.
 function wsBadge(item) {
-  const b = getItemWsBonus(item);
-  return b > 0
-    ? `<span title="Workstation bonus" style="font-size:10px;color:var(--accent3);border:1px solid var(--color-success-border);background:var(--color-success-bg);border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap">WS +${fmt(Math.round(b * 1000) / 10)}%</span>`
-    : '';
+  const cfg = getItemWsConfig(item);
+  const custom = cfg && (cfg === item.wsOverride || cfg === wsRecipeConfigs[item.recipeName || item.itemName]);
+  const e = calcWsEffectForMachine(item.machineName, cfg);
+  const style = 'font-size:10px;border:1px solid var(--color-border);background:var(--color-bg-elevated);border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap';
+  if (e.speed + e.eff > 0)
+    return `<span title="${custom ? 'Custom' : 'Global'} WS: ${wsConfigText(cfg)}" style="${style}">${custom ? 'WS★' : 'WS'} ${wsEffectHtml(e)}</span>`;
+  return custom && cfg.disabled ? `<span title="Custom: no workstation here" style="${style};color:var(--text-dim)">no WS</span>` : '';
 }
 
 // ── Infrastructure helpers ─────────────────────────────────────
@@ -143,6 +146,22 @@ function getMachinePowerKw(machineName, itemName) {
       : r.power_consumption;
   }
   return MACHINE_POWER_KW[machineName] || 0;
+}
+
+// Share of machinesPowerKw() that comes from the workstation bots (+power %)
+function wsExtraKw(machine, count, item = { machineName: machine }) {
+  const total = machinesPowerKw(machine, count, item);
+  return total - total / (1 + getItemWsEffect(item).power);
+}
+
+// Power value with a "+x WS" chip and a hover breakdown
+// parts: { ws, loaders, pumps } (kW) — machines (base) = total minus the rest
+function powerCellHtml(totalKw, { ws = 0, loaders = 0, pumps = 0 } = {}, style = 'font-size:12px;color:var(--color-power)') {
+  const f = kw => kw >= 1000 ? `${(kw / 1000).toLocaleString('de-DE', { maximumFractionDigits: 2 })} MW` : `${fmt(Math.round(kw))} kW`;
+  const base = totalKw - ws - loaders - pumps;
+  const tip = [`Machines (base): ${f(base)}`, ws > 0.5 && `Workstation bots: +${f(ws)}`, loaders > 0.5 && `Loaders: ${f(loaders)}`, pumps > 0.5 && `Pumps: ${f(pumps)}`, `Total: ${f(totalKw)}`].filter(Boolean).join('\n');
+  const chip = ws > 0.5 ? ` <span style="font-size:10px;color:var(--warn);border:1px solid var(--color-border);border-radius:3px;padding:0 4px;white-space:nowrap">+${f(ws)} WS</span>` : '';
+  return `<span title="${tip}" style="${style};cursor:help;white-space:nowrap">${f(totalKw)}${chip}</span>`;
 }
 
 // Power of `count` machines of one type.
@@ -182,17 +201,19 @@ function chainPowerKw() {
   if (typeof buildSankeyGraph !== 'function') return null; // unit test runner
   const g = buildSankeyGraph();
   if (!g) return null;
-  let machines = 0, loaders = 0;
+  let machines = 0, loaders = 0, wsKw = 0;
   const graph = g;
   g.nodes.forEach(n => {
     if (!n.machineName || !(n.machineCount > 0)) return;
     const count = ceilMachines(n.machineCount);
     const line  = selectedRecipeList.find(l => l.itemName === n.label);
-    machines += line ? machinesPowerKw(n.machineName, count, line) : machinesPowerKw(n.machineName, count);
+    const item  = line || { itemName: resolveRecipeName(n.label), machineName: n.machineName };
+    machines += machinesPowerKw(n.machineName, count, item); // its own WS (power)
+    wsKw     += wsExtraKw(n.machineName, count, item);
     const rec = RECIPES[line?.recipeName || resolveRecipeName(n.label)];
     if (rec?.machines?.[n.machineName]) loaders += calcLoadersForMachine(n.machineName, countSolidConnections(rec, n.label)).powerKw * count;
   });
-  return { machines, loaders, graph };
+  return { machines, loaders, wsKw, graph };
 }
 
 // Pipes / pipelines and pumps per fluid, from the full-chain graph: each fluid
@@ -434,6 +455,7 @@ function countSolidConnections(recipe, itemName) {
 function setCalcDepthMode(mode) {
   calcDepthMode = mode;
   saveSettings();
+  renderPlanOptions();
   calculateRecipes();
 }
 
@@ -451,7 +473,217 @@ function setCalcDepthMode(mode) {
 //      using resolveIngredient() → stored in `resolvedTotals` (depth-aware).
 //   4. Render three collapsible result tables into #recipeResults.
 //   5. Trigger renderSankey() and renderBoxes().
+// ── Power plant for the chain ("Calculate power") ────────────
+// The fuel of the chosen generator becomes an automatic recipe line
+// (auto: 'power'), so its chain, machines, workstations (Optimize) and
+// buildings count like any other line. The fuel chain needs power itself →
+// fixed point: fuel goal = fuel for (chain demand incl. the fuel chain).
+let powerPlanResult = null; // { gen, fuel, kw, fuelPerMin, units, buildings }
+
+function _chainDemandKw() {
+  const p = chainPowerKw();
+  if (!p) return 0;
+  // Fracking Towers: same fixed-fluid rule as calculateRecipes (fixedFluids)
+  const fluid = veinsDepleted && typeof VEIN_MINING_FLUIDS !== 'undefined' && Object.values(VEIN_MINING_FLUIDS)[0]?.fluid;
+  const frackL = fluid ? p.graph.nodes.reduce((a, n) => n.machineName && n.machineCount > 0
+    ? a + (fluidNeedsPerMachine(n.machineName, n.label)[fluid] || 0) * ceilMachines(n.machineCount) : a, 0) : 0;
+  return p.machines + p.loaders + (frackingTowerPlan(frackL)?.powerKw || 0)
+    + Object.values(fluidPlan(p.graph)).reduce((a, e) => a + e.pumpKw, 0);
+}
+
+// Buildings of `units` generators, ratios from the game data (POWER_SOURCES).
+function _powerBuildings(gen, units) {
+  const byType = t => POWER_SOURCES.find(s => s.type === t);
+  const byId   = id => POWER_SOURCES.find(s => s.id === id);
+  const up = x => Math.ceil(x - 1e-9);
+  if (gen.isNpp) {
+    const r = byType('npp_reactor'), t = byType('npp_turbine'), c = byType('npp_cooling_tower');
+    const reactors = up(units / r.turbines_per_reactor);
+    return { [t.name]: units, [r.name]: reactors, [M.STEAM_GENERATOR_BASE]: reactors,
+             [c.name]: up(units / t.turbines_per_cooling_tower) };
+  }
+  const turbine = byType('steam_turbine');
+  if (gen.id.endsWith('_turbine'))    return { [byId(gen.id.slice(0, -8)).name]: units, [turbine.name]: units };
+  if (gen.id.endsWith('_geothermal')) return { [byId(gen.id.slice(0, -11)).name]: units,
+                                               [turbine.name]: units * Math.round(gen.powerKw / turbine.power_kw) };
+  return { [gen.name]: units };
+}
+
+function syncPowerLine() {
+  const gen = powerPlan.on && typeof POWER_GENERATORS !== 'undefined'
+    ? (POWER_GENERATORS.find(g => g.id === powerPlan.gen) || POWER_GENERATORS.find(g => g.isNpp) || POWER_GENERATORS[0]) : null;
+  const fuel = gen?.requiresFuel ? (gen.fuels.includes(powerPlan.fuel) ? powerPlan.fuel : gen.fuels[0]) : null;
+  const recipeName = fuel && resolveRecipeName(fuel);
+  const craftable = !!RECIPES[recipeName]?.ingredients?.length;
+  // keep the line object (Optimize holds references and its wsOverride)
+  let line = selectedRecipeList.find(l => l.auto === 'power');
+  const hasLines = selectedRecipeList.some(l => !l.auto);
+  if (line && (!gen || !craftable || line.itemName !== fuel || !hasLines)) {
+    selectedRecipeList = selectedRecipeList.filter(l => l !== line);
+    line = null;
+  }
+  if (!gen || !hasLines) { powerPlanResult = null; return; }
+  if (!line && craftable) {
+    line = sanitizeRecipeList([{ itemName: fuel, recipeName, machineName: preferredMachineFor(RECIPES[recipeName]), goal: 1 }])[0];
+    line.auto = 'power';
+    selectedRecipeList.push(line);
+  }
+  const perGen = fuel ? _fuelPerUnitPerMin(gen, fuel) : 0;
+  let kw = 0;
+  for (let i = 0; i < 20; i++) {
+    const next = _chainDemandKw();
+    if (line) line.goal = Math.max(1e-6, perGen * next / gen.powerKw);
+    const done = Math.abs(next - kw) < 0.5;
+    kw = next;
+    if (done || !line) break;
+  }
+  const units = Math.ceil(kw / gen.powerKw - 1e-9);
+  powerPlanResult = { gen, fuel, kw, fuelPerMin: perGen * kw / gen.powerKw, units,
+                      buildings: units ? _powerBuildings(gen, units) : {} };
+}
+
+// Plan options in the sidebar: power plant + one-time build cost
+function renderPlanOptions() {
+  const el = document.getElementById('planOptions');
+  if (!el) return;
+  const selStyle = "width:100%;padding:4px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:6px;font-size:12px;outline:none";
+  const gens = typeof POWER_GENERATORS !== 'undefined' ? POWER_GENERATORS : [];
+  const pg = powerPlanResult?.gen || gens.find(g => g.id === powerPlan.gen) || gens[0];
+  const st = document.getElementById('planOptionsStatus');
+  if (st) st.textContent = [!wsGlobalOn && 'no WS', powerPlan.on && '⚡', buildCostOn && (buildPlan.mode === 'rate' ? '🏗/min' : '🏗')].filter(Boolean).join(' ');
+  el.innerHTML = `
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer" title="Add the power plant for this chain: its fuel chain, machines and buildings">
+      <input type="checkbox" ${powerPlan.on ? 'checked' : ''} onchange="setPowerPlan({ on: this.checked })">⚡ Calculate power</label>
+    ${powerPlan.on && gens.length ? `
+      <select style="${selStyle}" onchange="setPowerPlan({ gen: this.value, fuel: null })">
+        ${gens.map(g => `<option value="${g.id}" ${g.id === pg?.id ? 'selected' : ''}>${g.name}</option>`).join('')}
+      </select>
+      ${pg?.requiresFuel && pg.fuels.length > 1 ? `<select style="${selStyle}" onchange="setPowerPlan({ fuel: this.value })">
+        ${pg.fuels.map(f => `<option ${f === (powerPlanResult?.fuel || powerPlan.fuel) ? 'selected' : ''}>${f}</option>`).join('')}
+      </select>` : ''}` : ''}
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer" title="Global workstations (set per machine group) for the whole chain. A recipe's own Custom WS stays.">
+      <input type="checkbox" ${wsGlobalOn ? 'checked' : ''} onchange="setWsGlobal(this.checked)">🔧 Global workstations</label>
+    ${Object.keys(wsRecipeConfigs).length ? `<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);margin-left:22px">
+      ${Object.keys(wsRecipeConfigs).length} chain recipes with Custom WS (WS★)
+      <button class="reset-btn" style="margin:0;padding:1px 7px;font-size:11px;width:auto" onclick="resetRecipeWs()">reset</button></div>` : ''}
+    <label style="display:flex;align-items:center;gap:6px;cursor:pointer" title="Construction Material of the modular buildings and its raw materials, needed once (shown with Full Detail)">
+      <input type="checkbox" ${buildCostOn ? 'checked' : ''} onchange="setBuildCost(this.checked)">🏗 Build cost (one-time)</label>
+    ${buildCostOn ? `
+      <select style="${selStyle}" onchange="setBuildPlan({ mode: this.value })">
+        <option value="once" ${buildPlan.mode === 'once' ? 'selected' : ''}>One-time (total only)</option>
+        <option value="rate" ${buildPlan.mode === 'rate' ? 'selected' : ''}>Produce per minute (in the chain)</option>
+      </select>
+      ${buildPlan.mode === 'rate' ? buildMaterials().map(i => `
+        <label style="display:flex;align-items:center;gap:6px;font-size:11px">
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${i}">${i}</span>
+          <input type="number" min="0" max="999999" step="any" value="${buildRate(i)}" data-item="${i}" onchange="setBuildRate(this.dataset.item, this.value)"
+            style="width:72px;text-align:right;padding:4px 6px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--text);border-radius:6px;font-size:12px;outline:none;box-sizing:border-box">/min
+        </label>`).join('') : ''}` : ''}
+    ${buildCostOn && calcDepthMode !== 3 ? '<span style="color:var(--text-dim);font-size:11px">→ shown in Full Detail</span>' : ''}`;
+}
+
+function setPowerPlan(patch) {
+  Object.assign(powerPlan, patch);
+  saveSettings();
+  calculateRecipes();
+  renderSelectedRecipes();
+}
+
+// Build material lines: in 'rate' mode each material of the modular buildings
+// (game data) is a normal chain line at its rate, so its machines, power and
+// buildings count like any other line.
+function buildMaterials() {
+  const s = new Set();
+  Object.values(typeof MODULAR_BUILD_COST !== 'undefined' ? MODULAR_BUILD_COST : {})
+    .forEach(bc => [bc.fixed, bc.perModule].forEach(o => Object.keys(o || {}).forEach(i => s.add(i))));
+  return [...s];
+}
+const BUILD_RATE_DEFAULT = 100;
+const buildRate = item => buildPlan.rates[item] ?? BUILD_RATE_DEFAULT;
+
+function syncBuildLines() {
+  const keep = [];
+  if (buildCostOn && buildPlan.mode === 'rate' && selectedRecipeList.some(l => !l.auto)) buildMaterials().forEach(item => {
+    const rn = resolveRecipeName(item), rate = buildRate(item);
+    if (!(rate > 0) || !RECIPES[rn]) return;
+    let line = selectedRecipeList.find(l => l.auto === 'build' && l.itemName === item);
+    if (!line) {
+      line = sanitizeRecipeList([{ itemName: item, recipeName: rn, machineName: preferredMachineFor(RECIPES[rn]), goal: rate }])[0];
+      line.auto = 'build';
+      selectedRecipeList.push(line);
+    }
+    line.goal = rate;
+    keep.push(line);
+  });
+  selectedRecipeList = selectedRecipeList.filter(l => l.auto !== 'build' || keep.includes(l));
+}
+
+function setBuildPlan(patch) {
+  Object.assign(buildPlan, patch);
+  saveSettings();
+  renderPlanOptions();
+  calculateRecipes();
+  renderSelectedRecipes();
+}
+
+function setBuildRate(item, v) {
+  buildPlan.rates[item] = Math.min(Math.max(parseFloat(v) || 0, 0), 999999);
+  setBuildPlan({});
+}
+
+function setWsGlobal(on) {
+  wsGlobalOn = on;
+  saveSettings();
+  renderSelectedRecipes();
+  calculateRecipes();
+}
+
+function setBuildCost(on) {
+  buildCostOn = on;
+  saveSettings();
+  renderPlanOptions();
+  calculateRecipes();
+  renderSelectedRecipes();
+}
+
+// One-time material need: the chain math is linear, so expanding an amount
+// instead of a rate gives the total once (graph leaves = raw materials).
+function oneTimeMaterials(amounts) {
+  const saved = [selectedRecipeList, _lastSupply, _lastStock];
+  try {
+    const lines = Object.entries(amounts).map(([item, goal]) => {
+      const rn = resolveRecipeName(item);
+      return RECIPES[rn] ? { itemName: item, recipeName: rn, machineName: preferredMachineFor(RECIPES[rn]), goal } : null;
+    }).filter(Boolean);
+    selectedRecipeList = sanitizeRecipeList(lines).map((l, i) => ({ ...l, goal: lines[i].goal }));
+    _lastSupply = {}; _lastStock = {};
+    const g = buildSankeyGraph();
+    const raw = {};
+    (g?.nodes || []).filter(n => n.kind === 'raw').forEach(n => { raw[n.icon || n.label] = (raw[n.icon || n.label] || 0) + n.rate; });
+    return raw;
+  } finally {
+    [selectedRecipeList, _lastSupply, _lastStock] = saved;
+  }
+}
+
+// The power plant is sized from the byproduct pool of the last calculation
+// (_lastSupply). If this run changed the pool, run once more so the result does
+// not depend on what was calculated before (import, reload, first click).
+let _calcRerun = false;
 function calculateRecipes() {
+  const before = JSON.stringify(_lastSupply);
+  _calculateRecipesOnce();
+  if (_calcRerun || !selectedRecipeList.some(l => l.auto) || JSON.stringify(_lastSupply) === before) return;
+  _calcRerun = true;
+  try { _calculateRecipesOnce(); } finally { _calcRerun = false; }
+}
+
+function _calculateRecipesOnce() {
+  const hadPowerLine = selectedRecipeList.some(l => l.auto);
+  syncBuildLines(); // before the power plant: their chain needs power too
+  syncPowerLine();
+  // the sidebar shows the power line and its goal, both set just now
+  if ((hadPowerLine || selectedRecipeList.some(l => l.auto)) && typeof renderSelectedRecipes === 'function') renderSelectedRecipes();
   if (!selectedRecipeList.length) return;
 
   // totals[itemName] = total items/min consumed across all selected recipes
@@ -644,11 +876,11 @@ function calculateRecipes() {
     const repRecipe  = rp && RECIPES[rp.recipe];
     const repMachine = repRecipe && preferredMachineFor(repRecipe);
     if (!repMachine) { supply[name] = (supply[name] || 0) + info.amount; return; }
-    const inPerMachine  = (60 / wsCycleTime(repRecipe, { itemName: rp.produces, machineName: repMachine })) * repRecipe.ingredients[0].amount;
-    const outPerMachine = machineOpm(repRecipe, { itemName: rp.produces, machineName: repMachine });
+    const inPerMachine  = (60 / wsCycleTime(repRecipe, { itemName: rp.recipe, machineName: repMachine, product: rp.produces })) * repRecipe.ingredients[0].amount;
+    const outPerMachine = machineOpm(repRecipe, { itemName: rp.recipe, machineName: repMachine, product: rp.produces });
     const potential = (info.amount / inPerMachine) * outPerMachine;
     supply[rp.produces] = (supply[rp.produces] || 0) + potential;
-    info.reprocessed = { machine: repMachine, produces: rp.produces, potential, inPerMachine, outPerMachine };
+    info.reprocessed = { machine: repMachine, recipe: rp.recipe, produces: rp.produces, potential, inPerMachine, outPerMachine };
   });
   Object.entries(chanceProducts).forEach(([item, amt]) => { supply[item] = (supply[item] || 0) + amt; });
   _lastSupply = { ...supply }; // for the Sankey/Boxes graph
@@ -695,7 +927,7 @@ function calculateRecipes() {
   });
 
   // Adjacency needs the whole count per type, so total power is set per type
-  Object.values(infraByMachine).forEach(e => { e.totalMachPwrKw = machinesPowerKw(e.machineName, e.count, e.line); });
+  Object.values(infraByMachine).forEach(e => { e.totalMachPwrKw = machinesPowerKw(e.machineName, e.count, e.line); e.totalWsKw = wsExtraKw(e.machineName, e.count, e.line); });
   const totalMachPwrKw  = Object.values(infraByMachine).reduce((s, e) => s + e.totalMachPwrKw,   0);
   const totalLoaderPwrKw = Object.values(infraByMachine).reduce((s, e) => s + e.totalLoaderPwrKw, 0);
   const totalPwrKw       = totalMachPwrKw + totalLoaderPwrKw;
@@ -765,14 +997,20 @@ function calculateRecipes() {
       </div>
       <div class="summary-box orange">
         <div class="summary-label">Machine power</div>
-        <div class="summary-value">${fmtPwr(sumMachPwrKw)}</div>
+        <div class="summary-value">${chainPwr ? powerCellHtml(sumMachPwrKw, { ws: chainPwr.wsKw }, '') : fmtPwr(sumMachPwrKw)}</div>
         <div class="summary-unit">whole chain, excl. loaders and pumps</div>
       </div>
       <div class="summary-box" style="border-color:var(--color-power-border);background:var(--color-power-bg)">
         <div class="summary-label" style="color:var(--color-power)">Total power</div>
-        <div class="summary-value" style="color:var(--color-power)">${fmtPwr(sumPwrKw)}</div>
+        <div class="summary-value" style="color:var(--color-power)">${chainPwr ? powerCellHtml(sumPwrKw, { ws: chainPwr.wsKw, loaders: chainPwr.loaders, pumps: pumpKw }, '') : fmtPwr(sumPwrKw)}</div>
         <div class="summary-unit">whole chain, machines + loaders + pumps</div>
       </div>
+      ${powerPlanResult ? `
+      <div class="summary-box" style="border-color:var(--color-power-border);background:var(--color-power-bg)">
+        <div class="summary-label" style="color:var(--color-power)">Power plant</div>
+        <div class="summary-value" style="color:var(--color-power)">${powerPlanResult.units}× </div>
+        <div class="summary-unit">${powerPlanResult.gen.name} · ${fmtPwr(powerPlanResult.kw)} incl. fuel chain${powerPlanResult.fuel ? ` · ${fmt(powerPlanResult.fuelPerMin)} ${powerPlanResult.fuel}/min` : ''}</div>
+      </div>` : ''}
     </div>`;
   };
 
@@ -1168,7 +1406,8 @@ function calculateRecipes() {
           if (md) {
             const opm         = machineOpm(rec, { itemName: info.recipeName || name, machineName: machine, product: name });
             const count       = ceilMachines(val / opm);
-            const machPwrKw   = machinesPowerKw(machine, count);
+            const machPwrKw   = machinesPowerKw(machine, count, { itemName: info.recipeName || name, machineName: machine });
+            const machWsKw    = wsExtraKw(machine, count, { itemName: info.recipeName || name, machineName: machine });
             const nSolid      = countSolidConnections(rec, name);
             const loaders     = calcLoadersForMachine(machine, nSolid);
             const loaderPwrKw = loaders.powerKw * count;
@@ -1187,9 +1426,9 @@ function calculateRecipes() {
             machineTd = `
               <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span>${wsBadge({ itemName: info.recipeName || name, machineName: machine })}</div></td>
               <td class="num">${count}</td>
-              <td class="num">${fmtPwr(machPwrKw)}</td>
+              <td class="num">${powerCellHtml(machPwrKw, { ws: machWsKw }, '')}</td>
               <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${loaderDesc}</td>
-              <td class="num" style="color:var(--color-power)">${fmtPwr(machPwrKw + loaderPwrKw)}</td>`;
+              <td class="num" style="color:var(--color-power)">${powerCellHtml(machPwrKw + loaderPwrKw, { ws: machWsKw, loaders: loaderPwrKw }, '')}</td>`;
           } else {
             // Check for capacity-based machines (fluid sources with throughput_l_per_min)
             const machineRec = RECIPES[machine];
@@ -1198,7 +1437,7 @@ function calculateRecipes() {
             const capacityLpm = fluidSrc?.capacityPerMin ?? machineRec?.throughput_l_per_min ?? null;
             if (capacityLpm) {
               const count = Math.ceil(val / capacityLpm);
-              const machPwrKw = machinesPowerKw(machine, count);
+              const machPwrKw = machinesPowerKw(machine, count, { itemName: resolveRecipeName(name), machineName: machine });
               totMachPwr += machPwrKw;
               machineTd = `
                 <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(machine, 64)}<span class="label">${machine}</span></div></td>
@@ -1294,6 +1533,7 @@ function calculateRecipes() {
         // Conveyor (solids) or Pipe (fluids)
         const pipeThroughput = RECIPES['Pipe']?.throughput_l_per_min || 36000;
         let rowKw = 0; // machine (+ loader) power of this row; pumps added below
+        let rowWsKw = 0, rowLoaderKw = 0; // for the hover breakdown
         const fp = isFluid ? fluids[name] : null;
         if (fp) totMachPwr += fp.pumpKw;
         if (fp) fp.pumpList.forEach(p => tally(p.name, p.count));
@@ -1311,21 +1551,21 @@ function calculateRecipes() {
           const rp = byproductTotals[name]?.reprocessed;
           if (rp?.count > 0) {
             // Reprocessing: e.g. Chemical Processor for Blast Furnace Slag → Cement
-            const machPwrKw = machinesPowerKw(rp.machine, rp.count);
+            const machPwrKw = machinesPowerKw(rp.machine, rp.count, { itemName: rp.recipe, machineName: rp.machine });
             totMachPwr += machPwrKw;
             tally(rp.machine, rp.count);
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(rp.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${rp.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${rp.count}</span><span style="font-size:10px;color:var(--color-success-text);margin-left:4px">→ ${fmt(rp.producedPerMin)}/min ${rp.produces}</span></div>`;
             // Unused rest goes straight to disposal (e.g. 200/min slag → Flare Stack)
             const rest = byproductTotals[name]?.leftover || 0;
             const restCount = rest > 0.01 ? ceilMachines(rest / disposal.capacityPerMin) : 0;
-            const restPwrKw = machinesPowerKw(disposal.machine, restCount); // Flare Stack / Incinerator draw power too
+            const restPwrKw = machinesPowerKw(disposal.machine, restCount, { itemName: resolveRecipeName(disposal.machine), machineName: disposal.machine }); // Flare Stack / Incinerator draw power too
             totMachPwr += restPwrKw;
             tally(disposal.machine, restCount);
             if (restCount) machineCell += `<div style="display:flex;align-items:center;gap:5px;margin-top:3px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${restCount}</span><span style="font-size:10px;color:var(--text-dim);margin-left:4px">rest ${fmt(rest)}/min</span></div>`;
             rowKw = machPwrKw + restPwrKw;
           } else {
             const count     = Math.ceil(val / disposal.capacityPerMin);
-            const machPwrKw = machinesPowerKw(disposal.machine, count);
+            const machPwrKw = machinesPowerKw(disposal.machine, count, { itemName: resolveRecipeName(disposal.machine), machineName: disposal.machine });
             totMachPwr += machPwrKw;
             tally(disposal.machine, count);
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(disposal.machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${disposal.machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
@@ -1342,7 +1582,7 @@ function calculateRecipes() {
           if (!md && capacityLpm) {
             // Capacity-based count (e.g. Pipe Intake → ceil(waterRate / 30000))
             const count     = Math.ceil(val / capacityLpm);
-            const machPwrKw = machinesPowerKw(machine, count);
+            const machPwrKw = machinesPowerKw(machine, count, { itemName: resolveRecipeName(name), machineName: machine });
             totMachPwr += machPwrKw;
             tally(machine, count);
             machineCell = `<div style="display:flex;align-items:center;gap:5px">${iconBox(machine, 48)}<span style="font-size:12px;color:var(--text-dim)">${machine}</span><span style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--accent3)">×${count}</span></div>`;
@@ -1361,6 +1601,7 @@ function calculateRecipes() {
             const nSolid      = countSolidConnections(rec, name);
             const loaders     = calcLoadersForMachine(machine, nSolid);
             const loaderPwrKw = loaders.powerKw * count;
+            rowWsKw = wsExtraKw(machine, count, rowItem); rowLoaderKw = loaderPwrKw;
 
             totMachPwr   += machPwrKw;
             totLoaderPwr += loaderPwrKw;
@@ -1428,7 +1669,7 @@ function calculateRecipes() {
         }
 
         rowKw += fp?.pumpKw || 0; // Pipe-to-Pipeline / Pipeline-to-Pipe pumps of this fluid
-        if (rowKw > 0) pwrCell = `<span style="font-size:12px;color:var(--color-power)">${fmtPwr(rowKw)}</span>`;
+        if (rowKw > 0) pwrCell = powerCellHtml(rowKw, { ws: rowWsKw, loaders: rowLoaderKw, pumps: fp?.pumpKw || 0 });
         const cls = val > 100 ? 'num-warn' : 'num';
         const hasDetail = ingPills.length > 0;
         const isByproduct = !!info.byproduct;
@@ -1473,6 +1714,7 @@ function calculateRecipes() {
 
     // Shipping pads for items sold (up) and delivered by the station (down)
     shipping.forEach(p => tally(p.pad, p.count));
+    Object.entries(powerPlanResult?.buildings || {}).forEach(([b, n]) => tally(b, n));
     const isLoader = b => b.startsWith('Loader');
     const list = Object.entries(buildings).sort((a, b) => (isLoader(a[0]) - isLoader(b[0])) || b[1] - a[1]);
     const buildingsHtml = list.length ? `
@@ -1485,7 +1727,66 @@ function calculateRecipes() {
           </span>`).join('')}</div>
       </div>` : '';
 
-    return { rows, footer, buildingsHtml, count: Object.keys(totalsMap).length };
+    // One-time build cost of the modular buildings (Construction Material …)
+    let buildCostHtml = '';
+    if (buildCostOn && typeof MODULAR_BUILD_COST !== 'undefined') {
+      const perBuilding = [], need = {};
+      list.forEach(([b, n]) => {
+        const bc = MODULAR_BUILD_COST[b];
+        if (!bc) return;
+        const extra = bc.perModule && MODULAR_BUILDINGS[b] ? Math.max(0, modularModules(b) - MODULAR_BUILDINGS[b].min) : 0;
+        const cost = { ...bc.fixed };
+        Object.entries(bc.perModule || {}).forEach(([i, a]) => { cost[i] = (cost[i] || 0) + a * extra; });
+        Object.entries(cost).forEach(([i, a]) => { need[i] = (need[i] || 0) + a * n; });
+        perBuilding.push([b, n, cost]);
+      });
+      const raw = Object.entries(oneTimeMaterials(need)).sort((a, b) => b[1] - a[1]);
+      const chip = (name, amount) => `
+        <span style="display:inline-flex;align-items:center;gap:4px;background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:5px;padding:2px 7px 2px 3px;font-size:12px;white-space:nowrap">
+          ${iconBox(name, 32)}<span style="color:var(--text-dim)">${name}</span>
+          <span style="font-family:'Share Tech Mono',monospace;color:var(--accent3)">${fmt(Math.ceil(amount - 1e-9))}</span>
+        </span>`;
+      buildCostHtml = perBuilding.length ? `
+      <div class="collapsible-section">
+        <div class="collapsible-header" onclick="toggleSection(this)">
+          <span class="ch-title">Build cost (one-time)</span>
+          <span style="display:flex;align-items:center;gap:12px">
+            <span class="ch-meta">${Object.entries(need).map(([i, a]) => `${fmt(a)} ${i}`).join(' · ')}</span>
+            <span class="ch-arrow">▼</span>
+          </span>
+        </div>
+        <div class="collapsible-body" style="padding:10px 12px 12px">
+          <table class="results-table" style="margin-bottom:12px">
+            <thead><tr><th>Building</th><th style="text-align:right">Count</th><th>Per building</th><th>Total</th></tr></thead>
+            <tbody>${perBuilding.map(([b, n, cost]) => `
+              <tr>
+                <td style="padding:5px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(b, 32)}<span class="label">${b}</span>${MODULAR_BUILDINGS[b] && MODULAR_BUILD_COST[b].perModule ? `<span style="font-size:11px;color:var(--text-dim)">${modularModules(b)} ${MODULAR_BUILDINGS[b].module}</span>` : ''}</div></td>
+                <td class="num">${n}</td>
+                <td style="padding:5px 12px;font-size:12px;color:var(--text-dim)">${Object.entries(cost).map(([i, a]) => `${fmt(a)} ${i}`).join(' · ')}</td>
+                <td style="padding:5px 12px;font-size:12px">${Object.entries(cost).map(([i, a]) => `${fmt(a * n)} ${i}`).join(' · ')}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+          ${buildPlan.mode === 'rate' ? (() => {
+            const dur = m => m >= 60 ? `${Math.floor(m / 60)} h ${Math.round(m % 60)} min` : `${+m.toFixed(1)} min`;
+            const t = Object.entries(need).map(([i, a]) => [i, a, buildRate(i), buildRate(i) > 0 ? a / buildRate(i) : Infinity]);
+            const all = Math.max(...t.map(x => x[3]));
+            return `<div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">Production time at the set rates (lines in the chain)</div>
+            <table class="results-table" style="margin-bottom:12px">
+              <thead><tr><th>Material</th><th style="text-align:right">Needed</th><th style="text-align:right">Rate</th><th style="text-align:right">Time</th></tr></thead>
+              <tbody>${t.map(([i, a, r, m]) => `<tr><td style="padding:5px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(i, 32)}<span class="label">${i}</span></div></td>
+                <td class="num">${fmt(a)}</td><td class="num">${fmt(r)}/min</td><td class="num">${isFinite(m) ? dur(m) : '–'}</td></tr>`).join('')}
+                <tr style="font-weight:600"><td colspan="3" style="padding:5px 12px;color:var(--text-dim)">All done after</td><td class="num">${isFinite(all) ? dur(all) : '– (rate 0)'}</td></tr>
+              </tbody>
+            </table>`;
+          })() : ''}
+          <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">Raw materials, once (not per minute) · attachments counted at their minimum</div>
+          <div style="display:flex;flex-wrap:wrap;gap:5px">${raw.map(([i, a]) => chip(i, a)).join('')}</div>
+        </div>
+      </div>` : '';
+    }
+
+    return { rows, footer, buildingsHtml, buildCostHtml, count: Object.keys(totalsMap).length };
   }
 
   const direct   = buildMaterialRows(directTotals);
@@ -1506,10 +1807,10 @@ function calculateRecipes() {
       <td style="padding:6px 12px"><div style="display:flex;align-items:center;gap:8px">${iconBox(e.machineName, 64)}<span class="label">${e.machineName}</span></div></td>
       <td class="num">${e.count}</td>
       <td class="num">${fmtPwr(e.machPwrKw)}</td>
-      <td class="num">${fmtPwr(e.totalMachPwrKw)}</td>
+      <td class="num">${powerCellHtml(e.totalMachPwrKw, { ws: e.totalWsKw }, '')}</td>
       <td style="padding:6px 12px;font-size:12px;color:var(--text-dim)">${loaderDesc}</td>
       <td class="num">${e.totalLoaderPwrKw ? fmtPwr(e.totalLoaderPwrKw) : '—'}</td>
-      <td class="num" style="color:var(--color-power)">${fmtPwr(e.totalMachPwrKw + e.totalLoaderPwrKw)}</td>
+      <td class="num" style="color:var(--color-power)">${powerCellHtml(e.totalMachPwrKw + e.totalLoaderPwrKw, { ws: e.totalWsKw, loaders: e.totalLoaderPwrKw }, '')}</td>
     </tr>`;
     }).join('');
 
@@ -1751,7 +2052,8 @@ function calculateRecipes() {
           <tbody>${fullDetail.rows}${fullDetail.footer}</tbody>
         </table>
       </div>
-    </div>` : `
+    </div>
+    ${fullDetail.buildCostHtml}` : `
     <div class="collapsible-section">
       <div class="collapsible-header" onclick="toggleSection(this)">
         <span class="ch-title">${depthTitles[calcDepthMode]}</span>

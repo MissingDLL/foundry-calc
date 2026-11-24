@@ -789,7 +789,7 @@ def detect_workstation_data(templates_dir: Path, id_to_name: dict) -> dict:
     list and the robots' workstation_effect were never extracted):
       categories: tag displayName → machines carrying that workstationEffectTag
       effects:    robot name → {machine_speed | machine_efficiency (%),
-                  power_consumption (data02 / 100), applies_to: [category]}
+                  power_consumption (data02 / 100), applies_to: [category], exempt?: [category]}
     data01 / data02 are stored ×100 (Light Bot 3000/2000 → +30 % speed, 20).
     """
     tags = {k: v.get("displayName") or k
@@ -814,8 +814,12 @@ def detect_workstation_data(templates_dir: Path, id_to_name: dict) -> dict:
         except (ValueError, TypeError):
             continue
         applies = [tag_of(t) for t in v.get("workstationItem_requiredTags") or [] if tag_of(t)]
+        # excludedTags: machines of these groups get no bonus although a required tag
+        # matches (Operator Bot/Robot: not on Xeno-Scrap / Xeno-Crystal Extractors)
+        exempt = [tag_of(t) for t in v.get("workstationItem_excludedTags") or [] if tag_of(t)]
         if key and d1 > 0 and applies and v.get("name"):
-            effects[v["name"]] = {key: d1 / 100, "power_consumption": d2 / 100, "applies_to": applies}
+            effects[v["name"]] = {key: d1 / 100, "power_consumption": d2 / 100, "applies_to": applies,
+                                  **({"exempt": exempt} if exempt else {})}
     return {"categories": {c: sorted(m) for c, m in sorted(categories.items())}, "effects": effects}
 
 
@@ -1337,6 +1341,43 @@ def detect_modular_buildings(bots_raw: dict, id_to_name: dict, item_ids: set) ->
         if str(v.get("resourceConverter_hasAdjacencyBonus")) == "True":
             entry["adjacencyPowerDecrease"] = num(v.get("resourceConverter_powerDecreasePerAdjacentResourceConverter"))
         result[machine] = entry
+    return result
+
+
+def detect_modular_build_costs(bots_raw: dict, id_to_name: dict, item_ids: set) -> dict:
+    """
+    One-time construction cost of modular buildings (Construction Material,
+    High-Tech Construction Material …): {base name: {"fixed": {item: n},
+    "perModule": {item: n}}}.
+      fixed     = every module of modularBuildingLimits at its minAmount
+                  × modularBuildingItemCost of that module
+      perModule = cost of the counted module (tower / vent, MODULAR_BUILDINGS)
+                  for each one above its minimum
+    ponytail: optional attachments above their minimum are a layout choice → min only.
+    """
+    def cost(module_id):
+        return {id_to_name.get(c.get("itemTemplateIdentifier", ""), ""): float(c.get("itemCost") or 0)
+                for c in (bots_raw.get(module_id) or {}).get("modularBuildingItemCost") or []}
+    result = {}
+    for ident, v in bots_raw.items():
+        name = id_to_name.get(ident, "")
+        if v.get("modularBuildingType") != "Base" or not name or ident not in item_ids:
+            continue
+        fixed: dict[str, float] = {}
+        for lim in v.get("modularBuildingLimits") or []:
+            n = int(lim.get("minAmount") or 0)
+            for item, amt in cost(lim.get("bot_identifier", "")).items():
+                if item and amt and n:
+                    fixed[item] = fixed.get(item, 0) + n * amt
+        # same counted module as detect_modular_buildings (speed-bonus field only on RC_TYPES:
+        # other templates carry an inert copy of it)
+        rc = ((v.get("resourceConverter_speedBonusModules") or [{}])[0] or {}).get("bot_identifier") \
+            if v.get("type") in RC_TYPES else None
+        counted = rc or v.get("blastFurnace_towerModuleBotIdentifier") \
+            or (v.get("frackingTower_towerModuleBOT_identifier") if v.get("type") == "FrackingTower" else None)
+        per = {k: a for k, a in cost(counted).items() if k and a} if counted else {}
+        if fixed or per:
+            result[name] = {"fixed": fixed, **({"perModule": per} if per else {})}
     return result
 
 
@@ -2403,6 +2444,9 @@ def generate_game_data_js(version: str, recipes: list[dict],
         lines.append(f"  '{mach_name}': {json.dumps(info)},")
     lines.append("});")
     lines.append("")
+    lines.append("// One-time build cost: fixed (all modules at minimum) + perModule × modules above min")
+    lines.append(f"const MODULAR_BUILD_COST = Object.freeze({json.dumps(shipping_data['buildCost'], sort_keys=True)});")
+    lines.append("")
 
     # MACHINE_POWER_KW
     lines.append("// ── Machine power consumption (kW) ───────────────────────────")
@@ -2942,6 +2986,7 @@ def main():
     workstation_data = detect_workstation_data(templates_dir, id_to_name)
     shipping_data = detect_shipping_data(templates_dir, id_to_name)
     shipping_data["excavation"] = shipping_excavation  # rides along to the JS writer
+    shipping_data["buildCost"] = detect_modular_build_costs(bots_raw, id_to_name, _build_item_bot_ids(templates_dir))
     shipping_data["fluid"] = detect_fluid_ports(templates_dir, bots_raw, id_to_name)
     shipping_data["variants"] = build_variant_groups(recipes)
     shipping_data["saveTemplates"] = build_save_templates(templates_dir, id_to_name)

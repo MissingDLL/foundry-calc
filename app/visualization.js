@@ -329,8 +329,8 @@ function buildSankeyGraph() {
       let leftover = Math.min(byproductNode.rate, pool[itemName] ?? byproductNode.rate);
       if (repMachine) {
         // Only what the chain took from the pool is reprocessed (Slag → Cement)
-        const inPerMachine  = (60 / wsCycleTime(repRecipe, { itemName: rp.produces, machineName: repMachine })) * repRecipe.ingredients[0].amount;
-        const outPerMachine = machineOpm(repRecipe, { itemName: rp.produces, machineName: repMachine });
+        const inPerMachine  = (60 / wsCycleTime(repRecipe, { itemName: rp.recipe, machineName: repMachine, product: rp.produces })) * repRecipe.ingredients[0].amount;
+        const outPerMachine = machineOpm(repRecipe, { itemName: rp.recipe, machineName: repMachine, product: rp.produces });
         const usedOut = Math.max(0, (_lastSupply[rp.produces] || 0) - (pool[rp.produces] || 0));
         const usedIn  = Math.min(byproductNode.rate, usedOut / outPerMachine * inPerMachine);
         if (usedIn > 0) { // also tiny amounts: the expand() edge already points at this node

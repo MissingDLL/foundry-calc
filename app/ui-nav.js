@@ -224,6 +224,11 @@ function _initVizBlob() {
 // PLAN EXPORT / IMPORT
 // ============================================================
 
+// Current recipe list + all settings as a plan object (export, share, saved plans)
+function _buildPlanObject() {
+  return { version: 1, gameVersion: GAME_VERSION_ID, selectedRecipeList: savedRecipeList(), settings: settingsSnapshot() };
+}
+
 // Serialises the current recipe list + all settings into a JSON file
 // and triggers a browser download.
 function exportPlan() {
@@ -231,37 +236,7 @@ function exportPlan() {
     alert('No recipes selected – please add recipes first.');
     return;
   }
-  const famDefaults = {};
-  MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
-
-  const plan = {
-    version: 1,
-    selectedRecipeList: selectedRecipeList.map(item => ({
-      itemName:    item.itemName,
-      recipeName:  item.recipeName,
-      machineName: item.machineName,
-      goal:        item.goal,
-      wsOverride:  item.wsOverride,
-      forSale:     !!item.forSale,
-    })),
-    settings: {
-      variantSettings,
-      minerSettings,
-      botEfficiencyOverrides,
-      botWeightReductions,
-      miningEfficiencyLevel,
-      pumpjackEfficiencyLevel,
-      depletedVeins,
-      modularSettings,
-      adjacencyBonus,
-      veinsDepleted,
-      shippingShip,
-      shippingFlightSec,
-      stockItems,
-      workstationConfigs,
-      machineFamilyDefaults: famDefaults,
-    },
-  };
+  const plan = _buildPlanObject();
 
   const blob = new Blob([JSON.stringify(plan, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
@@ -300,57 +275,20 @@ function _applyImportedPlan(plan) {
     return;
   }
 
+  // Made with other game data? Recipes / machines may differ — ask first
+  if (plan.gameVersion && plan.gameVersion !== GAME_VERSION_ID) {
+    const name = id => (GAME_VERSIONS.find(v => v.id === id) || {}).label || id;
+    if (!confirm(`This plan was made with game data "${name(plan.gameVersion)}", loaded is "${name(GAME_VERSION_ID)}".\nRecipes that no longer exist are skipped. Load anyway?`)) return;
+  }
+
   // Restore recipe list — skip recipes no longer in RECIPES
   if (Array.isArray(plan.selectedRecipeList)) selectedRecipeList = sanitizeRecipeList(plan.selectedRecipeList);
 
-  // Reset all settings to their defaults before applying imported values.
-  // Without this, Object.assign() would only merge — leaving any keys that
-  // exist in the current session but not in the imported plan in place,
-  // causing different behaviour than opening a fresh share link.
-  Object.keys(variantSettings).forEach(k => delete variantSettings[k]);
-  Object.keys(minerSettings).forEach(k => delete minerSettings[k]);
-  Object.keys(botEfficiencyOverrides).forEach(k => delete botEfficiencyOverrides[k]);
-  Object.keys(botWeightReductions).forEach(k => delete botWeightReductions[k]);
-  Object.keys(workstationConfigs).forEach(k => delete workstationConfigs[k]);
-  miningEfficiencyLevel   = 0;
-  pumpjackEfficiencyLevel = 0;
-  depletedVeins           = 1;
-  Object.keys(modularSettings).forEach(k => delete modularSettings[k]);
-  adjacencyBonus = true;
-  veinsDepleted  = false;
-  shippingShip = null;
-  shippingFlightSec = 26;
-  stockItems = {};
-  MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
-
-  // Restore settings from the imported plan
-  const s = plan.settings || {};
-  if (s.variantSettings)        Object.assign(variantSettings,        s.variantSettings);
-  if (s.minerSettings)          Object.assign(minerSettings,          s.minerSettings);
-  if (s.botEfficiencyOverrides) Object.assign(botEfficiencyOverrides, s.botEfficiencyOverrides);
-  if (s.botWeightReductions) Object.entries(s.botWeightReductions).forEach(([k, v]) => {
-    if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 100) botWeightReductions[k] = v;
-  });
-  const lvl = (v, min = 0) => (typeof v === 'number' && isFinite(v)) ? Math.max(min, Math.floor(v)) : null;
-  miningEfficiencyLevel   = lvl(s.miningEfficiencyLevel)   ?? 0;
-  pumpjackEfficiencyLevel = lvl(s.pumpjackEfficiencyLevel) ?? 0;
-  depletedVeins           = lvl(s.depletedVeins, 1)        ?? 1;
-  if (s.workstationConfigs)     Object.assign(workstationConfigs,     s.workstationConfigs);
-  if (s.modularSettings) Object.entries(s.modularSettings).forEach(([m, n]) => {
-    if (typeof n === 'number' && isFinite(n)) modularSettings[m] = n; // clamped in modularModules()
-  });
-  if (typeof s.adjacencyBonus === 'boolean') adjacencyBonus = s.adjacencyBonus;
-  if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
-  if (typeof s.shippingShip === 'string') shippingShip = s.shippingShip;
-  if (typeof s.shippingFlightSec === 'number' && s.shippingFlightSec >= 0) shippingFlightSec = s.shippingFlightSec;
-  stockItems = sanitizeStock(s.stockItems);
+  // Defaults first, then the plan's values: nothing of the current session
+  // leaks in (same result as opening the share link in a fresh tab)
+  resetSettings();
+  applySettings(plan.settings || {});
   _applyModularSpeeds();
-  if (s.machineFamilyDefaults) {
-    MACHINE_FAMILIES.forEach(f => {
-      const saved = s.machineFamilyDefaults[f.label];
-      if (saved && f.machines.includes(saved)) f.defaultChoice = saved;
-    });
-  }
 
   // Persist and re-render everything
   saveSettings();
@@ -380,37 +318,7 @@ function sharePlan() {
     return;
   }
 
-  const famDefaults = {};
-  MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
-
-  const plan = {
-    version: 1,
-    selectedRecipeList: selectedRecipeList.map(item => ({
-      itemName:    item.itemName,
-      recipeName:  item.recipeName,
-      machineName: item.machineName,
-      goal:        item.goal,
-      wsOverride:  item.wsOverride,
-      forSale:     !!item.forSale,
-    })),
-    settings: {
-      variantSettings,
-      minerSettings,
-      botEfficiencyOverrides,
-      botWeightReductions,
-      miningEfficiencyLevel,
-      pumpjackEfficiencyLevel,
-      depletedVeins,
-      modularSettings,
-      adjacencyBonus,
-      veinsDepleted,
-      shippingShip,
-      shippingFlightSec,
-      stockItems,
-      workstationConfigs,
-      machineFamilyDefaults: famDefaults,
-    },
-  };
+  const plan = _buildPlanObject();
 
   const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(plan))));
   const url     = location.href.split('#')[0] + '#plan=' + encoded;
@@ -487,3 +395,15 @@ document.addEventListener('keydown', function (e) {
 // ============================================================
 // SANKEY — Datenaufbau
 // ============================================================
+
+// Sidebar tool chips (Options, Stock, Saved …): one panel open at a time,
+// a click outside closes it
+document.addEventListener('toggle', e => {
+  const d = e.target;
+  if (!d.open || !d.parentElement?.classList.contains('side-tools')) return;
+  d.parentElement.querySelectorAll(':scope > details[open]').forEach(o => { if (o !== d) o.open = false; });
+}, true);
+document.addEventListener('pointerdown', e => {
+  const tools = document.querySelector('.side-tools');
+  if (tools && !tools.contains(e.target)) tools.querySelectorAll(':scope > details[open]').forEach(o => { o.open = false; });
+});

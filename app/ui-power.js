@@ -211,6 +211,17 @@ function _renderRows() {
          </div>`
       : '';
 
+    // All buildings of these units (NPP: turbines + reactors + steam generators + cooling towers)
+    const blds = count > 0 && typeof _powerBuildings === 'function' ? Object.entries(_powerBuildings(gen, count)) : [];
+    const buildingsLine = blds.length > 1
+      ? `<div style="display:flex; flex-wrap:wrap; gap:5px; align-items:center; font-size:12px; color:var(--color-text-secondary);">
+           Buildings:
+           ${blds.map(([b, n]) => `<span style="display:inline-flex; align-items:center; gap:4px; background:var(--color-bg-elevated); border:1px solid var(--color-border); border-radius:5px; padding:2px 7px 2px 3px; white-space:nowrap">
+             ${getIcon(b, 20)}<span>${b}</span><strong style="color:var(--accent3)">×${n}</strong></span>`).join('')}
+           <span style="color:var(--color-text-disabled)">· ${blds.reduce((a, [, n]) => a + n, 0)} total</span>
+         </div>`
+      : '';
+
     const surplusLine = count > 0 && surplus > 0
       ? `<span style="font-size:11px; color:var(--color-text-disabled); margin-left:6px;">+${_fmtPower(surplus)} surplus</span>`
       : '';
@@ -258,6 +269,7 @@ function _renderRows() {
         </div>
       </div>
 
+      ${buildingsLine}
       ${fuelLine}
     </div>`;
   }).join('');

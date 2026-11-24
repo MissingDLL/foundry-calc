@@ -523,7 +523,7 @@ function renderStockList() {
     inp.onchange = () => setStockAmount(item, inp.value);
     const del = document.createElement("button");
     del.className = "reset-btn"; del.textContent = "✕"; del.title = "Remove";
-    del.style.cssText = "margin:0;padding:3px 7px;font-size:11px";
+    del.style.cssText = "margin:0;padding:3px 7px;font-size:11px;width:auto;flex:none";
     del.onclick = () => setStockAmount(item, 0);
     row.append(inp, del);
     el.appendChild(row);
@@ -578,13 +578,63 @@ function renderHistory() {
   el.innerHTML = h.map((e, i) => {
     const label = e.list.map(l => `${+l.goal.toFixed(2)}/min ${l.itemName}`).join(", ");
     const when = new Date(e.at).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
-    return `<div style="display:flex;gap:6px;align-items:center;font-size:12px">
-      <button class="reset-btn" style="margin:0;padding:4px 8px;font-size:11px;flex:1;min-width:0;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"
-        title="${label}" onclick="loadHistoryEntry(${i})">${label}</button>
-      <span style="color:var(--color-text-disabled);white-space:nowrap">${when}</span>
-      <button class="reset-btn" style="margin:0;padding:4px 7px;font-size:11px" title="Remove" onclick="deleteHistoryEntry(${i})">✕</button>
+    return `<div style="display:flex;gap:6px;align-items:stretch">
+      <button class="reset-btn" style="margin:0;padding:4px 8px;font-size:11px;flex:1;min-width:0;text-align:left;line-height:1.35"
+        title="${label}" onclick="loadHistoryEntry(${i})">
+        <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--color-text-primary)">${label}</div>
+        <div style="font-size:10px;color:var(--color-text-disabled)">${when}</div></button>
+      <button class="reset-btn" style="margin:0;padding:4px 7px;font-size:11px;width:auto;flex:none" title="Remove" onclick="deleteHistoryEntry(${i})">✕</button>
     </div>`;
   }).join("");
+}
+
+// ── Saved plans (name → full plan incl. settings and Custom WS) ──
+function loadSavedPlans() {
+  try { return JSON.parse(localStorage.getItem("fc_saved") || "[]"); } catch (e) { return []; }
+}
+function _storeSavedPlans(list) {
+  try { localStorage.setItem("fc_saved", JSON.stringify(list)); }
+  catch (e) { alert("Could not save (browser storage full or blocked)."); }
+}
+function saveCurrentPlan() {
+  const input = document.getElementById("savePlanName");
+  const name = (input?.value || "").trim();
+  if (!selectedRecipeList.some(l => !l.auto)) { alert("No recipes selected – please add recipes first."); return; }
+  if (!name) { input?.focus(); return; }
+  const list = loadSavedPlans().filter(e => !(e.name === name && e.version === GAME_VERSION_ID));
+  if (list.length !== loadSavedPlans().length && !confirm(`Overwrite "${name}"?`)) return;
+  list.unshift({ name, version: GAME_VERSION_ID, at: Date.now(), plan: _buildPlanObject() });
+  _storeSavedPlans(list);
+  input.value = "";
+  renderSavedPlans();
+}
+function loadSavedPlan(i) {
+  const e = loadSavedPlans().filter(e => e.version === GAME_VERSION_ID)[i];
+  if (e) _applyImportedPlan(e.plan);
+}
+function deleteSavedPlan(i) {
+  const all = loadSavedPlans();
+  const e = all.filter(e => e.version === GAME_VERSION_ID)[i];
+  if (!e || !confirm(`Delete "${e.name}"?`)) return;
+  _storeSavedPlans(all.filter(x => x !== e));
+  renderSavedPlans();
+}
+function renderSavedPlans() {
+  const el = document.getElementById("savedList");
+  if (!el) return;
+  const list = loadSavedPlans().filter(e => e.version === GAME_VERSION_ID);
+  const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  el.innerHTML = list.length ? list.map((e, i) => {
+    const label = e.plan.selectedRecipeList.map(l => `${+l.goal.toFixed(2)}/min ${l.itemName}`).join(", ");
+    const when = new Date(e.at).toLocaleString([], { dateStyle: "short", timeStyle: "short" });
+    return `<div style="display:flex;gap:6px;align-items:stretch">
+      <button class="reset-btn" style="margin:0;padding:4px 8px;font-size:11px;flex:1;min-width:0;text-align:left;line-height:1.35"
+        title="${esc(label)}" onclick="loadSavedPlan(${i})">
+        <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--color-text-primary);font-weight:600">${esc(e.name)}</div>
+        <div style="font-size:10px;color:var(--color-text-disabled);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${when} · ${esc(label)}</div></button>
+      <button class="reset-btn" style="margin:0;padding:4px 7px;font-size:11px;width:auto;flex:none" title="Delete" onclick="deleteSavedPlan(${i})">✕</button>
+    </div>`;
+  }).join("") : `<div style="font-size:12px;color:var(--color-text-disabled)">Nothing saved yet.</div>`;
 }
 
 function loadHistoryEntry(i) {
@@ -604,6 +654,13 @@ function deleteHistoryEntry(i) {
 }
 
 function renderSelectedRecipes() {
+  // bot sidebar checkboxes follow the list (load, import, history, reset)
+  const picked = new Set(selectedRecipeList.map(l => l.itemName));
+  document.querySelectorAll('#botList input[id^="chk_"]').forEach(c => { c.checked = picked.has(c.id.slice(4)); });
+  const botLine = selectedRecipeList.find(l => RECIPES[l.recipeName]?.category === "Robots");
+  const goalEl = document.getElementById("goalProd");
+  if (botLine && goalEl && document.activeElement !== goalEl) goalEl.value = +botLine.goal.toFixed(2);
+  renderPlanOptions();
   renderStockList(); // stock is part of the plan (load / import / reset)
   const sellBtn = document.getElementById("botSellAllBtn");
   if (sellBtn) {
@@ -660,18 +717,24 @@ function renderSelectedRecipes() {
       <div style="background:var(--color-bg-elevated);border:1px solid var(--color-border);border-radius:12px;padding:9px 10px">
         <!-- Row 1: icon + name + machines badge + remove -->
         <div style="display:flex;align-items:center;gap:8px">
+          <div data-idx="${idx}" onclick="toggleRecipeCard(this.dataset.idx)" title="${item.open ? 'Collapse' : 'Expand'}"
+            style="display:flex;align-items:center;gap:8px;flex:1;min-width:0;cursor:pointer">
+          <span style="font-size:9px;color:var(--text-dim);width:8px">${item.open ? '▼' : '▶'}</span>
           ${getIcon(item.itemName, 28)}
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${item.itemName}</div>
-            <div style="font-size:10px;color:var(--text-dim)">${hasVariants ? item.recipeName : r.category}${Array.isArray(r.output) && !r.chanceOutputs && r.output[0]?.item !== item.itemName && r.output[0]?.item !== item.recipeName ? ' → ' + r.output[0].item : ''}</div>
+            <div style="font-size:10px;color:var(--text-dim)">${item.auto === 'power' ? '<span style="color:var(--color-power)">⚡ fuel for the power plant (automatic)</span> · ' : item.auto === 'build' ? '<span style="color:var(--accent3)">🏗 build material (automatic)</span> · ' : ''}${hasVariants ? item.recipeName : r.category}${Array.isArray(r.output) && !r.chanceOutputs && r.output[0]?.item !== item.itemName && r.output[0]?.item !== item.recipeName ? ' → ' + r.output[0].item : ''}</div>
+          </div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-family:'Share Tech Mono',monospace;font-size:18px;color:var(--accent);line-height:1">${machinesNeeded}</div>
             <div style="font-size:10px;color:var(--text-dim)">${fmt(actualOpm)}/min</div>
           </div>
-          <button data-idx="${idx}" onclick="removeRecipeItem(this.dataset.idx)"
+          <button data-idx="${idx}" onclick="${item.auto === 'power' ? 'setPowerPlan({ on: false })' : item.auto === 'build' ? "setBuildPlan({ mode: 'once' })" : 'removeRecipeItem(this.dataset.idx)'}"
+            ${item.auto === 'power' ? 'title="Turn off Calculate power"' : item.auto === 'build' ? 'title="Build cost back to one-time"' : ''}
             style="padding:3px 7px;background:transparent;border:1px solid var(--color-danger-border);color:var(--color-danger);border-radius:4px;cursor:pointer;font-size:12px;flex-shrink:0">✕</button>
         </div>
+        <div style="display:${item.open ? 'block' : 'none'}">
         <!-- Row 2: selects + goal -->
         <div style="display:flex;gap:5px;margin-top:7px;flex-wrap:wrap;align-items:center">
           ${hasVariants ? `<select data-idx="${idx}" onchange="updateRecipeVariant(this.dataset.idx, this.value)"
@@ -687,7 +750,7 @@ function renderSelectedRecipes() {
           </div>
           <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
             <span style="font-size:10px;color:var(--text-dim)">Goal</span>
-            <input type="number" value="${item.goal}" min="0.01" max="999999" step="any" data-idx="${idx}"
+            <input type="number" value="${item.auto ? +item.goal.toFixed(2) : item.goal}" ${item.auto ? `disabled title="${item.auto === 'build' ? 'Set under Build cost in the sidebar' : 'Set by the chain\'s power demand'}"` : ''} min="0.01" max="999999" step="any" data-idx="${idx}"
               onchange="updateRecipeGoal(this.dataset.idx, this.value)"
               style="width:64px;padding:5px 8px;background:var(--color-surface-input);border:1px solid var(--color-border);color:var(--color-text-primary);border-radius:8px;font-family:-apple-system,sans-serif;font-size:11px;text-align:right;outline:none">
           </div>
@@ -749,14 +812,22 @@ function renderSelectedRecipes() {
           })()
           : ""
         }
-      </div>
         <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--color-border)">
           ${buildItemWsRow(item, idx)}
+        </div>
         </div>
       </div>`;
     })
     .join("");
   saveSettings();
+}
+
+// Card collapsed by default (UI state, not saved): header shows count + ✕ only
+function toggleRecipeCard(idx) {
+  const item = selectedRecipeList[idx];
+  if (!item) return;
+  item.open = !item.open;
+  renderSelectedRecipes();
 }
 
 // ── Per-item workstation row ──────────────────────────────────
@@ -765,7 +836,7 @@ function renderSelectedRecipes() {
 function chainWsCategories(item) {
   const cats = new Set(), seen = new Set();
   const walk = (recipeName, machine) => {
-    const c = MACHINE_TO_CATEGORY[machine];
+    const c = globalWsCategory(machine);
     if (c && workstationConfigs[c]) cats.add(c);
     if (seen.has(recipeName)) return;
     seen.add(recipeName);
@@ -780,24 +851,23 @@ function chainWsCategories(item) {
 }
 
 function buildItemWsRow(item, idx) {
-  const cat = MACHINE_TO_CATEGORY[item.machineName];
+  const cat = globalWsCategory(item.machineName);
   const globalConfig = cat ? workstationConfigs[cat] : null;
-  const hasOverride = item.wsOverride !== null && item.wsOverride !== undefined;
-  const isDisabled = hasOverride && item.wsOverride.disabled;
+  const hasOverride = !!item.wsOverride && !item.wsOverride.useGlobal;
+  const usesGlobal = !hasOverride && (wsGlobalOn || !!item.wsOverride?.useGlobal);
+  const isDisabled = (hasOverride && item.wsOverride.disabled) || (!hasOverride && !usesGlobal);
   const useOverride = hasOverride && !isDisabled;
   const activeConfig = useOverride ? item.wsOverride : (isDisabled ? null : globalConfig);
-  const bonus = calcWsBonusForMachine(item.machineName, activeConfig);
-  const bonusLabel = bonus > 0
-    ? `<span style="color:var(--accent3);font-family:'Share Tech Mono',monospace;font-size:11px">+${Math.round(bonus * 1000) / 10}%</span>`
-    : `<span style="color:var(--text-dim);font-size:11px">no bonus</span>`;
+  const effHtml = wsEffectHtml(calcWsEffectForMachine(item.machineName, getItemWsConfig(item)));
+  const bonusLabel = effHtml
+    ? `<span style="font-family:'Share Tech Mono',monospace;font-size:11px">${effHtml}</span>`
+    : `<span style="color:var(--text-dim);font-size:11px">${!hasOverride && !usesGlobal ? 'global off' : 'no bonus'}</span>`;
   const modeLabel = useOverride ? "Custom WS" : (isDisabled ? "No WS" : "Global WS");
 
   // Only bots compatible with this item's machine category
   const compatBots = Object.entries(RECIPES)
     .filter(([, r]) => r.category === "Robots" && r.workstation_effect &&
-      (r.workstation_effect.applies_to || []).some(c =>
-        (APPLIES_TO_MACHINES[c] || []).includes(item.machineName)
-      ))
+      wsBotFits(r.workstation_effect, item.machineName))
     .sort(([a], [b]) => a.localeCompare(b));
 
   const editorHtml = (() => {
@@ -831,7 +901,7 @@ function buildItemWsRow(item, idx) {
       ? `<label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--accent3);cursor:pointer;flex-shrink:0">
             <input type="checkbox" ${cfg.chargedCore ? "checked" : ""} data-idx="${idx}"
               onchange="updateItemWsCore(this)" style="accent-color:var(--accent3)">
-            Charged Core
+            ${I.XENO_POWER_CORE}
           </label>`
       : "";
 
@@ -841,7 +911,7 @@ function buildItemWsRow(item, idx) {
           ${["none", "global", "custom"].map(mode => {
       const isActive = mode === "custom" ? useOverride
         : mode === "none" ? isDisabled
-          : (!hasOverride && !isDisabled);
+          : usesGlobal;
       const label = mode === "none" ? "No WS" : mode === "global" ? "Global WS" : "Custom WS";
       return `<button data-action="wsmode" data-idx="${idx}" data-mode="${mode}"
               style="padding:3px 10px;border-radius:4px;cursor:pointer;font-family:inherit;font-size:11px;transition:all 0.15s;${isActive
@@ -860,8 +930,10 @@ function buildItemWsRow(item, idx) {
         </div>
         ${useOverride
         ? slotsHtml
-        : globalConfig && !useOverride
-          ? `<div style="font-size:11px;color:var(--text-dim);margin-top:5px">Using global WS for: <span style="color:var(--accent)">${chainWsCategories(item).join(", ") || "—"}</span></div>`
+        : usesGlobal && globalConfig
+          ? `<div style="font-size:11px;color:var(--text-dim);margin-top:5px">Global WS: <span style="color:var(--color-text-primary)">${wsConfigText(globalConfig)}</span></div>`
+          : !hasOverride && !wsGlobalOn
+          ? `<div style="font-size:11px;color:var(--color-text-disabled);margin-top:5px">Global workstations are off (Options) — pick Global WS to use them for this recipe.</div>`
           : `<div style="font-size:11px;color:var(--color-text-disabled);margin-top:5px">No WS bonus active.</div>`
       }
       </div>`;
@@ -871,7 +943,7 @@ function buildItemWsRow(item, idx) {
       <span style="font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:1px">Workstation:</span>
       <button data-action="wstoggle" data-idx="${idx}"
         style="padding:2px 8px;background:${item.wsExpanded ? "var(--color-accent-active-bg)" : "var(--color-accent-inactive-bg)"};border:1px solid ${item.wsExpanded ? "var(--color-border-focus)" : "var(--color-border)"};color:var(--color-interactive);border-radius:6px;cursor:pointer;font-size:11px;display:flex;align-items:center;gap:5px">
-        ${modeLabel} ${bonusLabel} <span style="font-size:9px">${item.wsExpanded ? "▲" : "▼"}</span>
+        ${modeLabel} ${bonusLabel} <span style="font-size:9px" title="${wsConfigText(getItemWsConfig(item))}">${item.wsExpanded ? "▲" : "▼"}</span>
       </button>
       ${compatBots.length ? `<button onclick="event.stopPropagation();optimizeLineWs(${idx})"
         title="Best workstation for this recipe: WS 3, charged core, the bot mix with the fewest machines in the whole chain"
@@ -889,7 +961,7 @@ function buildItemWsRow(item, idx) {
 // ponytail: all bots from the game data count, owned or not
 function _wsBestBots(machineName, cat) {
   const fits = we => cat ? (we.applies_to || []).includes(cat)
-    : (we.applies_to || []).some(c => (APPLIES_TO_MACHINES[c] || []).includes(machineName));
+    : wsBotFits(we, machineName);
   const bots = Object.entries(RECIPES).filter(([, r]) => r.category === "Robots" && r.workstation_effect && fits(r.workstation_effect));
   const best = key => bots
     .filter(([, r]) => r.workstation_effect[key] > 0)
@@ -907,32 +979,58 @@ function _wsMixes(b) {
   return out;
 }
 
-// [machines, kW] of the whole chain for the current settings
+// Optimize goal (dialog): 'machines' | 'power' | 'raw' (solid raw materials /min)
+let _wsGoal = 'machines';
+
+// [main, tie-break] of the whole chain for the current settings and goal
 function _wsChainScore() {
+  // "Calculate power": more power → more fuel chain and power plant, so both count
+  if (powerPlan.on) syncPowerLine();
   const p = chainPowerKw();
-  if (!p) return [Infinity, Infinity];
+  if (!p) return [Infinity, Infinity, Infinity];
   let machines = 0;
   p.graph.nodes.forEach(n => { if (n.machineName && n.machineCount > 0) machines += ceilMachines(n.machineCount); });
-  return [machines, p.machines + p.loaders];
+  Object.values(powerPlanResult?.buildings || {}).forEach(n => { machines += n; });
+  const kw = p.machines + p.loaders;
+  // ponytail: fluids (water, crude) left out — litres would drown the ores
+  const raw = p.graph.nodes.filter(n => n.kind === 'raw' && !FLUID_ITEMS.has(n.icon || n.label)).reduce((a, n) => a + n.rate, 0);
+  // goal first, then the other two as tie-breaks (no "first tried wins" on a tie)
+  if (_wsGoal === 'power') return [kw, machines, raw];
+  if (_wsGoal === 'raw')   return [raw, machines, kw];
+  return [machines, kw, raw];
 }
 
-// Tries each option (the first one wins ties) and keeps the best
+// a better than b: first differing value (goal, then tie-breaks) is lower
+const _wsBetter = (a, b) => { const i = a.findIndex((v, k) => Math.abs(v - b[k]) > 1e-6); return i >= 0 && a[i] < b[i]; };
+
+// Tries each option (the first one wins full ties) and keeps the best;
+// identical options are scored once
 function _wsPick(apply, options) {
   let best, bestScore;
+  const seen = new Set();
   options.forEach(o => {
+    const key = JSON.stringify(o ?? null);
+    if (seen.has(key)) return;
+    seen.add(key);
     apply(o);
     const s = _wsChainScore();
-    if (!bestScore || s[0] < bestScore[0] || (s[0] === bestScore[0] && s[1] < bestScore[1] - 1e-6)) { best = o; bestScore = s; }
+    if (!bestScore || _wsBetter(s, bestScore)) { best = o; bestScore = s; }
   });
   apply(best);
 }
 
+const WS_NONE = () => ({ tier: 1, robots: [], chargedCore: false, disabled: true });
+
+// Options for one machine: keep, no WS, then the speed/eff mixes (WS 3 + core)
+const _wsOptionsFor = (machineName, keep) => {
+  const mixes = _wsMixes(_wsBestBots(machineName));
+  return mixes.length ? [keep, WS_NONE(), ...mixes] : [];
+};
+
 function _wsOptimizeLine(item) {
-  const mixes = _wsMixes(_wsBestBots(item.machineName));
-  if (!mixes.length) return;
-  const keep = item.wsOverride;
   // current setting first: only a real improvement replaces it
-  _wsPick(o => { item.wsOverride = o; }, [keep, ...mixes]);
+  const opts = _wsOptionsFor(item.machineName, item.wsOverride);
+  if (opts.length) _wsPick(o => { item.wsOverride = o; }, opts);
 }
 
 function _wsAfterOptimize() {
@@ -950,29 +1048,152 @@ function optimizeLineWs(idx) {
   _wsAfterOptimize();
 }
 
-// Global WS per machine group of the whole chain (intermediate machines
-// follow it), then every selected line on its own
-function optimizeAllWs() {
-  if (!selectedRecipeList.length) return;
-  selectedRecipeList.forEach(l => { delete l.wsOverride; }); // lines follow the global WS meanwhile
-  const g = buildSankeyGraph();
-  const cats = new Set((g?.nodes || [])
-    .filter(n => n.machineName && n.machineCount > 0)
-    .map(n => MACHINE_TO_CATEGORY[n.machineName]).filter(Boolean));
-  cats.forEach(cat => {
-    const mixes = _wsMixes(_wsBestBots(null, cat));
-    if (!mixes.length) return;
-    const keep = workstationConfigs[cat];
-    _wsPick(o => { if (o) workstationConfigs[cat] = o; else delete workstationConfigs[cat]; }, [keep, ...mixes]);
+// Every recipe of the chain gets its own Custom WS: selected lines (wsOverride)
+// and the recipes deeper in the chain (wsRecipeConfigs). Each option is scored
+// on the WHOLE chain (machines, then power), because a choice at A changes the
+// demand at B, C, D. Top-down, in rounds until nothing changes.
+// ponytail: coordinate search — very good, not guaranteed the global optimum
+// (all combinations = 5^n); max `rounds` rounds (dialog).
+// Overlay with a spinner and "X of Y" while Optimize runs (it yields to the browser)
+function _wsProgress(text, sub = '') {
+  let el = document.getElementById('wsProgress');
+  if (text == null) { el?.remove(); return; }
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'wsProgress';
+    el.className = 'ws-progress';
+    el.innerHTML = '<div class="ws-progress-box"><div class="ws-spinner"></div><div class="ws-progress-text"></div><div class="ws-progress-sub"></div><button class="calc-btn ws-progress-ok" style="display:none">OK</button></div>';
+    document.body.appendChild(el);
+  }
+  el.querySelector('.ws-progress-text').textContent = text;
+  el.querySelector('.ws-progress-sub').textContent = sub;
+}
+// Final message: spinner off, OK button; resolves when OK is pressed
+function _wsProgressDone(text, sub) {
+  _wsProgress(text, sub);
+  const el = document.getElementById('wsProgress');
+  el.classList.add('done');
+  el.querySelector('.ws-spinner').style.display = 'none';
+  const ok = el.querySelector('.ws-progress-ok');
+  ok.style.display = '';
+  ok.focus();
+  return new Promise(r => { ok.onclick = r; });
+}
+let _wsOptimizing = false;
+
+// Dialog before Optimize: rounds + goal (kept per browser)
+function openWsOptimizeDialog() {
+  let pref = { rounds: 4, goal: 'machines' };
+  try { pref = { ...pref, ...JSON.parse(localStorage.getItem('fc_wsopt') || '{}') }; } catch { /* defaults */ }
+  let dlg = document.getElementById('wsOptDialog');
+  if (!dlg) {
+    dlg = document.createElement('dialog');
+    dlg.id = 'wsOptDialog';
+    dlg.className = 'ws-opt-dialog';
+    document.body.appendChild(dlg);
+  }
+  const goals = [['machines', 'Fewest machines', 'then less power'],
+                 ['power', 'Least power', 'machines + loaders; then fewer machines'],
+                 ['raw', 'Fewest raw materials', 'ores and other solid raw items per min (fluids not counted); then fewer machines']];
+  dlg.innerHTML = `<form method="dialog">
+      <div class="ws-opt-title">⚡ Optimize workstations</div>
+      <div class="ws-opt-label">Optimize for</div>
+      ${goals.map(([v, l, d]) => `<label class="ws-opt-choice"><input type="radio" name="goal" value="${v}" ${pref.goal === v ? 'checked' : ''}>
+        <span><b>${l}</b><br><small>${d}</small></span></label>`).join('')}
+      <label class="ws-opt-label" style="display:flex;align-items:center;gap:8px;margin-top:12px">Max. rounds
+        <input type="number" name="rounds" min="1" max="20" step="1" value="${pref.rounds}" style="width:64px"></label>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">Stops earlier once a round changes nothing.</div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+        <button value="cancel" class="reset-btn" style="width:auto;margin:0">Cancel</button>
+        <button value="ok" class="calc-btn" style="width:auto;margin:0;padding:8px 18px">Start</button>
+      </div>
+    </form>`;
+  dlg.onclose = () => {
+    if (dlg.returnValue !== 'ok') return;
+    const f = dlg.querySelector('form');
+    const opts = { goal: f.goal.value, rounds: Math.min(20, Math.max(1, parseInt(f.rounds.value) || 4)) };
+    try { localStorage.setItem('fc_wsopt', JSON.stringify(opts)); } catch { /* not kept */ }
+    optimizeAllWs(opts);
+  };
+  dlg.returnValue = '';
+  dlg.showModal();
+}
+
+async function optimizeAllWs({ rounds = 4, goal = 'machines' } = {}) {
+  if (!selectedRecipeList.length || _wsOptimizing) return;
+  _wsOptimizing = true;
+  _wsGoal = goal;
+  _wsEffCache = new WeakMap();
+  let lastYield = 0; // first step paints the overlay right away
+  const step = async (text, sub) => {
+    _wsProgress(text, sub);
+    if (performance.now() - lastYield > 100) { await new Promise(r => setTimeout(r, 0)); lastYield = performance.now(); }
+  };
+  try {
+  await step('Preparing…');
+  const lineRecipes = new Set(selectedRecipeList.map(l => l.recipeName));
+  const lines = selectedRecipeList.filter(l => _wsOptionsFor(l.machineName).length);
+  const chain = new Map(); // recipe → machine, every chain recipe a bot fits
+  (buildSankeyGraph()?.nodes || []).filter(n => n.machineName && n.machineCount > 0).forEach(n => {
+    const rn = resolveRecipeName(n.label);
+    if (RECIPES[rn] && !lineRecipes.has(rn) && !chain.has(rn) && _wsOptionsFor(n.machineName).length) chain.set(rn, n.machineName);
   });
-  selectedRecipeList.forEach(_wsOptimizeLine);
+  // Three fixed starts (no WS / all speed / all eff), each searched to the end;
+  // the best result wins → same result every time, independent of earlier WS
+  const startCfg = { none: () => WS_NONE(), speed: m => _wsMixes(_wsBestBots(m)).at(-1), eff: m => _wsMixes(_wsBestBots(m))[0] };
+  const starts = Object.keys(startCfg);
+  let best = null;
+  const usedRounds = [];
+  for (const [si, start] of starts.entries()) {
+    lines.forEach(l => { l.wsOverride = startCfg[start](l.machineName); });
+    wsRecipeConfigs = {};
+    chain.forEach((m, rn) => { wsRecipeConfigs[rn] = startCfg[start](m); });
+    calculateRecipes(); // byproduct supply pool of the graph from this start
+    let used = rounds, stable = false;
+    for (let round = 0; round < rounds; round++) {
+      const before = JSON.stringify([wsRecipeConfigs, lines.map(l => l.wsOverride)]);
+      const total = lines.length + chain.size;
+      let done = 0;
+      const head = () => `Start ${si + 1} of ${starts.length} · Round ${round + 1} of max. ${rounds} · ${++done} of ${total}`;
+      for (const l of lines) { await step(head(), l.itemName); _wsOptimizeLine(l); }
+      for (const [rn, machineName] of chain) {
+        await step(head(), rn);
+        _wsPick(o => { wsRecipeConfigs[rn] = o; }, _wsOptionsFor(machineName, wsRecipeConfigs[rn]));
+      }
+      if (JSON.stringify([wsRecipeConfigs, lines.map(l => l.wsOverride)]) === before) { used = round + 1; stable = true; break; }
+    }
+    usedRounds.push(stable ? `${used}` : `${used}+`);
+    calculateRecipes(); // score every start with its own up-to-date supply pool
+    const score = _wsChainScore();
+    if (!best || _wsBetter(score, best.score))
+      best = { score, start, rc: structuredClone(wsRecipeConfigs), lo: lines.map(l => structuredClone(l.wsOverride)) };
+  }
+  wsRecipeConfigs = best.rc;
+  lines.forEach((l, i) => { l.wsOverride = best.lo[i]; });
+  _wsEffCache = null;
+  _wsAfterOptimize();
+  const limited = usedRounds.some(r => r.endsWith('+'));
+  await _wsProgressDone(`Done · best of ${starts.length} starts: ${best.start === 'none' ? 'no WS' : 'all ' + best.start}`,
+              `rounds per start: ${usedRounds.join(' / ')} of max. ${rounds}${limited ? ' (+ = hit the limit, more rounds may help)' : ''}`);
+  } catch (e) {
+    console.error(e);
+    await _wsProgressDone('Optimize failed', String(e.message || e));
+  } finally {
+    _wsEffCache = null;
+    _wsOptimizing = false;
+    _wsProgress(null);
+  }
+}
+
+function resetRecipeWs() {
+  wsRecipeConfigs = {};
   _wsAfterOptimize();
 }
 
 function updateItemWsMode2(idx, mode) {
   const item = selectedRecipeList[idx];
   if (mode === "custom") {
-    const cat = MACHINE_TO_CATEGORY[item.machineName];
+    const cat = globalWsCategory(item.machineName);
     const globalCfg = cat ? workstationConfigs[cat] : null;
     item.wsOverride = globalCfg
       ? { tier: globalCfg.tier, robots: [...globalCfg.robots], chargedCore: globalCfg.chargedCore }
@@ -980,8 +1201,9 @@ function updateItemWsMode2(idx, mode) {
   } else if (mode === "none") {
     item.wsOverride = { tier: 1, robots: [], chargedCore: false, disabled: true };
   } else {
-    // "global" — remove override entirely
-    item.wsOverride = null;
+    // "global" — default (null) follows the global switch; while it is off the
+    // line keeps the global WS explicitly
+    item.wsOverride = wsGlobalOn ? null : { useGlobal: true };
   }
   renderSelectedRecipes();
 }

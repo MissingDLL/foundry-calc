@@ -278,12 +278,13 @@ function _savePlan(s) {
     const cur = f.defaultChoice || f.machines[0];
     if (best) add('Machines', f.label, cur, best, () => { f.defaultChoice = best; });
   });
-  // Miner per raw item: the one built most in the save (drone miners and ore
-  // vein miners work on different deposits, so "fastest" would be a guess)
+  // Miner per raw item: an Ore Vein Miner once the save has one (veins are the
+  // late-game source; drone miners are often just left over), else the one built most
   const built = {};
   Object.values(s.categories).forEach(c => Object.entries(c.items).forEach(([n, k]) => { built[n] = (built[n] || 0) + k; }));
   MINER_GROUPS.forEach(g => {
-    const best = g.miners.filter(m => built[m]).sort((a, b) => built[b] - built[a])[0];
+    const best = g.miners.includes(M.ORE_VEIN_MINER) && built[M.ORE_VEIN_MINER] ? M.ORE_VEIN_MINER
+      : g.miners.filter(m => built[m]).sort((a, b) => built[b] - built[a])[0];
     const cur = minerSettings[g.label] || g.miners[0];
     if (best) add('Miners', g.label, cur, best, () => { minerSettings[g.label] = best; });
   });

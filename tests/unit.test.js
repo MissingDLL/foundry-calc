@@ -87,14 +87,18 @@ const { describe, it, expect } = _T;
 function _resetState() {
   localStorage.clear();
   sessionStorage.clear();
+  resetSettings(); // every setting (incl. fluid source, excavation, deluxe …) back to default
   Object.keys(variantSettings).forEach(k => delete variantSettings[k]);
   Object.keys(minerSettings).forEach(k => delete minerSettings[k]);
   Object.keys(botEfficiencyOverrides).forEach(k => delete botEfficiencyOverrides[k]);
+  Object.keys(botWeightReductions).forEach(k => delete botWeightReductions[k]);
   Object.keys(workstationConfigs).forEach(k => delete workstationConfigs[k]);
   miningEfficiencyLevel    = 0;
   pumpjackEfficiencyLevel  = 0;
   depletedVeins            = 1;
   veinsDepleted            = false;
+  wsGlobalOn               = true;
+  wsRecipeConfigs          = {};
   selectedRecipeList       = [];
   MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
 }
@@ -458,6 +462,30 @@ describe('saveSettings() / loadSettings() round-trip', () => {
 // 5. _applyImportedPlan()
 // ════════════════════════════════════════════════════════════
 describe('_applyImportedPlan()', () => {
+  it('export → import restores EVERY setting (one list: settingsSnapshot)', () => {
+    const fluid = Object.entries(FLUID_SOURCE_MACHINES).find(([, s]) => (s.alternatives || []).length > 1);
+    // a non-default value for each setting
+    variantSettings[VARIANT_GROUPS[0].label] = VARIANT_GROUPS[0].variants.at(-1);
+    minerSettings[MINER_GROUPS[0].label] = MINER_GROUPS[0].miners.at(-1);
+    botEfficiencyOverrides['Light Bot'] = 33; botWeightReductions['Light Bot'] = 40;
+    miningEfficiencyLevel = 7; pumpjackEfficiencyLevel = 5; depletedVeins = 3; calcDepthMode = 3;
+    modularSettings[Object.keys(MODULAR_BUILDINGS)[0]] = 4; adjacencyBonus = false; veinsDepleted = true;
+    shippingShip = SHIPPING.ships.at(-1).name; shippingFlightSec = 40; stockItems = { 'Steel Beams': 12 };
+    ownsDeluxe = true; excavationTool = EXCAVATION.tools.at(-1);
+    fluidSourceChoice[fluid[0]] = fluid[1].alternatives.at(-1).machine; // Water: pipeline intake
+    powerPlan = { on: true, gen: 'some_generator', fuel: null };
+    buildCostOn = true; buildPlan = { mode: 'rate', rates: { 'Construction Material': 50 } };
+    wsGlobalOn = false; wsRecipeConfigs = { 'Wire Coil': { tier: 3, robots: ['Operator Robot', null, null], chargedCore: false } };
+    workstationConfigs['Miners'] = { tier: 2, robots: ['Light Bot', null], chargedCore: false };
+    MACHINE_FAMILIES[0].defaultChoice = MACHINE_FAMILIES[0].machines.at(-1);
+    const before = JSON.stringify(settingsSnapshot());
+    const plan = JSON.parse(JSON.stringify(_buildPlanObject())); // like a file or a share link
+    resetSettings();
+    expect(JSON.stringify(settingsSnapshot()) === before).toBeFalsy();
+    _applyImportedPlan(plan);
+    expect(JSON.stringify(settingsSnapshot())).toBe(before);
+    resetSettings();
+  });
   it('rejects a plan with an unsupported version', () => {
     let alerted = false;
     const origAlert = window.alert;

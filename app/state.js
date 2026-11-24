@@ -452,6 +452,32 @@ let stockItems = {};
 let ownsDeluxe = false;
 // Tool shown as source of excavated items (Dirt, Biomass, seeds …); null = game data default
 let excavationTool = null;
+// "Calculate power": the chain's own power plant (generator + fuel) is calculated too
+let powerPlan = { on: false, gen: null, fuel: null };
+// "Build cost (one-time)": Construction Material of the modular buildings + its raw materials
+let buildCostOn = false;
+// Global workstations (per machine group) on/off for the whole chain; a line's Custom WS stays
+let wsGlobalOn = true;
+// Custom WS of recipes deeper in the chain (recipe name → WS config); set by
+// Optimize. Selected lines keep theirs in line.wsOverride.
+let wsRecipeConfigs = {};
+function sanitizeWsConfigs(o) {
+  const out = {};
+  Object.entries(o && typeof o === 'object' ? o : {}).forEach(([rn, c]) => {
+    if (!RECIPES[rn] || !c || typeof c !== 'object') return;
+    out[rn] = { tier: [1, 2, 3].includes(c.tier) ? c.tier : 1,
+                robots: (Array.isArray(c.robots) ? c.robots : []).slice(0, 3).map(b => typeof b === 'string' && (WORKSTATION_EFFECTS[b] || RECIPES[b]) ? b : null), // bots: game WS data (robot recipes are added later)
+                chargedCore: !!c.chargedCore, ...(c.disabled ? { disabled: true } : {}) };
+  });
+  return out;
+}
+// Build material: 'once' = total only; 'rate' = produced at rates[item] /min as chain lines
+let buildPlan = { mode: 'once', rates: {} };
+function sanitizeBuildPlan(b) {
+  const rates = {};
+  Object.entries(b?.rates || {}).forEach(([k, v]) => { if (typeof v === 'number' && isFinite(v) && v >= 0) rates[k] = Math.min(v, 999999); });
+  return { mode: b?.mode === 'rate' ? 'rate' : 'once', rates };
+}
 // Chosen intake per raw fluid (Water: Liquid Intake on pipes or Liquid Intake
 // (Pipeline) 180,000 L/min); null = game data default (the basic intake).
 const fluidSourceChoice = {};
@@ -571,6 +597,22 @@ const MACHINE_TO_CATEGORY = {};
 Object.entries(APPLIES_TO_MACHINES).forEach(([cat, machines]) => {
   machines.forEach(m => { MACHINE_TO_CATEGORY[m] = cat; });
 });
+// A machine can be in several groups (Xeno-Scrap-Extractor: Extractors and
+// Miners). Its global WS: the most specific group that has one set up.
+const MACHINE_TO_CATEGORIES = {};
+Object.entries(APPLIES_TO_MACHINES).forEach(([cat, machines]) => machines.forEach(m => (MACHINE_TO_CATEGORIES[m] ||= []).push(cat)));
+Object.values(MACHINE_TO_CATEGORIES).forEach(l => l.sort((a, b) => APPLIES_TO_MACHINES[a].length - APPLIES_TO_MACHINES[b].length));
+function globalWsCategory(machine) {
+  const l = MACHINE_TO_CATEGORIES[machine] || [];
+  return l.find(c => workstationConfigs[c]) || l[0];
+}
+
+// Does a bot's workstation effect reach this machine? A matching applies_to
+// group is required and no exempt group may match (game: excludedTags).
+function wsBotFits(we, machineName) {
+  const hit = cats => (cats || []).some(c => (APPLIES_TO_MACHINES[c] || []).includes(machineName));
+  return hit(we.applies_to) && !hit(we.exempt);
+}
 
 // Computes the total workstation bonus (as a decimal fraction, e.g. 0.20
 // for a 20 % bonus) for a specific machine given a wsConfig object.
@@ -582,8 +624,19 @@ Object.entries(APPLIES_TO_MACHINES).forEach(([cat, machines]) => {
 //   speed  — machine runs faster: input AND output scale (120→264 / 40→88 at +120 %)
 //   eff    — free extra output from the same input (productivity)
 //   power  — extra power consumption of the machine (+20 % per Screen Bot)
-// A Charged/Reno power core multiplies all three by 4/3 (+33.33 %).
+// A charged Xeno Power Core multiplies all three by 4/3 (+33.33 %).
+// Cache config → machine → effect, only while Optimize runs (configs are
+// replaced, never mutated, then). Outside of it configs are edited in place.
+let _wsEffCache = null;
 function calcWsEffectForMachine(machineName, wsConfig) {
+  if (!_wsEffCache || !wsConfig) return _calcWsEffect(machineName, wsConfig);
+  let m = _wsEffCache.get(wsConfig);
+  if (!m) _wsEffCache.set(wsConfig, m = new Map());
+  let e = m.get(machineName);
+  if (!e) m.set(machineName, e = _calcWsEffect(machineName, wsConfig));
+  return e;
+}
+function _calcWsEffect(machineName, wsConfig) {
   const none = { speed: 0, eff: 0, power: 0 };
   if (!wsConfig || wsConfig.disabled) return none;
   let eff = 0, speed = 0, power = 0;
@@ -592,10 +645,7 @@ function calcWsEffectForMachine(machineName, wsConfig) {
     const r = RECIPES[botName];
     if (!r || !r.workstation_effect) return;
     const we = r.workstation_effect;
-    // Only apply if the bot's effect targets this machine's category
-    if ((we.applies_to || []).some(cat =>
-      (APPLIES_TO_MACHINES[cat] || []).includes(machineName)
-    )) {
+    if (wsBotFits(we, machineName)) {
       eff   += we.machine_efficiency || 0;
       speed += we.machine_speed      || 0;
       power += we.power_consumption  || 0;
@@ -605,34 +655,38 @@ function calcWsEffectForMachine(machineName, wsConfig) {
   return { speed: speed * k, eff: eff * k, power: power * k };
 }
 
-// Total bonus (speed + efficiency) as one number — for display only.
+// Total bonus (speed + efficiency) as one number — for sorting / "any bonus?".
 function calcWsBonusForMachine(machineName, wsConfig) {
   const e = calcWsEffectForMachine(machineName, wsConfig);
   return e.speed + e.eff;
 }
 
-// Returns the workstation bonus for a recipe line item.
-// Uses the item's own wsOverride config if set, otherwise falls back
-// to the global workstationConfigs entry for that machine category.
-function getItemWsEffect(item) {
-  if (item.wsOverride === undefined && selectedRecipeList.length &&
-      selectedRecipeList.every(l => l.wsOverride?.disabled)) return { speed: 0, eff: 0, power: 0 };
-  const config = item.wsOverride !== undefined && item.wsOverride !== null
-    ? item.wsOverride
-    : workstationConfigs[MACHINE_TO_CATEGORY[item.machineName]];
-  return calcWsEffectForMachine(item.machineName, config);
+// Config that applies to a line or chain machine: the line's own setting
+// (Custom / No WS) only for that line; everything else the global WS of its
+// machine group, unless global workstations are switched off.
+// { useGlobal: true } = the line picked Global WS explicitly: kept while global WS is off.
+function getItemWsConfig(item) {
+  if (item.wsOverride && !item.wsOverride.useGlobal) return item.wsOverride;
+  const own = !item.wsOverride && wsRecipeConfigs[item.recipeName || item.itemName];
+  if (own) return own;
+  return wsGlobalOn || item.wsOverride?.useGlobal ? workstationConfigs[globalWsCategory(item.machineName)] : null;
 }
+function getItemWsEffect(item) { return calcWsEffectForMachine(item.machineName, getItemWsConfig(item)); }
+function getItemWsBonus(item)  { const e = getItemWsEffect(item); return e.speed + e.eff; }
 
-function getItemWsBonus(item) {
-  // Chain machines (no own wsOverride key) follow the selected lines: if every
-  // line is set to "No WS", the chain gets no bonus either.
-  // ponytail: mixed lines share the chain, so any Global/Custom line keeps it on.
-  if (item.wsOverride === undefined && selectedRecipeList.length &&
-      selectedRecipeList.every(l => l.wsOverride?.disabled)) return 0;
-  const config = item.wsOverride !== undefined && item.wsOverride !== null
-    ? item.wsOverride
-    : workstationConfigs[MACHINE_TO_CATEGORY[item.machineName]];
-  return calcWsBonusForMachine(item.machineName, config);
+// Display: speed (blue) and efficiency (green) apart — they act differently.
+function wsEffectHtml(e) {
+  const pct = x => Math.round(x * 1000) / 10;
+  return [e.speed && `<span style="color:var(--accent)">+${pct(e.speed)}% speed</span>`,
+          e.eff   && `<span style="color:var(--accent3)">+${pct(e.eff)}% eff</span>`].filter(Boolean).join(' ');
+}
+// "WS 3 · 2× Light Bot · 1× Miner Robot · Xeno Power Core"
+function wsConfigText(cfg) {
+  if (!cfg || cfg.disabled) return 'no workstation';
+  const n = {};
+  (cfg.robots || []).filter(Boolean).forEach(b => { n[b] = (n[b] || 0) + 1; });
+  return [`WS ${cfg.tier || 1}`, ...Object.entries(n).map(([b, c]) => `${c}× ${b}`), cfg.chargedCore && I.XENO_POWER_CORE]
+    .filter(Boolean).join(' · ');
 }
 
 // ── Machine families (for grouped settings UI) ────────────────
@@ -787,42 +841,81 @@ function saveSettings() {
   _savePending = setTimeout(_flushSaveSettings, 250);
 }
 
-function _flushSaveSettings() {
-  _savePending = null;
+// ONE list of what a plan's settings are: save (per tab), export, share,
+// saved plans and import all go through settingsSnapshot / resetSettings /
+// applySettings, so no setting can be lost on one of the ways.
+function settingsSnapshot() {
   const famDefaults = {};
   MACHINE_FAMILIES.forEach(f => { if (f.defaultChoice) famDefaults[f.label] = f.defaultChoice; });
+  return {
+    variantSettings,
+    minerSettings,
+    botEfficiencyOverrides,
+    botWeightReductions,
+    miningEfficiencyLevel,
+    pumpjackEfficiencyLevel,
+    depletedVeins,
+    calcDepthMode,
+    modularSettings,
+    adjacencyBonus,
+    veinsDepleted,
+    shippingShip,
+    shippingFlightSec,
+    stockItems,
+    ownsDeluxe,
+    excavationTool,
+    powerPlan,
+    buildCostOn,
+    buildPlan,
+    wsGlobalOn,
+    wsRecipeConfigs,
+    fluidSourceChoice,
+    workstationConfigs,
+    machineFamilyDefaults: famDefaults,
+  };
+}
+
+// Recipe list as stored: without UI-only state (wsExpanded, open) and without
+// the automatic lines (power fuel, build material — re-created from their settings)
+function savedRecipeList() {
+  return selectedRecipeList.filter(item => !item.auto).map(item => ({
+    itemName:    item.itemName,
+    recipeName:  item.recipeName,
+    machineName: item.machineName,
+    goal:        item.goal,
+    wsOverride:  item.wsOverride,
+    forSale:     !!item.forSale,
+  }));
+}
+
+// Every setting back to its default (import starts from here, so nothing of
+// the current session leaks into an imported plan)
+function resetSettings() {
+  [variantSettings, minerSettings, botEfficiencyOverrides, botWeightReductions, workstationConfigs, modularSettings, fluidSourceChoice]
+    .forEach(o => Object.keys(o).forEach(k => delete o[k]));
+  miningEfficiencyLevel   = 0;
+  pumpjackEfficiencyLevel = 0;
+  depletedVeins           = 1;
+  calcDepthMode           = 1;
+  adjacencyBonus = true;
+  veinsDepleted  = false;
+  shippingShip = null;
+  shippingFlightSec = 26;
+  stockItems = {};
+  ownsDeluxe = false;
+  excavationTool = null;
+  powerPlan = { on: false, gen: null, fuel: null };
+  buildCostOn = false;
+  buildPlan = { mode: 'once', rates: {} };
+  wsGlobalOn = true;
+  wsRecipeConfigs = {};
+  MACHINE_FAMILIES.forEach(f => { delete f.defaultChoice; });
+}
+
+function _flushSaveSettings() {
+  _savePending = null;
   try {
-    const blob = JSON.stringify({
-      gameVersion: GAME_VERSION_ID,
-      variantSettings,
-      minerSettings,
-      botEfficiencyOverrides,
-      botWeightReductions,
-      miningEfficiencyLevel,
-      pumpjackEfficiencyLevel,
-      depletedVeins,
-      calcDepthMode,
-      modularSettings,
-      adjacencyBonus,
-      veinsDepleted,
-      shippingShip,
-      shippingFlightSec,
-      stockItems,
-      ownsDeluxe,
-      excavationTool,
-      fluidSourceChoice,
-      workstationConfigs,
-      machineFamilyDefaults: famDefaults,
-      // Save recipe list without UI-only state (wsExpanded)
-      selectedRecipeList: selectedRecipeList.map(item => ({
-        itemName:    item.itemName,
-        recipeName:  item.recipeName,
-        machineName: item.machineName,
-        goal:        item.goal,
-        wsOverride:  item.wsOverride,
-        forSale:     !!item.forSale,
-      })),
-    });
+    const blob = JSON.stringify({ gameVersion: GAME_VERSION_ID, ...settingsSnapshot(), selectedRecipeList: savedRecipeList() });
     // sessionStorage = this tab's own calculation (survives reload, not shared);
     // localStorage = starting point for new tabs.
     sessionStorage.setItem('fc_settings', blob);
@@ -877,55 +970,67 @@ function sanitizeRecipeList(list) {
     });
 }
 
+// Apply saved/imported settings (validated); missing keys keep their value
+function applySettings(s) {
+  if (s.variantSettings)    Object.assign(variantSettings,    s.variantSettings);
+  if (s.minerSettings)      Object.assign(minerSettings,      s.minerSettings);
+  if (s.workstationConfigs) Object.assign(workstationConfigs, s.workstationConfigs);
+
+  // Clamp productivity values to the valid UI range [0, 100]
+  // Old %-based keys (globalMining/FluidProductivity) had wrong semantics → ignored
+  const lvl = (v, min = 0) => (typeof v === 'number' && isFinite(v)) ? Math.max(min, Math.floor(v)) : null;
+  miningEfficiencyLevel   = lvl(s.miningEfficiencyLevel)   ?? miningEfficiencyLevel;
+  pumpjackEfficiencyLevel = lvl(s.pumpjackEfficiencyLevel) ?? pumpjackEfficiencyLevel;
+  depletedVeins           = lvl(s.depletedVeins, 1)        ?? depletedVeins;
+  if (s.modularSettings) Object.entries(s.modularSettings).forEach(([m, n]) => {
+    if (typeof n === 'number' && isFinite(n)) modularSettings[m] = n; // clamped in modularModules()
+  });
+  if (typeof s.adjacencyBonus === 'boolean') adjacencyBonus = s.adjacencyBonus;
+  if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
+  if (typeof s.shippingShip === 'string') shippingShip = s.shippingShip;
+  if (typeof s.shippingFlightSec === 'number' && s.shippingFlightSec >= 0) shippingFlightSec = s.shippingFlightSec;
+  stockItems = sanitizeStock(s.stockItems);
+  if (typeof s.ownsDeluxe === 'boolean') ownsDeluxe = s.ownsDeluxe;
+  if (typeof s.excavationTool === 'string') excavationTool = s.excavationTool;
+  if (s.powerPlan && typeof s.powerPlan === 'object')
+    powerPlan = { on: !!s.powerPlan.on, gen: s.powerPlan.gen ?? null, fuel: s.powerPlan.fuel ?? null };
+  if (typeof s.buildCostOn === 'boolean') buildCostOn = s.buildCostOn;
+  buildPlan = sanitizeBuildPlan(s.buildPlan);
+  wsGlobalOn = s.wsGlobalOn !== false;
+  wsRecipeConfigs = sanitizeWsConfigs(s.wsRecipeConfigs);
+  if (s.fluidSourceChoice && typeof s.fluidSourceChoice === 'object')
+    Object.entries(s.fluidSourceChoice).forEach(([k, v]) => { if (typeof v === 'string') fluidSourceChoice[k] = v; });
+  if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))
+    calcDepthMode = s.calcDepthMode;
+
+  if (s.botWeightReductions) {
+    Object.entries(s.botWeightReductions).forEach(([k, v]) => {
+      if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 100) botWeightReductions[k] = v;
+    });
+  }
+  // Only keep bot efficiency overrides that are finite numbers in [0, 200]
+  if (s.botEfficiencyOverrides) {
+    Object.entries(s.botEfficiencyOverrides).forEach(([k, v]) => {
+      if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 200)
+        botEfficiencyOverrides[k] = v;
+    });
+  }
+
+  if (s.machineFamilyDefaults) {
+    MACHINE_FAMILIES.forEach(f => {
+      const saved = s.machineFamilyDefaults[f.label];
+      if (saved && f.machines.includes(saved)) f.defaultChoice = saved;
+    });
+  }
+}
+
 function loadSettings() {
   try {
     const raw = sessionStorage.getItem('fc_settings') || localStorage.getItem('fc_settings');
     if (!raw) return;
     const s = JSON.parse(raw);
-    if (s.variantSettings)    Object.assign(variantSettings,    s.variantSettings);
-    if (s.minerSettings)      Object.assign(minerSettings,      s.minerSettings);
-    if (s.workstationConfigs) Object.assign(workstationConfigs, s.workstationConfigs);
+    applySettings(s);
 
-    // Clamp productivity values to the valid UI range [0, 100]
-    // Old %-based keys (globalMining/FluidProductivity) had wrong semantics → ignored
-    const lvl = (v, min = 0) => (typeof v === 'number' && isFinite(v)) ? Math.max(min, Math.floor(v)) : null;
-    miningEfficiencyLevel   = lvl(s.miningEfficiencyLevel)   ?? miningEfficiencyLevel;
-    pumpjackEfficiencyLevel = lvl(s.pumpjackEfficiencyLevel) ?? pumpjackEfficiencyLevel;
-    depletedVeins           = lvl(s.depletedVeins, 1)        ?? depletedVeins;
-    if (s.modularSettings) Object.entries(s.modularSettings).forEach(([m, n]) => {
-      if (typeof n === 'number' && isFinite(n)) modularSettings[m] = n; // clamped in modularModules()
-    });
-    if (typeof s.adjacencyBonus === 'boolean') adjacencyBonus = s.adjacencyBonus;
-    if (typeof s.veinsDepleted === 'boolean') veinsDepleted = s.veinsDepleted;
-    if (typeof s.shippingShip === 'string') shippingShip = s.shippingShip;
-    if (typeof s.shippingFlightSec === 'number' && s.shippingFlightSec >= 0) shippingFlightSec = s.shippingFlightSec;
-    stockItems = sanitizeStock(s.stockItems);
-    if (typeof s.ownsDeluxe === 'boolean') ownsDeluxe = s.ownsDeluxe;
-    if (typeof s.excavationTool === 'string') excavationTool = s.excavationTool;
-    if (s.fluidSourceChoice && typeof s.fluidSourceChoice === 'object')
-      Object.entries(s.fluidSourceChoice).forEach(([k, v]) => { if (typeof v === 'string') fluidSourceChoice[k] = v; });
-    if (typeof s.calcDepthMode === 'number' && [0, 1, 2, 3].includes(s.calcDepthMode))
-      calcDepthMode = s.calcDepthMode;
-
-    if (s.botWeightReductions) {
-      Object.entries(s.botWeightReductions).forEach(([k, v]) => {
-        if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 100) botWeightReductions[k] = v;
-      });
-    }
-    // Only keep bot efficiency overrides that are finite numbers in [0, 200]
-    if (s.botEfficiencyOverrides) {
-      Object.entries(s.botEfficiencyOverrides).forEach(([k, v]) => {
-        if (typeof v === 'number' && isFinite(v) && v >= 0 && v <= 200)
-          botEfficiencyOverrides[k] = v;
-      });
-    }
-
-    if (s.machineFamilyDefaults) {
-      MACHINE_FAMILIES.forEach(f => {
-        const saved = s.machineFamilyDefaults[f.label];
-        if (saved && f.machines.includes(saved)) f.defaultChoice = saved;
-      });
-    }
     // Restore recipe list; skip any entry whose recipe no longer exists.
     // Also validate the machine name — fall back to the recipe's first machine
     // if the saved name is no longer valid (e.g. after a game-data update).
